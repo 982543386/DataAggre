@@ -1,0 +1,440 @@
+<style type="text/css">
+     div.mychart{
+         display: inline-block;
+         width: 200px;
+         height: 160px;
+     }
+     div.service_usage_show_legend{
+     	width: 200px;
+     	height:20px;
+     }
+     .left-close{
+     	margin-left: -15%;
+     }
+     .bottom-close{
+     	margin-bottom: 0;
+     }
+</style>
+<div class="row">
+	<div class="col-xs-12">
+			<div class="box box-info">
+		        <div class="box-body">
+		        	<div class="row">
+		        		<div class="col-xs-12">
+							<div class="box bottom-close">
+								<div class="box-body">
+									<div class="row">
+										<div class="col-xs-12">
+												<div class="col-sm-4">
+													<label class="col-sm-5" for="service_name">服务名：</label>
+									     			<select id="service_name" class="col-sm-7 left-close">
+									       				<option disabled selected>请选择service名称</option>
+									     			</select>
+												</div>
+												<div class="col-sm-3">
+													<label class="col-sm-6" for="pod_amount">Pod数量：</label>
+													<span id="pod_amount" class="col-sm-2 left-close"></span>
+												</div>
+												<div class="col-sm-3">
+													<div id="service_usage_show_legend_div" class="service_usage_show_legend"></div>
+												</div>
+												<div class="col-sm-2">
+													<select id="service_refrash_time">
+														<option value='30'>30秒</option>
+														<option value='60'>1分钟</option>
+														<option value='120'>2分钟</option>
+														<option value='180'>3分钟</option>
+														<option value='240'>4分钟</option>
+														<option value='0'>off</option>
+													</select>
+												</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+		    </div>
+	</div>
+</div>
+<div id="service_usage_show_div"></div>
+<script>
+	//chart内外半径
+	var innerRadius = [25, 50];
+	var outerRadius = [50, 75];
+	//chart option格式对象
+	var dataStyle = {
+		normal: {
+			label: {show:false},
+			labelLine: {show:false}
+		}
+	};
+	var placeHolderStyle = {
+		normal : {
+			color: "rgba(200,200,200,0.5)",
+			label: {show:false},
+			labelLine: {show:false},
+			borderColor: "rgba(150,150,150,0.8)"
+		},
+		emphasis : {
+			color: "rgba(200,200,200,0.5)",
+			borderColor: "rgba(150,150,150,0.8)"
+		}
+	};
+
+	//legend
+	var legend_option = {
+			legend: {
+				itemGap:12,
+				data:["内存使用率","CPU使用率"],
+				itemWidth: 10
+			},
+			series: [
+				{
+					type:'pie',
+					radius : [0,0],
+					itemStyle : dataStyle,
+					data:[
+						{
+							value:0,
+							name:'内存使用率',
+							itemStyle: {
+								normal: {
+									color: "rgb(64,136,41)"
+								}
+							}
+						}
+					]
+				},
+				{
+					type:'pie',
+					radius : [0,0],
+					itemStyle : dataStyle,
+					data:[
+						{
+							value:0,
+							name:'CPU使用率',
+							itemStyle: {
+								normal: {
+									color: "rgb(104,165,71)"
+								}
+							}
+						}
+					]
+				}
+			]
+		};
+	
+	//获取service name的function
+	function get_service_name_list(val){
+		$("#service_name option:gt(0)").remove();
+		$.ajax({
+		    url:"/monitor/service",
+		    type: "GET",
+		    dataType:"json",
+		    success: function(response){
+		    	switch(response.status){
+		    	case -1:
+		    		var _div = $('<div>');
+		    		_div.load('alert_error.html', function(){
+						$(this).find('#title').html("ERROR:").end().find('#message').html(response.message);
+						var content = $(this).children();
+						content.fadeTo(3000, 1).slideToggle(500, function(){
+							 content.alert('close');
+							 _div.remove();
+						});
+					});
+		    		$('section.content').append(_div);
+		    		break;
+		    	case 0:
+		    		var data = response.data;
+		    		for(var i = 0; i < data.length; i++){
+		    			$("<option>" + data[i] +"</option>").appendTo($("#service_name"));
+		    		}
+		    		break;
+		    	default:
+		    		console.log('Unknown case..');
+		    	};
+		    	if(val != null){
+		    		$("#service_name").val(val);
+		    	}
+		    }
+		});
+	};
+	
+	//为service name列表添加change事件，获取对应service信息，并打开定时器
+	$("#service_name").on("change",function(){
+		get_service_amount_info();
+		$("#service_refrash_time").val("30");
+		$("#service_refrash_time").change();
+	});
+	
+	//当下拉列表change时先获取partion信息和各自的pod数量，建立相应的画框，然后各自发送ajax请求
+	function get_service_amount_info(val){
+		//var service_name = val || $("#service_name").val();//使用此句代替下面的if else语句
+		var service_name = null;
+		if(val != null){
+			service_name = val;
+		} else{
+			service_name = $("#service_name").val();
+		}
+		/* $(".forDel").remove(); */
+		$.ajax({
+			 url:"/monitor/service/amount/" + service_name,
+		     type: "GET",
+		     dataType:"json",
+		     success: function(response){
+		    	 switch(response.status){
+		    	 	case -1:
+		    	 		$(".forDel").remove();
+		    	 		$("#service_usage_show_div").load('alert_error.html', function(){
+							$(this).find('#title').html("ERROR:").end().find('#message').html(response.message);
+							var content = $(this).children();
+							content.fadeTo(3000, 1).slideToggle(500, function(){
+								 content.alert('close');
+							});
+						});
+		    	 		break;
+		    	 	case 0:
+		    	 		var pod_amount = 0;
+		    	 		
+		    	 		var responseKeys = [];
+		    	 		for(var o in response.data){
+		    	 			responseKeys.push(o);
+		    	 			var pods = response.data[o];
+		    	 			pod_amount = pod_amount + pods.length;
+		    	 		}
+		    	 		$.each($(".partion"),function(index, value){
+		    	 			if(responseKeys.indexOf($(this).attr("data-partion-name")) == -1){
+		    	 				$(this).parent().parent().parent().remove();
+		    	 			}
+	    	 			});
+		    	 		for(var i = 0; i < responseKeys.length; i++){
+		    	 			if($(".partion[data-partion-name=" + responseKeys[i] + "]").length <= 0){
+		    	 				var partion = $("<div class='row forDel'><div class='col-xs-12'><div class='box'><div class='box-header with-border'><h3 class='box-title'>"
+										+ "分区：" + responseKeys[i] + "</h3></div><div class='box-body partion' data-partion-name=" + responseKeys[i] 
+										+ "></div></div></div></div>");
+			    	 			partion.appendTo($('section.content'));
+		    	 			}
+		    	 			
+		    	 			var pods = response.data[responseKeys[i]];
+		    	 			
+		    	 			$.each($(".partion[data-partion-name=" + responseKeys[i] + "]").find(".mychart"),function(index,value){
+		    	 				if(pods.indexOf($(this).attr("id")) == -1){
+		    	 					$(this).remove();
+		    	 				}
+		    	 			});
+		    	 			for(var j = 0; j < pods.length; j++){
+		    	 				if($("#" + pods[j]) .length <= 0){
+		    	 					var mydiv = $("<div>",{//新建echart画框
+			    						id: pods[j],
+			    						class: "mychart"
+			    					});
+			    					mydiv.appendTo($(".partion[data-partion-name=" + responseKeys[i] + "]"));//将新建的画框添加到相应的partion分组
+		    	 				}
+		    	 			}
+		    	 		}
+		    	 		
+		    	 		/* for(var o in response.data){
+		    	 			
+		    	 			var partion = $("<div class='row forDel'><div class='col-xs-12'><div class='box'><div class='box-header with-border'><h3 class='box-title'>"
+									+ "分区：" + o + "</h3></div><div class='box-body partion' data-partion-name=" + o 
+									+ "></div></div></div></div>");
+		    	 			partion.appendTo($('section.content'));
+		    	 			var pods = response.data[o];
+		    	 			for(var i = 0; i < pods.length; i++){
+		    	 				var mydiv = $("<div>",{//新建echart画框
+		    						id: pods[i],
+		    						class: "mychart"
+		    					});
+		    					mydiv.appendTo(partion.find("div.partion"));//将新建的画框添加到相应的partion分组
+		    					pod_amount = pod_amount + 1;
+		    	 			}
+		    	 		} */
+		    	 		
+		    	 		//设置pod数量
+				    	$("#pod_amount").text(pod_amount);
+		    	 		
+		    	 		//legend绘画
+				    	var legend_div = $("#service_usage_show_legend_div");
+						var legend_chart = echarts.init(legend_div[0]);
+						legend_chart.setOption(legend_option);
+						get_service_info();
+		    	 		break;
+		    	 	default:
+		    	 		console.debug("Unknow case...");
+		    	 }
+		     }
+		});
+	};
+	
+	//获取service详细信息的function
+	function get_service_info(){
+		$.each($("div.mychart"),function(index,value){
+			var _this = this;
+			$.ajax({
+				url : "/monitor/service/" + $(_this).attr("id"),
+				type : "GET",
+				dataType : "json",
+				success : function(infoResponse) {
+					switch(infoResponse.status){
+						case -2:
+							$(_this).children().remove();
+							var error_div = $("<div class='callout callout-danger'><h4><i class='icon fa fa-warning'></i>pod:" + $(_this).attr("id") + " ERROR:</h4><p>" + infoResponse.message + "</p></div>");
+							error_div.appendTo($(_this));
+							break;
+						case 0:
+							//绑定click事件，跳转历史记录页面
+							$(_this).on("click", function() {
+								clearInterval(service_get_info_clock);
+								sessionStorage.setItem("podName", $(_this).attr(
+										"id"));
+								sessionStorage.setItem("service_name",$("#service_name").val());
+								$('.content').load('single_pod_usage.html');
+							});
+							var data = infoResponse.data;
+							var myChart = echarts.init($(_this)[0]);
+							//chart option选项参数
+							var servic_option = {
+								tooltip : {
+									show: true,
+									formatter: "{b} : {d}%"
+								},
+								title: {
+									text : data.title,
+									link: "",
+									x: 'center',
+									y: 'center',
+				                    textStyle: {
+				                        fontSize: 8
+				                    }
+								},
+								series: [
+									{
+										type:'pie',
+										clockWise:false,
+										radius : outerRadius,
+										itemStyle : dataStyle,
+										data:[
+											{
+												value:data.memoryUsage,
+												name:'内存使用率',
+												itemStyle: {
+													normal: {
+														text: "",
+														color: function (message){
+															var use_percent =message.data.value / (message.data.value + message.series.data[1].value);
+															if(use_percent < 0.6){
+																return "rgb(64,136,41)";
+															} else if(use_percent >= 0.6 && use_percent < 0.8){
+																return "yellow";
+															} else{
+																return "red";
+															}
+														},
+														borderColor: "rgba(150,150,150,0.8)"
+													}
+												}
+											},
+											{
+												value:data.memoryAvelibale,
+												name:'invisible',
+												itemStyle : placeHolderStyle,
+												tooltip : {
+													show: false
+												}
+											}
+										]
+									},
+									{
+										type:'pie',
+										clockWise:false,
+										radius : innerRadius,
+										itemStyle : dataStyle,
+										data:[
+											{
+												value:data.cpuUsage,
+												name:'CPU使用率',
+												itemStyle: {
+													normal: {
+														text: "",
+														color: function (message){
+															var use_percent =message.data.value / (message.data.value + message.series.data[1].value);
+															if(use_percent < 0.6){
+																return "rgb(104,165,71)";
+															} else if(use_percent >= 0.6 && use_percent < 0.8){
+																return "yelllow";
+															} else{
+																return "red";
+															}
+														},
+														borderColor: "rgba(150,150,150,0.8)"
+													}
+												}
+											},
+											{
+												value:data.cpuAveliable,
+												name:'invisible',
+												itemStyle : placeHolderStyle,
+												tooltip : {
+													show: false
+												}
+											}
+										]
+									}
+								]
+							};
+							myChart.setOption(servic_option);
+							break;
+						default:
+								console.debug("Unknow case...");
+					}
+				}
+			});
+		});
+	};
+	
+	//为刷新时间列表添加事件，用于开关定时器
+	$("#service_refrash_time").on("change",function(){
+		//刷新时间
+		var service_get_info_clock_time = $("#service_refrash_time").val();
+		//清除定时器
+		try{
+			clearInterval(service_get_info_clock);
+		}catch(err){
+			console.debug("定时器不存在");
+		}
+		
+		if(service_get_info_clock_time != 0){
+			//声明定时器，定时器用于间隔时间取数据重新绘制画图
+			service_get_info_clock = setInterval(function() {
+				if ($("#service_usage_show_div").length > 0) {
+					get_service_amount_info();
+				}
+				else {
+					clearInterval(service_get_info_clock);
+				}
+			}, service_get_info_clock_time * 1000);
+		}
+	});
+	
+	//清除定时器，当重新加载当前页面时
+	try{
+		clearInterval(service_get_info_clock);
+	}catch(err){
+		console.debug("定时器不存在");
+	}
+	
+	//当正常进入此菜单时，执行else语句，当从下级页面通过返回按钮进入此菜单时，执行if语句
+	var back_service_name = sessionStorage.getItem("service_name");
+	if(back_service_name != null){
+		sessionStorage.removeItem("service_name");
+		get_service_name_list(back_service_name);
+		get_service_amount_info(back_service_name);
+		$("#service_refrash_time").change();
+	} else{
+		//加载service列表
+		get_service_name_list();
+	}
+</script>

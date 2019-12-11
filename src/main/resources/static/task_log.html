@@ -1,0 +1,181 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="col-xs-12">
+					<div class="col-sm-4">
+						<label class="col-sm-5">partition：</label>
+						<span id="namespace" class="col-sm-2 left-close"></span>
+					</div>
+					<div class="col-sm-4">
+						<label class="col-sm-6">jobName：</label>
+						<span id="jobName" class="col-sm-2 left-close"></span>
+					</div>
+				</div>
+			</div>
+			<div class="box-body">
+				<table id="taskLogTable" class="table table-bordered table-hover" style="font-size: 12px; text-align:center;">
+					<thead>
+						<tr>
+							<th>开始时间</th>
+							<th>结束时间</th>
+							<th>用时</th>
+							<th>执行状态</th>
+							<th>详情</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+				</table>
+				<div class="box-footer">
+				<div class="box-tools pull-right">
+					<button id="back" class="btn btn-default" type="button">返回</button>
+				</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var taskId;
+if(sessionStorage.getItem("security_task")){
+	var task = JSON.parse(sessionStorage.getItem("security_task"));
+	taskId=task.id;
+	$('#namespace').text(task.jobGroup);
+	$('#jobName').text(task.jobName);
+	sessionStorage.removeItem("security_task");
+}
+	var table = $('#taskLogTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/task/getTaskLog?taskId="+taskId,
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "startTime",
+									render: function ( data, type, row ) {
+										return (new Date(data)).format("yyyy-MM-dd hh:mm:ss");
+										
+									}
+								},
+								{
+									"data" : "endTime",
+									render: function ( data, type, row ) {
+										return (new Date(data)).format("yyyy-MM-dd hh:mm:ss");
+										
+									}
+								},
+								{
+									"data" : "useTime",
+									render: function ( data, type, row ) {
+										if(row.endTime!="" || row.endTime!=null){
+											return getUseTime(row.endTime-row.startTime);
+										}
+									}
+								},
+							    {
+									"data" : "status",
+									render: function ( data, type, row ) {
+										if(data==1){
+											return "运行中";
+										}else if(data==2){
+											return "完成";
+										}else if(data==-1){
+											return "异常";
+										}else {
+											return "";
+										}
+									}
+								}, 
+								{
+									"data" : "hint"
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs del'>Delete</button>"
+								} ]
+					});
+	// 删除 需要确定删除方式  
+	$('#taskLogTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "/task/deleteTaskLog?taskLogId="+data.id,
+		       type: "GET",
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] == 0) {
+		        	   table.ajax.reload();
+		        	   alertSuccess("SUCCESS", "Delete <strong>" + data.jobName + "</strong> successfully.");
+		           } else {
+		        	   alertError("ERROR", response['message']);
+		           }
+		       }
+		   });
+	});
+	// 补充back事件
+	$("#back").click(function() {
+		$(".content").load("task_list.html");
+	});
+	
+	Date.prototype.format = function(format) {  
+	    /* 
+	     * eg:format="yyyy-MM-dd hh:mm:ss"; 
+	     */  
+	    var o = {  
+	        "M+" : this.getMonth() + 1, // month  
+	        "d+" : this.getDate(), // day  
+	        "h+" : this.getHours(), // hour  
+	        "m+" : this.getMinutes(), // minute  
+	        "s+" : this.getSeconds(), // second  
+	        "q+" : Math.floor((this.getMonth() + 3) / 3), // quarter  
+	        "S" : this.getMilliseconds()  
+	        // millisecond  
+	    }  
+	  
+	    if (/(y+)/.test(format)) {  
+	        format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4  
+	                        - RegExp.$1.length));  
+	    }  
+	  
+	    for (var k in o) {  
+	        if (new RegExp("(" + k + ")").test(format)) {  
+	            format = format.replace(RegExp.$1, RegExp.$1.length == 1  
+	                            ? o[k]  
+	                            : ("00" + o[k]).substr(("" + o[k]).length));  
+	        }  
+	    }  
+	    return format;  
+	}
+	
+	function getUseTime(date){
+		//输入相差的时间秒数
+		//计算出相差天数
+		var days=Math.floor(date/(24*3600*1000))
+		//计算出小时数
+		var leave1=date%(24*3600*1000)    //计算天数后剩余的毫秒数
+		var hours=Math.floor(leave1/(3600*1000))
+		//计算相差分钟数
+		var leave2=leave1%(3600*1000)        //计算小时数后剩余的毫秒数
+		var minutes=Math.floor(leave2/(60*1000))
+		//计算相差秒数
+		var leave3=leave2%(60*1000)      //计算分钟数后剩余的毫秒数
+		var seconds=Math.round(leave3/1000)
+		var ret;
+		if(days!=0){
+			ret = days+"天 "+hours+"小时 "+minutes+"分钟"+seconds+"秒";
+		}else if(hours!=0){
+			ret = hours+"小时 "+minutes+"分钟"+seconds+"秒";
+		}else if(minutes!=0){
+			ret = minutes+"分钟"+seconds+"秒";
+		}else{
+			ret = seconds+"秒";
+		}
+		return ret;
+	}
+</script>

@@ -1,0 +1,109 @@
+<script type="text/javascript">
+	$.getScript("iiot/device/device_list.js");
+	$.getScript("iiot/device/mqtt.js");
+</script>
+<!-- Main content -->
+<section class="content">
+	<!-- table -->
+	<div class="box" id="table" >	
+		<div class="box-header">
+                <div class="input-group input-group-sm" >
+                  <button class='btn btn-primary btn-sm add' id="add_btn">新 增</button>
+                </div>
+        </div>		
+		<div class="box-body">
+			<span class="info-box-text"><h3>设备列表</h3></span>
+			<table id="deviceTable" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+				<thead>
+			
+				</thead>
+			</table>
+		</div>
+	</div>
+	<!-- /table -->
+	<!-- form style="display: none;" readonly="readonly" disabled="disabled"  readonly unselectable="on" -->
+	<div class="box" id="editForm" style="display: none;">
+		<div class="box-body">
+			<span class="info-box-text"><h3>设备编辑</h3></span>
+				 <input type="text" style="display: none;"  id="id">
+				<div class="form-group">
+					<label for="exampleInputEmail1">设备编码</label> <input type="text"
+						style="width: 60%" class="form-control" id="deviceEncode"
+						placeholder="请输入设备编码" >
+				</div>
+				<div class="form-group">
+					<label for="exampleInputEmail1">设备名称</label> <input type="text"
+						style="width: 60%" class="form-control" id="deviceName"
+						placeholder="请输入设备名称" >
+				</div>
+				<div class="form-group">
+					<label for="exampleInputEmail1">Topic Name</label> <input type="text"
+						style="width: 60%" class="form-control" id="topicNanme"
+						placeholder="请输入Topic Name" >
+				</div>
+				<div class="form-group">
+					<label>设备运行状态</label> <select class="form-control"
+						style="width: 60%" id="deviceStatusCode">
+						<option value="0">Stopped</option>
+						<option value="1">Running</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>绑定节点</label> <select class="form-control"
+						style="width: 60%" id="nodeIp">
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="exampleInputEmail1">描述</label> <textarea 
+						style="width: 60%" class="form-control" id="description"
+						placeholder="请输入描述"></textarea>
+				</div>
+				<div class="box-footer" style="width: 60%">
+                	<button id="return_btn" type="button" style="width: 49%" class="btn btn-default">返 回</button>
+                	<button id="submit_btn" type="button" style="width: 49%" class="btn btn-info pull-right">提 交</button>
+				</div>
+			<div>
+			<br />
+				<p>
+					备注：</br> ……
+				</p>
+			</div>
+		</div>
+	</div>
+	<!-- /form -->
+	<div class="modal modal-primary fade" id="modalConfirm">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+		  </div>
+		  <div class="modal-body">
+			<p id="modalMsgConfirm"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline" id="modal-btn" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">提示</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+			<button type="button" class="btn btn-outline" id="modal-btn" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</section>
+

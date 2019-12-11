@@ -1,0 +1,568 @@
+<!-- <div class="row"> -->
+<div class="container-fluid">
+
+	<div class="box box-info">
+		<div class="box-header with-border">
+			<h3 class="box-title">View Application</h3><button type="button" id="backToList" class="btn btn-default pull-right"
+						style="margin: 20px 0 20px 0;" >
+						返<span style="padding-left: 12px" />回
+					</button>
+		</div>
+		<!-- /.box-header -->
+		<div class="box-body">
+			<div class="row">
+			<div class="col-md-12">
+				<div class="col-sm-4">
+					<dl class="dl-horizontal">
+						<dt class="col-xs-3">Application Name</dt>
+						<dd id="name" />
+						<dt class="col-xs-3">Owner</dt>
+						<dd id="owner" />
+						<dt class="col-xs-3">配置信息</dt>
+						<!-- <dd id="jsonSpec"></dd> -->
+					</dl>
+				</div>
+				<div class="col-sm-6">
+					<dl class="dl-horizontal">
+						<dt class="col-xs-3">Version</dt>
+						<dd id="version" />
+						<dt class="col-xs-3">Notes</dt>
+						<dd id="note" />
+					</dl>
+				</div>
+				<!-- 			<div class="col-sm-6">
+				<dl class="dl-horizontal">
+                    <dt class="col-xs-3">Json Spec</dt>
+                </dl>
+			</div> -->
+			</div>
+
+			<div class="row">
+			
+		</div>
+	</div>
+	<div class="col-sm-9 col-sm-offset-1" id="jsonSpec">jsonSpec</div>
+</div>
+</div>
+<div >
+
+<script src="plugins/jsonview/jquery.jsonview.js"></script>
+<script>
+	//原来使用ku8ID appID
+	$("#expand-btn").on('click', function() {
+		$("#jsonSpec").JSONView('expand');
+	});
+	$("#collapse-btn").on('click', function() {
+		$("#jsonSpec").JSONView('collapse');
+	});
+	$("#toggle").on('click', function() {
+		$("#jsonSpec").JSONView('toggle');
+	});
+	var _id = sessionStorage.getItem("appID");
+	//alert(_id);
+	var tabIndex = 0;
+	$.getScript("../js/project.js");
+	
+	$("#backToList").on('click', function() {
+		$(".content").load("/iiot/app/edge_app_templates.html", function(){
+			getTemplateTable();
+		  });
+	});
+	
+
+	$(document).ready(function() {
+		sessionStorage.removeItem("appID");
+		if (_id !== null) {
+			$.ajax({
+				url : "/iiot/project/app/getApplication",
+				type : "GET",
+				dataType : "json",
+				data : {
+					appID : _id
+				},
+				success : function(data) {
+					$("#name").html(data.name);
+					$("#version").html(data.version);
+					$("#owner").html(data.owner);
+					$("#note").html(data.note);
+					//alert(data.jsonSpec);
+					//var last=obj.toJSONString();
+					//$("#jsonSpec").html(data.jsonSpec);
+					//$("#jsonSpec").JSONView(data.jsonSpec);
+					$("#jsonSpec").JSONView(data.jsonSpec, {
+						collapsed : true,
+						nl2br : true,
+						recursive_collapser : true
+					});
+
+				}
+			});
+			//getServices();
+		} else {
+			alertError('ERROR', 'NO SESSION FOUND');
+		}
+	});
+
+	function setReplica(e) {
+		var data = $(e).data('sdata');
+		var _replicaNew = $('#service_newReplica_' + data.sindex).val();
+
+		$('span.formtips').remove().end();
+		if (_replicaNew === '' || _replicaNew === data.replica
+				|| _replicaNew < 1) {
+			$('#service_newReplica_' + data.sindex)
+					.closest('li')
+					.append(
+							'<span class="formtips label label-danger" style="font-weight: lighter;">不能为空 / New and Old replicas must be different</span>');
+			return;
+		}
+		$('#replicaModalMsg').html(
+				'Do you want scale the replicas from <strong>' + data.replica
+						+ '</strong> to <strong>' + _replicaNew + '</strong?');
+		$('#replicaModal').modal().one('click', '#modal-confirm', function() {
+			$(e.target).button('loading');
+			confirmReplica(data, _replicaNew, e.target, null);
+		});
+	}
+
+	function confirmReplica(data, _replica, _caller, _message) {
+		$('.tab-pane.active :input').attr('disabled', 'disabled');
+
+		$.ajax({
+			url : "/application/setReplica",
+			type : "POST",
+			dataType : "json",
+			data : {
+				appID : _id,
+				replicas : _replica,
+				serviceName : data.name
+			},
+			success : function(response) {
+				if (response.status > -1) {
+					if (_message === null)
+						_message = "Replicas scaled to <strong>" + _replica
+								+ "</strong> successfully.";
+					alertSuccess(response.message, _message);
+				} else {
+					alertError("ERROR", response.message);
+				}
+				reloadServices();
+				$(_caller).button('reset');
+			}
+		});
+	}
+
+	function getServices(tabIndex) {
+		$
+				.ajax({
+					url : "/iiot/project/app/getServices",
+					type : "GET",
+					dataType : "json",
+					data : {
+						appID : _id
+					},
+					success : function(ss) {
+						if (ss.data === null) {
+							$('#error_server').show();
+							$('#service-div').hide();
+							return;
+						}
+						if (ss.data.length === 0) {
+							$('#error_app').show();
+							$('#service-div').hide();
+							return;
+						}
+
+						//Get Services
+						var scontent = $('#service-content').html('');
+						if (tabIndex === undefined)
+							tabIndex = 0;
+						$
+								.each(
+										ss.data,
+										function(i, s) {
+
+											//Set data
+											s.sindex = i;
+
+											var tab = $('<li>')
+													.html(
+															"<a onclick='return setIndex(this);' href='#service_"
+																	+ i
+																	+ "' data-toggle='tab' data-tabindex='"
+																	+ i
+																	+ "'><strong>"
+																	+ s.name
+																	+ "</strong></a>")
+													.data('serviceName', s.name);
+											var _div = $('<div>');
+											_div
+													.load(
+															'service_details.html?h='
+																	+ new Date()
+																			.getTime(),
+															function() {
+																var tabpane = $(
+																		this)
+																		.find(
+																				'.tab-pane')
+																		.attr(
+																				'id',
+																				'service_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#service_replica')
+																		.html(
+																				s.replica)
+																		.attr(
+																				'id',
+																				'service_replica_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#service_newReplica')
+																		.attr(
+																				'id',
+																				'service_newReplica_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#replica_setBtn')
+																		.attr(
+																				'id',
+																				'replica_setBtn_'
+																						+ i)
+																		.data(
+																				"sdata",
+																				s);
+																$(this)
+																		.find(
+																				'#service_resPart')
+																		.html(
+																				s.resPart)
+																		.attr(
+																				'id',
+																				'service_resPart_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#service_ku8Version')
+																		.html(
+																				s.ku8Version)
+																		.attr(
+																				'id',
+																				'service_ku8Version_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#label_title')
+																		.attr(
+																				'id',
+																				'label_title_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#label_table')
+																		.attr(
+																				'id',
+																				'label_table_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#volume_title')
+																		.attr(
+																				'id',
+																				'volume_title_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#volume_table')
+																		.attr(
+																				'id',
+																				'volume_table_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#confmap_title')
+																		.attr(
+																				'id',
+																				'confmap_title_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#confmap_table')
+																		.attr(
+																				'id',
+																				'confmap_table_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#container_table')
+																		.attr(
+																				'id',
+																				'container_table_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#pod_table')
+																		.attr(
+																				'id',
+																				'pod_table_'
+																						+ i);
+																$(this)
+																		.find(
+																				'#pod_reloadBtn')
+																		.attr(
+																				'id',
+																				'pod_reloadBtn_'
+																						+ i)
+																		.data(
+																				"data",
+																				{
+																					name : '#pod_table_'
+																							+ i
+																				});
+
+																//Set Start/Stop buttons
+																var stoggle;
+																s.replica > 0 ? stoggle = true
+																		: stoggle = false;
+																$(this)
+																		.find(
+																				'.service_stop')
+																		.data(
+																				"sdata",
+																				s)
+																		.toggle(
+																				stoggle);
+																$(this)
+																		.find(
+																				'.service_start')
+																		.data(
+																				"sdata",
+																				s)
+																		.toggle(
+																				!stoggle);
+
+																$(this)
+																		.find(
+																				'.updatelbl')
+																		.data(
+																				"sdata",
+																				s);
+
+																if (i === tabIndex) {
+																	tab
+																			.addClass("active");
+																	tabpane
+																			.addClass("in active");
+																}
+
+																$('#service-ul')
+																		.append(
+																				tab);
+																scontent
+																		.append(tabpane);
+
+																//Get Labels
+																if (Object
+																		.keys(s.labels).length === 0) {
+																	$(
+																			'#label_table_'
+																					+ i
+																					+ ', #label_title_'
+																					+ i)
+																			.hide();
+																} else {
+																	$(
+																			'#updatelbl_up')
+																			.hide();
+																	$
+																			.each(
+																					s.labels,
+																					function(
+																							lbKey,
+																							lbValue) {
+																						buildLabelTable(
+																								'#label_table_'
+																										+ i,
+																								lbKey,
+																								lbValue);
+																					});
+																}
+
+																//Get Volumes
+																if (s.volumes.length === 0) {
+																	$(
+																			'#volume_table_'
+																					+ i
+																					+ ', #volume_title_'
+																					+ i)
+																			.hide();
+																} else {
+																	$
+																			.each(
+																					s.volumes,
+																					function(
+																							j,
+																							v) {
+																						buildVolumeTable(
+																								'#volume_table_'
+																										+ i,
+																								v);
+																					});
+																}
+
+																//Get Conf Maps
+																if (s.confmaps.length === 0) {
+																	$(
+																			'#confmap_table_'
+																					+ i
+																					+ ', #confmap_title_'
+																					+ i)
+																			.hide();
+																} else {
+																	$
+																			.each(
+																					s.confmaps,
+																					function(
+																							l,
+																							cm) {
+																						buildConfMapTable(
+																								'#confmap_table_'
+																										+ i,
+																								cm);
+																					});
+																}
+
+																//Get Containers
+																$
+																		.each(
+																				s.containers,
+																				function(
+																						k,
+																						c) {
+																					buildContainerTable(
+																							'#container_table_'
+																									+ i,
+																							c,
+																							_id,
+																							k,
+																							s.name,
+																							ku8App);
+																				});
+
+																//Build Pod Table
+																getPods(
+																		'#pod_table_'
+																				+ i,
+																		s);
+															});
+										});
+						scontent.fadeIn('normal', function() {
+							$('#loading').hide();
+						});
+					}
+				});
+	}
+
+	function setIndex(e) {
+		tabIndex = $(e).data("tabindex");
+	}
+
+	function getPods(table, service) {
+		var showbtn;
+
+		$(table)
+				.on('preXhr.dt', function(e, settings, data) {
+					showbtn = true;
+				})
+				.on(
+						'draw.dt',
+						function() {
+							var $btns = $(table).closest('.tab-pane').find(
+									'.con_updbtn');
+							showbtn === true ? $btns.removeAttr('disabled')
+									: $btns.attr('disabled', 'disabled');
+						})
+				.DataTable(
+						{
+							autoWidth : false,
+							responsive : true,
+							"ajax" : {
+								url : "/application/getPods",
+								data : {
+									appID : _id,
+									name : service.name
+								},
+								error : function(XMLHttpRequest, textStatus,
+										errorThrown) {
+									if (JSON.parse(XMLHttpRequest.status) === 403) {
+										window.location.replace('/login.html');
+									}
+								}
+							},
+							"columns" : [ {
+								"data" : "name"
+							}, {
+								"data" : "pod_ip"
+							}, {
+								"data" : "host_ip"
+							}, {
+								"defaultContent" : ""
+							}, {
+								"defaultContent" : ""
+							} ],
+							"createdRow" : function(row, data, i) {
+								var name = data.name;
+								var logBtn = $('<button/>').addClass(
+										'btn btn-primary btn-sm').data(
+										'btndata', service).html(
+										"<i class='fa fa-search'></i> Logs")
+										.attr(
+												'onclick',
+												"return openLogs(" + _id
+														+ ", \"" + name
+														+ "\", ku8App, this);");
+								var statusBtn = $('<button/>').addClass(
+										'btn btn-primary btn-xs').data(
+										'btndata', data).html(
+										"<i class='fa fa-search'></i>").attr(
+										'onclick',
+										"return showPodStatus(this);");
+
+								$(row).find('td:eq(3)').html(data.status)
+										.append("&nbsp;").append(statusBtn);
+								$(row)
+										.find('td:eq(4)')
+										.html(
+												"<button class='btn btn-danger btn-sm stop' onclick='return stopPod(this, ku8App);'><i class='fa fa-stop'></i> Stop</button>&nbsp;<button class='btn btn-primary btn-sm console' onclick='return openConsole(\""
+														+ service.resPart
+														+ "\",\""
+														+ service.name
+														+ "\",\""
+														+ name
+														+ "\");'><i class='fa fa-terminal'></i> Console</button>&nbsp;")
+										.append(logBtn);
+								//Check if Rolling Updates are allowed
+								if (data.status !== 'Running'
+										&& showbtn === true)
+									showbtn = false;
+							}
+						});
+	}
+
+	function reloadPodTable(e) {
+		var data = $(e).data('data');
+		$(data.name).DataTable().ajax.reload();
+	}
+
+	function reloadServices() {
+		$('#service-ul').html('');
+		$('#service-content').fadeOut('normal', function() {
+			$('#loading').show();
+		});
+		getServices(tabIndex);
+	}
+</script>

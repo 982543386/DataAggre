@@ -1,0 +1,121 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增用户</button>
+			</div>
+			<div class="box-body">
+				<table id="userTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>userId</th>
+							<th>userType</th>
+							<th>userGroup</th>
+							<th>note</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	var table = $('#userTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/user/list",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "userId"
+								},
+								{
+									"data" : "userType",
+									"render" : function(data, type, row) {
+										//console.info("this is userType");
+										//console.info(row);
+										if(data==="1"){
+											return "SUPER ADMIN";
+										}else{
+											return "USER";
+										}
+										
+									}
+								},
+								{
+									"data" : "alias"
+								},
+								{
+									"data" : "note"
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs update'>Update</button>&nbsp;<button class='btn btn-primary btn-xs del'>Delete</button>"
+								} ]
+					});
+	// 删除 需要确定删除方式  
+	$('#userTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "/user/" + data.userId +"/del",
+		       type: "GET",
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] > 0) {
+		        	   table.ajax.reload();
+		               var _name = data.userId;
+		               var _div = $('<div/>');
+		               _div.load('alert_success.html',
+		               function() {
+		                   $(this).find('#title').html(response['message']);
+		                   $(this).find('#message').html("Delete <strong>" + _name + "</strong> successfully.");
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1).slideToggle(1000,
+		                    function() {
+		                        child.alert('close');
+		                    });
+		                   $('.content').append(child);
+		               });
+		           } else {
+		               var _div = $('<div/>');
+		               _div.load('alert_error.html',
+		               function() {
+		                   $(this).find('#title').html("ERROR");
+		                   $(this).find('#message').html(response['message']);
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1,
+		                    function() {
+		                        setTimeout(function() {
+		                            child.slideToggle(2000,
+			                            function() {
+			                                child.alert('close');
+			                            })
+		                        },
+		                        5000);
+		                   });
+		                   $('.content').append(child);
+		               });
+		           }
+		       }
+		   });
+	});
+	$('#userTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("security_user", JSON.stringify(data));
+		$('.content').load('user_security_form.html');
+	});
+	$("#add").click(function() {
+		if(sessionStorage.getItem("security_user")){
+			sessionStorage.removeItem("security_user");
+		}
+		$(".content").load("user_security_form.html");
+	});
+</script>

@@ -1,0 +1,83 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">Add Service</h3>
+			</div>
+			<div class="col-sm-6 no-padding">
+<!--   <button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>   -->
+					<button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+
+			
+				<button type="button" class="btn btn-primary pull-right" id="template_open">Use Template</button>
+				<div class="col-sm-12 input-group input-group-sm pull-right" id="template_div" style="display:none;">
+					<input type="text" class="form-control" placeholder="Paste JSON here" id="template_input"/>
+					<span class="input-group-btn">
+					  <button type="button" class="btn btn-primary btn-flat" id="template_import">Import</button>
+					</span>
+				</div>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+				<div class="form-group" name="service">
+                    <div class="col-sm-9 col-sm-offset-1 panel-body" id="service_panel"/>
+                </div>
+			</form>
+			<div class="modal-footer clearfix">
+					<div class="col-sm-9 col-sm-offset-1 no-padding">
+						<!--   <button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>   -->
+						<button type="button" class="btn btn-default" onclick="location.href='application_main_new.html'">
+							返<span style="padding-left: 12px" />回
+						</button>
+
+						<button onclick="return addServiceAndRC()" type="button" class="btn btn-primary saveBtn" disabled="disabled">
+							保<span style="padding-left: 12px" />存
+						</button>
+					</div>
+			</div>	
+		</div>
+	</div>
+</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+	$(document).ready(function(){
+		var _div = $('<div>');
+		_div.load('service_template.html?h=' + new Date().getTime(), function(){
+			$("#service_panel").append($(this).children());
+			getDockerImage('', $("#service_panel").find('#conImage'));
+			getConfigMaps($("#service_panel"));
+		});
+	});
+	
+	$('#template_open').click( function() {
+		$(this).hide();
+		$('#template_div').animate({width:'toggle'},500);
+	});
+	
+	$('#template_import').click( function() {
+		var json;
+
+		try
+		{
+			json = JSON.parse($('#template_input').val());
+		}
+		catch (e)
+		{
+			alertError("ERROR", "You entered an Invalid Template.");
+			return;
+		}
+		
+		var $sp = $("#service_panel").html('');
+		cloneService(json, $sp, ku8Srv);
+	});
+</script>

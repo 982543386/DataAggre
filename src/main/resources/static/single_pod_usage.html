@@ -1,0 +1,232 @@
+<style type="text/css">
+     #pod_cpu_usage_show_div,#pod_memory_usage_show_div{
+     	width: 1000px;
+     	height: 250px;
+     }
+     #pod_info{
+     	height:20px;
+     }
+</style>
+<div id="pod_info">
+	<label>服务名：</label><span id="service_name"></span>
+	<label>Pod名：</label><span id="pod_name"></span>
+	<label>历史性能数据(过去30分钟)</label>
+</div>
+<div style="width:100%;">
+	<select id="pod_refrash_time">
+		<option value='30'>30秒</option>
+		<option value='60'>1分钟</option>
+		<option value='120'>2分钟</option>
+		<option value='180'>3分钟</option>
+		<option value='240'>4分钟</option>
+		<option value='0'>off</option>
+	</select>
+	<button onclick="backToService()" type="button" class="btn btn-default" style="float:right;">
+		返<span style="padding-left: 12px" />回
+	</button>
+</div>
+
+<div id="pod_cpu_usage_show_div" class="pod_cpu_usage_show"></div>
+<div id="pod_memory_usage_show_div" class="pod_memory_usage_show"></div>
+<script>
+	var podName = sessionStorage.getItem("podName");
+	sessionStorage.removeItem("podName");
+	var service_name = sessionStorage.getItem("service_name");
+	sessionStorage.removeItem("service_name");
+	$("#service_name").text(service_name);
+	//刷新时间
+	var pod_get_info_clock_time = $("#pod_refrash_time").val();
+	//清除定时器，当重新加载当前页面时
+	clearInterval(pod_get_info_clock);
+	//声明定时器，定时器用于间隔时间取数据重新绘制画图
+	var pod_get_info_clock = setInterval(function() {
+		if ($("#pod_cpu_usage_show_div").length > 0) {
+			get_pod_info();
+		}
+		else {
+			clearInterval(pod_get_info_clock);
+		}
+	}, pod_get_info_clock_time * 1000);
+	
+	function get_pod_info(){
+		$.ajax({
+		    url:"/monitor/pod/" + podName,
+		    type: "GET",
+		    dataType:"json",
+		    success: function(data){
+		    	$("#pod_name").text(data[0].name);
+		    	if(data[0].time[0] == null){
+		    		return;
+		    	}
+		    	var pod_cpu_data_time_index = data[0].time.length - 1;
+		    	var cpu_option = {
+		    		    title : {
+		    		        text: 'pod历史CPU使用率',
+		    		        x: 'center'
+		    		    },
+		    		    tooltip : {
+		    		        trigger: 'axis',
+		    		        formatter: function(params) {
+		    		            return params[0].name + '<br/>'
+		    		                   + params[0].seriesName + ' : ' + params[0].value;
+		    		        }
+		    		    },
+		    		    xAxis : [
+		    		        {
+		    		            type : 'category',
+		    		            boundaryGap : false,//类目起始和结束两端空白策略，默认为true留空，false则顶头
+		    		            axisLine: {onZero: false},//坐标轴线，定位到垂直方向的0值坐标上
+		    		            axisTick:{
+		    		            	interval: function(index, data){
+		    		            		if(index % 10 == 0){
+		    		            			return true;
+		    		            		} else if(index == pod_cpu_data_time_index){
+		    		            			return true;
+		    		            		} else{
+		    		            			return false;
+		    		            		}
+		    		            	}
+		    		            },
+		    		            axisLabel: {
+		    		            	interval: function(index, data){
+		    		            		if(index % 10 == 0){
+		    		            			return true;
+		    		            		} else if(index == pod_cpu_data_time_index){
+		    		            			return true;
+		    		            		} else{
+		    		            			return false;
+		    		            		}
+		    		            	}
+		    		            },
+		    		            data : data[0].time
+		    		        }
+		    		    ],
+		    		    yAxis : [
+		    		        {
+		    		            name : 'CPU',
+		    		            type : 'value',
+		    		            max : data[0].limit,
+		    		            min: 0,
+		    		          	nameTextStyle:{
+		    		            	color:'rgb(0,0,0)'
+		    		            }
+		    		        }
+		    		    ],
+		    		    series : [
+		    		        {
+		    		            name:'CPU',
+		    		            type:'line',
+		    		          	symbolSize:0,
+		    		          	clickable:false,
+		    		            itemStyle: {normal: {areaStyle: {type: 'default', color: "rgb(143,219,220)"}}},
+		    		            data:data[0].value
+		    		        }
+		    		    ]
+		    	};
+		    	var pod_cpu_usage_show_div = $("#pod_cpu_usage_show_div");
+				var pod_cpu_chart = echarts.init(pod_cpu_usage_show_div[0]);
+				pod_cpu_chart.setOption(cpu_option);
+				
+				var pod_memory_data_time_index = data[1].time.length - 1;
+		    	var memory_option = {
+		    		    title : {
+		    		        text: 'pod历史memory使用率',
+		    		        x: 'center'
+		    		    },
+		    		    tooltip : {
+		    		        trigger: 'axis',
+		    		        formatter: function(params) {
+		    		            return params[0].name + '<br/>'
+		    		                   + params[0].seriesName + ' : ' + params[0].value + 'G';
+		    		        }
+		    		    },
+		    		    xAxis : [
+		    		        {
+		    		            type : 'category',
+		    		            boundaryGap : false,//类目起始和结束两端空白策略，见下图，默认为true留空，false则顶头
+		    		            axisLine: {onZero: false},//坐标轴线，定位到垂直方向的0值坐标上
+		    		            axisTick:{
+		    		            	interval: function(index, data){
+		    		            		if(index % 10 == 0){
+		    		            			return true;
+		    		            		} else if(index == pod_memory_data_time_index){
+		    		            			return true;
+		    		            		} else{
+		    		            			return false;
+		    		            		}
+		    		            	}
+		    		            },
+		    		            axisLabel: {
+		    		            	interval: function(index, data){
+		    		            		if(index % 10 == 0){
+		    		            			return true;
+		    		            		} else if(index == pod_memory_data_time_index){
+		    		            			return true;
+		    		            		} else{
+		    		            			return false;
+		    		            		}
+		    		            	}
+		    		            },
+		    		            data : data[1].time
+		    		        }
+		    		    ],
+		    		    yAxis : [
+		    		        {
+		    		            name : 'MEMORY',
+		    		            type : 'value',
+		    		            max : data[1].limit,
+		    		            min: 0,
+		    		          	nameTextStyle:{
+		    		            	color:'rgb(0,0,0)'
+		    		            }
+		    		        }
+		    		    ],
+		    		    series : [
+		    		        {
+		    		            name:'MEMORY',
+		    		            type:'line',
+		    		          	symbolSize:0,
+		    		          	clickable:false,
+		    		            itemStyle: {normal: {areaStyle: {type: 'default', color: "rgb(143,219,220)"}}},
+		    		            data: data[1].value
+		    		        }
+		    		    ]
+		    	};
+				var pod_memory_usage_show_div = $("#pod_memory_usage_show_div");
+				var pod_memory_chart = echarts.init(pod_memory_usage_show_div[0]);
+				pod_memory_chart.setOption(memory_option);
+		    }
+		});
+	};
+	
+	$("#pod_refrash_time").on("change",function(){
+		pod_get_info_clock_time = $("#pod_refrash_time").val();
+		//清除定时器
+		clearInterval(pod_get_info_clock);
+		if(pod_get_info_clock_time != 0){
+			//声明定时器，定时器用于间隔时间取数据重新绘制画图
+			pod_get_info_clock = setInterval(function() {
+				if ($("#pod_cpu_usage_show_div").length > 0) {
+					get_pod_info();
+				}
+				else {
+					clearInterval(pod_get_info_clock);
+				}
+			}, pod_get_info_clock_time * 1000);
+		}
+	});
+	
+	function backToService(){
+		sessionStorage.setItem("service_name",$("#service_name").text());
+		$("#menudashboard").addClass("active");
+		$.each($("#menudashboard ul").first().children("li").children("a"),function(index, value){
+			if($(this).text() == "服务视图"){
+				$(this).click();
+				return false;
+			}
+		});
+		/* $("#menudashboard ul").first().children("li").eq(1).children("a").click(); */
+	}
+	
+	get_pod_info();
+</script>

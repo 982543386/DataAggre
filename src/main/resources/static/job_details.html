@@ -1,0 +1,65 @@
+<div class="tab-pane fade">
+	<div class="row">
+		<div class="col-xs-12">
+			<button type="button" class="btn btn-sm btn-warning updatelbl pull-right" id="updatelbl_up" onclick="return updateLabels(this, ku8Job);">Update Labels</button>
+		</div>
+	</div>
+	<div class="box-footer">
+		<div class="col-xs-4">
+			<ul class="nav nav-stacked">
+				<li style="padding: 5px 15px;">Parallelism
+					<span class="pull-right badge bg-blue" id="job_parallelism"/>
+				</li>
+			</ul>
+		</div>
+		<div class="col-sm-offset-2 col-xs-5">
+			<ul class="nav nav-stacked">
+				<li style="padding: 5px 15px;">Ku8 Version
+					<span class="pull-right badge bg-blue" id="job_ku8Version"/>
+				</li>
+				<li style="padding: 5px 15px;">Resource Partition
+					<span class="pull-right badge bg-blue" id="job_resPart"/>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<h4 id="label_title">Label Details
+		<button type="button" class="btn btn-sm btn-warning updatelbl" id="updatelbl_down" onclick="return updateLabels(this, ku8Job);">Update Labels</button>
+	<hr/></h4>
+	<table id="label_table" class="table table-bordered table-hover" style="font-size: 12px; width:60%">
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+	<h4>Container Details<hr/></h4>
+	<table id="container_table" class="table table-bordered table-hover" style="font-size: 12px; width: 60%">
+		<thead>
+			<tr>
+				<th>Container Name</th>
+				<th>Image</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+	<h4>Pod Details 
+		<button type="button" id="pod_reloadBtn" class="btn btn-sm btn-primary" onclick="return reloadPodTable(this);" data-loading-text="<i class='fa fa-spin fa-refresh'></i>">
+			<i class='fa fa-refresh'></i> Reload
+		</button>
+	<hr/></h4>
+	<table id="pod_table" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+		<thead>
+			<tr>
+				<th>Pod Name</th>
+				<th>Pod IP</th>
+				<th>Host IP</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+</div>

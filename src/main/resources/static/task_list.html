@@ -1,0 +1,133 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增定时任务</button>
+			</div>
+			<div class="box-body">
+				<table id="taskTable" class="table table-bordered table-hover" style="font-size: 12px; text-align:center;">
+					<thead>
+						<tr>
+							<th>JobName</th>
+							<th>partition</th>
+							<th>状态</th>
+							<th>定时规则</th>
+							<th>同步执行</th>
+							<th>描述</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	var table = $('#taskTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/task/getTasks",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "jobName"
+								},
+								{
+									"data" : "jobGroup"
+								},
+								{
+									"data" : "jobStatus",
+									render: function ( data, type, row ) {
+										if(data==0){
+											return "关闭";
+										}else{
+											return "开启";
+										}
+									}
+								},
+								{
+									"data" : "cronExpression",
+									render: function ( data, type, row ) {
+										return getcron(data);
+									}
+								},
+							    {
+									"data" : "concurrent",
+									render: function ( data, type, row ) {
+										if(data==0){
+											return "是";
+										}else{
+											return "否";
+										}
+									}
+								}, 
+								{
+									"data" : "note"
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs update'>Update</button>&nbsp;<button class='btn btn-primary btn-xs del'>Delete</button>&nbsp;<button class='btn btn-primary btn-xs log'>Log</button>"
+								} ]
+					});
+	// 删除 需要确定删除方式  
+	$('#taskTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "/task/deleteTask",
+		       type: "GET",
+		       data:{
+		    	   taskId:data.id
+		       },
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] == 0) {
+		        	   table.ajax.reload();
+		        	   alertSuccess("SUCCESS", "Delete <strong>" + data.jobName + "</strong> successfully.");
+		           } else {
+		        	   alertError("ERROR", response['message']);
+		           }
+		       }
+		   });
+	});
+	$('#taskTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("security_task", JSON.stringify(data));
+		var nowDate = new Date();
+		$('.content').load('task_list_form.html?now=' + nowDate.toLocaleTimeString());
+	});
+	$('#taskTable tbody').on('click', 'button.log', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("security_task", JSON.stringify(data));
+		var nowDate = new Date();
+		$('.content').load('task_log.html?now=' + nowDate.toLocaleTimeString());
+	});
+	$("#add").click(function() {
+		if(sessionStorage.getItem("security_task")){
+			sessionStorage.removeItem("security_task");
+		}
+		$(".content").load("task_list_form.html?_f="+$.now());
+	});
+	function getcron(cron){
+		var cronArray = cron.split(" ");
+		var min = format(cronArray[0]);
+		var hour = format(cronArray[1]);
+		var day = format(cronArray[2]);
+		var month = format(cronArray[3]);
+		var week = format(cronArray[4]);
+		
+		return "<b>"+month+"</b>月<b>"+week+"</b>周<b>"+day+"</b>日<b>"+hour+"</b>时<b>"+min+"</b>分";
+	}
+	function format(par){
+		if(par=="*"){
+			return "每";
+		}
+		return par
+	}
+</script>

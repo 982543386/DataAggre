@@ -1,0 +1,93 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增配置</button>
+			</div>
+			<div class="box-body">
+				<table id="configTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Namespace</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+	
+	var table = $('#configTable').DataTable({
+		ajax : {
+			url : "/configmaps",
+			error : function(XMLHttpRequest, textStatus,errorThrown) {
+				if (JSON.parse(XMLHttpRequest.status) === 403) {
+					window.location.replace('/login.html');
+				}
+			}
+		},
+		"columns" : [
+			{"data" : "name"},
+			{"data" : "namespace"},
+			{"defaultContent" : "<button class='btn btn-primary btn-sm update'>Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm del'>Delete</button>"}
+		]
+	});
+	
+	$('#configTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		showAlertModel("删除  " +data.name,"点击确定从服务端删除此项配置.",function (){
+			$.ajax({
+				url : "/configmaps/del/" + data.id,
+				dataType : "json",
+				success : function(response, textStatus, jqXHR) {
+					if (response['status'] > 0) 
+					{
+						table.ajax.reload();
+						alertSuccess(response['message'], "Config Map <strong>" + data.name + "</strong> deleted successfully.");
+					} 
+					else 
+					{
+						alertError("ERROR", response['message']);
+					}
+				}
+			});
+		});
+	});
+	
+	$('#configTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		data.oldname = data.name;
+		sessionStorage.setItem("config_map", JSON.stringify(data));
+		$('.content').load("configMap_form.html?_f=" + $.now());
+		
+		sessionStorage.setItem('lastPage', 'configMap_list.html');
+		history.pushState(null, null, 'index');
+	});
+
+	$('#configTable tbody').on('click', 'button.clone', function() {
+		var data = table.row($(this).parents('tr')).data();
+		data.clusterId = null;
+		data.oldname = data.name;
+		data.name = null;
+		data.namespace = null;
+		sessionStorage.setItem("config_map", JSON.stringify(data));
+		$('.content').load("configMap_form.html?_f=" + $.now());
+		
+		sessionStorage.setItem('lastPage', 'configMap_list.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	$("#add").click(function() {
+		if (sessionStorage.getItem("config_map")) {
+			sessionStorage.removeItem("config_map");
+		}
+		$(".content").load("configMap_form.html?_f=" + $.now());
+		
+		sessionStorage.setItem('lastPage', 'configMap_list.html');
+		history.pushState(null, null, 'index');
+	});
+</script>

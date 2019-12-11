@@ -1,0 +1,694 @@
+<head>
+<style type="text/css">
+body, div {
+	padding: 0;
+	margin: 0;
+}
+
+.wraper {
+	padding: 100px;
+}
+
+.phone {
+	width: 220px;
+	height: 40px;
+	box-sizing: border-box;
+	outline: none;
+	padding: 0 10px;
+}
+
+.getverify-code-btn {
+	display: inline-block;
+	width: 140px;
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+	background-color: blue;
+	border: 1px solid #ccc;
+	box-sizing: border-box;
+	vertical-align: middle;
+	cursor: pointer;
+	color: #fff;
+}
+
+.unlabed {
+	background-color: lightblue;
+	color: #eee;
+}
+</style>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="col-md-12">
+					<div class="col-sm-6">
+						<textarea id="command">
+
+</textarea>
+						<button id="submitCommand">执行命令</button>
+						<div type="button" class="btn-primary" id="testCommandMysql">helm mysql测试</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+
+		<div class="col-xs-12">
+			<div class="box">
+				<div class="box-header">
+
+					<div class="wraper">
+						<h1>获取手机验证码</h1>
+						<input type="text" id="j_phone" class="phone">
+						<div id="j_getVerifyCode" class="getverify-code-btn">获取手机验证码</div>
+					</div>
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="add">申请订单</a> <a class="btn btn-primary" id="jenkinsBuildTest">jenkins测试按钮</a>
+						<textarea id="jenkinsJobNumber" rows="" cols=""></textarea>
+
+
+						<textarea id="jenkinsJobResult" rows="" cols=""></textarea>
+						<textarea id="consoleOutputDetail" rows="" cols=""></textarea>
+						<a class="btn btn-primary" id="jenkinsConsoleTest">jenkinsconsole测试按钮</a> <a class="btn btn-primary" id="progressbutton">进度条测试</a> <a class="btn btn-primary" id="jenkinsGetJsonTest">获取lastBuild结果</a>
+
+					</div>
+					<!-- <div class="col-sm-6 no-padding">
+						<button type="button" class="btn btn-primary pull-right" id="importApp_open" data-loading-text="<i class='fa fa-spin fa-cog'></i>">Import Application</button>
+						<div class="col-sm-5 input-group input-group-sm pull-right" id="importApp_div0" style="display:none;">
+							<input type="text" class="form-control" placeholder="Enter Service Name" id="importApp_input"/>
+							<span class="input-group-btn">
+							  <button type="button" data-loading-text="<i class='fa fa-spin fa-cog'></i>" class="btn btn-primary btn-flat" id="importApp_btn">Import</button>
+							</span>
+						</div>
+						<div class="col-sm-3 pull-right no-padding input-group-sm" id="importApp_div1" style="margin-right:5px;display:none;">
+							<select class="form-control" id="importApp_partition" data-toggle="tooltip" data-placement="top" title="Select the partition"/>
+						</div>
+					</div> -->
+				</div>
+				<div id="jqmeter-container"></div>
+				<div id="jqmeter-container-jenkinsBuildTest">jenkinsBuildTest</div>
+				<textarea id="jenurltest"></textarea>
+				<button id="jenurl">发送url</button>
+				<div class="box-body">
+					<table id="orderTable" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>订单号</th>
+								<th>租户</th>
+								<th>用户</th>
+								<th>创建时间</th>
+								<th>状态</th>
+								<th>备注</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="modal modal-primary fade" id="deleteModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+							<span>×</span>
+						</button>
+						<h4 class="modal-title">Please confirm</h4>
+					</div>
+					<div class="modal-body">
+						<p id="deleteModalMsg" />
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal modal-primary fade" id="deleteModalConfirm">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+							<span>×</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="deleteModalMsgConfirm" />
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<script type="text/javascript">
+		$.getScript("js/project.js");
+		$.getScript("js/date.format.js");
+
+		var table = $('#orderTable')
+				.DataTable(
+						{
+							autoWidth : false,
+							responsive : true,
+							ajax : {
+								url : "order/list",
+								error : function(XMLHttpRequest, textStatus,
+										errorThrown) {
+									if (JSON.parse(XMLHttpRequest.status) === 403) {
+										window.location.replace('login.html');
+									}
+								}
+							},
+							"bSort" : false,
+							"columns" : [
+									{
+										"data" : "orderId"
+									},
+									{
+										"data" : "orderNo"
+									},
+									//{ "data": "tenantId" },
+									{
+										"data" : "tenantName"
+									},
+									{
+										"data" : "userId"
+									},
+									{
+										"data" : "createTime",
+										"render" : function(data, type, row) {
+											return new Date(data)
+													.format("yyyy-MM-dd HH:mm:ss");
+										}
+									},
+									{
+										"data" : "status",
+										"render" : function(data, type, row) {
+											if (data == "0")
+												return "待处理";
+											else if (data == "1")
+												return "处理中";
+											else if (data == "2")
+												return "已处理";
+											else if (data == "3")
+												return "拒绝";
+											else
+												return "已发布并且全部服务异常"
+										}
+									},
+									{
+										"data" : "remark"
+									},
+									{
+										"defaultContent" : "<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>&nbsp;<button class='btn btn-danger btn-sm build' >一键构建</button>"
+									}
+							/* { "defaultContent": "" } */
+							]
+						/* "createdRow": function ( row, data, index ) {
+						    switch (data.status)
+							{
+								//New
+								case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+										$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+								break;
+
+								//Deploying
+								case 1: $(row).find('td:eq(5)').html('');
+										$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+								break;
+
+								//Deployed
+								case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+										$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+								break;
+
+								//Failed
+								case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+										 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+								break;
+
+							   default: console.log('Unknown case..');
+							   break;
+							}
+						} */
+						});
+		var status;
+		var estimateTime;
+
+		$("#progressbutton").click(function() {
+			// $('#jqmeter-container').jQMeter();
+
+			$.getJSON("http://localhost:10086/jenkins.json", function(data) {
+				/* $.getJSON("http://10.1.24.164:10010/job/cudcos_admin/lastBuild/api/json?pretty=true&jsoncallback=?", function(data) { */
+				status = data.id;
+				alert(status);
+				$('#jqmeter-container').jQMeter();
+
+				//$("#info").html("");//清空info内容
+
+				//解析数组
+				/* $.each(data.comments, function(i, item) {
+				 $("#info").append(
+				   "<div>" + item.id + "</div>" + 
+				   "<div>" + item.nickname + "</div>" +
+				   "<div>" + item.content + "</div><hr/>");
+				}); */
+			});
+
+		});
+
+		var a = 500;
+		$('#jqmeter-container').jQMeter({
+			goal : "$1,000",
+			raised : "$" + a,
+			orientation : 'horizontal',
+			width : '200px',
+			height : '50px'
+		});
+
+		/*     $('#jqmeter-container-jenkinsBuildTest').jQMeter({
+		       goal:"$1,000",
+		       //raised:"$"+a,
+		       raised:"$1,000",
+		       orientation:'horizontal',
+		       width:'200px',
+		       height:'50px',
+		       animationSpeed :200
+		   });  */
+
+		/*    $('#my-selector').bind('click', function() {
+		       $(this).unbind('click');
+		       alert('Clicked and unbound!');
+		   });
+		 */
+
+		//获取手机验证码
+		$("#j_getVerifyCode")
+				.on(
+						"click",
+						getVerifyCode({
+							callBack : function() {//按钮点击后的回调函数，-----必须-----
+								//在这里你还是可以对你的按钮进行操作
+								$
+										.ajax({
+											url : "jenkins/job/buildTest",
+											type : "POST",
+											dataType : "json",
+											contentType : "application/json; charset=utf-8",
+
+											success : function(response) {
+												//console.log(response);
+												alert(6);
+												var getJsonResult = $
+														.parseJSON(response.body);
+												if (!getJsonResult) {
+													return;
+												}
+												var jenkinsJobEstimatedDuration = getJsonResult["estimatedDuration"];
+												var j = parseInt(jenkinsJobEstimatedDuration);
+
+												var jenkinsJobResult = getJsonResult["result"];
+												if (jenkinsJobResult = "FAILURE") {
+													alert("jenkins Build Failed!");
+													return;
+												}
+												alert(3);
+												$(
+														'#jqmeter-container-jenkinsBuildTest')
+														.jQMeter(
+																{
+																	goal : "$1,000",
+																	//raised:"$"+a,
+																	raised : "$1,000",
+																	orientation : 'horizontal',
+																	width : '200px',
+																	height : '50px',
+																	animationSpeed : j,
+																	counterSpeed : j
+																});
+												alert(4);
+												//document.write(response);
+
+											},
+											error : function() {
+												alert(7);
+											}
+										});
+
+								//console.log(this);
+								alert("验证码发送成功");
+							},
+							time : 60,//定时时间，以秒为单位，默认60秒
+							getCurrentTime : function(time) {//获取倒计时当前时间
+								//console.log(time);
+								//console.log(this);//这里的这个this执行按钮
+								//console.log("=================================");
+							},
+							isPhone : true,//是否为发送手机验证码，如果是则会验证手机号格式，-----必须-----
+							getPhone : function() {//获取手机号，此处一定要return
+								return $("#j_phone").val();
+							},
+							//phoneReg: /^1[34578]\d{9}$/,//手机号验证正则
+							phoneCallBack : function() {//当手机号有误时的回调，默认会中止操作
+								alert("您输入的手机号有误");
+							},
+
+							timeIsUpText : "重新发送",//倒计时时间到了后按钮所显示文字
+							timeRunnigText : "s后重新发送",//倒计时时间正在走的时候按钮所显示文字。默认为"xxs后重新获取"
+							unabledClass : "unlabed"//按钮不能用的样式，即点击按钮后的样式
+						}));
+
+		//$("#jenkinsBuildTest").click(function() {
+		// 按下后取消点击事件绑定
+
+		//var jenresturl = document.getElementById('jenurltest');
+		
+		$("#jenurl").on('click', function() {
+			var jenresturl = $("#jenurltest").val();
+			$.ajax({
+				url : "jenkins/test/url",
+				type : "POST",
+				dataType : "json",
+				contenType : "application/json;charset=utf-8",
+				data : {
+					url : jenresturl
+				},
+				success : function() {
+					alert("发出去了url" + jenresturl)
+				},
+				error : function() {
+					alert("出错了呵呵");
+				}
+			});
+		});
+
+		$("#jenkinsBuildTest")
+				.bind('click',function() {
+							alert(1);
+							$.ajax({
+										url : "jenkins/job/buildTest",
+										type : "POST",
+										dataType : "json",
+										contentType : "application/json; charset=utf-8",
+
+										success : function(response) {
+											//console.log(response);
+											alert(6);
+											var getJsonResult = $
+													.parseJSON(response.body);
+											if (!getJsonResult) {
+												return;
+											}
+											var jenkinsJobEstimatedDuration = getJsonResult["estimatedDuration"];
+											var j = parseInt(jenkinsJobEstimatedDuration);
+
+											var jenkinsJobResult = getJsonResult["result"];
+											if (jenkinsJobResult = "FAILURE") {
+												alert("jenkins Build Failed!");
+												return;
+											}
+											alert(3);
+											$(
+													'#jqmeter-container-jenkinsBuildTest')
+													.jQMeter(
+															{
+																goal : "$1,000",
+																//raised:"$"+a,
+																raised : "$1,000",
+																orientation : 'horizontal',
+																width : '200px',
+																height : '50px',
+																animationSpeed : j,
+																counterSpeed : j
+															});
+											alert(4);
+											//document.write(response);
+
+										},
+										error : function() {
+											alert(7);
+										}
+									});
+							alert(5);
+							$("#jenkinsBuildTest").attr("disabled", true);
+							$(this).unbind('click');
+						});
+
+		$("#jenkinsConsoleTest").click(function() {
+			alert(1);
+			$.ajax({
+				url : "jenkins/job/consoleTest",
+				type : "POST",
+				dataType : "json",
+				contentType : "application/json; charset=utf-8",
+				success : function(response) {
+					console.log(response);
+					// var str=response.responseText;
+					// $('#uninstallPackageConfirmDialog').modal('hide');
+					$('#consoleOutputDetail').val(response.body);
+					window.alert("ok");
+					alert(response.body);
+					/*
+					var json = eval(response);
+					$.each(json, function (index, item) {  
+					    //循环获取数据    
+					    var name = json[index].body;  
+					    $('#consoleOutputDetail').html(name);
+					   
+					});  
+					 */
+
+				}
+			});
+		});
+
+		$("#jenkinsGetJsonTest")
+				.click(
+						function() {
+							alert(1);
+							$
+									.ajax({
+										url : "jenkins/job/getLastBuildJson",
+										type : "POST",
+										dataType : "json",
+										contentType : "application/json; charset=utf-8",
+										success : function(response) {
+											console.log(response);
+											alert(666);
+											// var str=response.responseText;
+											// $('#uninstallPackageConfirmDialog').modal('hide');
+											var getJsonResult = $
+													.parseJSON(response.body);
+											if (!getJsonResult) {
+												return;
+											}
+
+											var jenkinsJobNumber = getJsonResult["number"];
+											var jenkinsJobResult = getJsonResult["result"];
+											var jenkinsJobEstimatedDuration = getJsonResult["estimatedDuration"];
+
+											var jenkinsJobUrlCurrent = getJsonResult["url"];
+											//var jenkinsDetail[]= [getJsonResult["number"],getJsonResult["result"],getJsonResult["url"]];
+											// $('#consoleOutputDetail').val(response.body);
+											$('#jenkinsJobResult').val(
+													jenkinsJobResult);
+											$('#jenkinsJobNumber').html(
+													jenkinsJobNumber);
+											window.alert("ok");
+											alert(response.body);
+											/*
+											var json = eval(response);
+											$.each(json, function (index, item) {  
+											    //循环获取数据    
+											    var name = json[index].body;  
+											    $('#consoleOutputDetail').html(name);
+											   
+											});  
+											 */
+
+										}
+									});
+						});
+
+		//json   解析json的库 
+
+		$('#add').click(
+				function() {
+					$('section.content').load(
+							'Devops/order_add_user.html?h='
+									+ new Date().getTime());
+
+					sessionStorage.setItem('lastPage',
+							'Devops/order_list_user.html');
+					history.pushState(null, null, 'index');
+				});
+
+		/* $('#orderTable tbody').on( 'click', 'button.view', function () {
+			var data = table.row($(this).parents('tr')).data();
+		    $('section.content').load('view_application.html?h=' + new Date().getTime());
+			sessionStorage.setItem("ku8ID", data.id);
+
+			sessionStorage.setItem('lastPage', 'application_main.html');
+			history.pushState(null, null, 'index');
+		}); */
+		$('#orderTable tbody').on(
+				'click',
+				'button.view',
+				function() {
+					var data = table.row($(this).parents('tr')).data();
+					// $('section.content').load('order_add.html?h=' + new Date().getTime());
+					$('section.content').load(
+							'order/order_view.html?h=' + new Date().getTime());
+					sessionStorage.setItem("id", data.orderId);
+					sessionStorage.setItem('lastPage',
+							'order/order_list_user.html');
+
+					history.pushState(null, null, 'index');
+				});
+
+		$('#orderTable tbody').on(
+				'click',
+				'button.update',
+				function() {
+					var data = table.row($(this).parents('tr')).data();
+					// $('section.content').load('order_add.html?h=' + new Date().getTime());
+					$('section.content')
+							.load(
+									'order/order_update.html?h='
+											+ new Date().getTime());
+					sessionStorage.setItem("id", data.orderId);
+					sessionStorage.setItem('lastPage',
+							'order/order_list_user.html');
+
+					history.pushState(null, null, 'index');
+				});
+
+		$('#orderTable tbody').on('click', 'button.build', function() {
+			//调用build接口
+
+			alert(1);
+			$.ajax({
+				url : "jenkins/job/buildTest",
+				type : "POST",
+				dataType : "jsonp",
+				contentType : "application/json; charset=utf-8",
+				success : function(response) {
+					//console.log(response);
+					document.write(response);
+					$('#uninstallPackageConfirmDialog').modal('hide');
+
+				}
+			});
+		});
+
+		$('#orderTable tbody').on(
+				'click',
+				'button.delete',
+				function(e) {
+					var data = table.row($(this).parents('tr')).data();
+					e.preventDefault();
+					if (data.status == "2") {
+						//alert("对不起，您所要删除的订单状态为已完成，所以不能做删除操作，谢谢！");
+						$('#deleteModalMsgConfirm').html(
+								'对不起，您所要删除的订单' + data.orderNo
+										+ '状态为已处理，所以不能做删除操作，谢谢！');
+						$('#deleteModalConfirm').modal().one('click',
+								'#modal-delete', function() {
+									//$(e.target).button('loading');
+									return;
+								});
+
+					} else {
+						$('#deleteModalMsg').html(
+								'你确定要删除这个订单 <strong>' + data.orderNo
+										+ '</strong>?');
+						$('#deleteModal').modal().one('click', '#modal-delete',
+								function() {
+									$(e.target).button('loading');
+									confirmDelete(data);
+								});
+					}
+				});
+
+		function confirmDelete(data) {
+			$.ajax({
+				url : "order/delete",
+				type : "POST",
+				dataType : "json",
+				data : {
+					id : data.orderId
+				},
+				success : function(response) {
+					if (response.status > -1) {
+						alertSuccess("SUCCESS", response.message);
+					} else {
+						alertError("ERROR", response.message);
+					}
+					table.ajax.reload();
+				}
+			});
+		}
+		//var command = $('#command').val();
+		$('#submitCommand').on('click', function() {
+			//提交命令
+			var command = $('#command').val();
+
+			alert("提交命令" + command);
+			$.ajax({
+				url : "ssh/exec/helm/install",
+				type : "POST",
+				dataType : "json",
+				data : {
+					k8Or : command,
+				},
+				success : function(response) {
+
+					if (response.status > -1) {
+						alertSuccess(response.message, "命令发送成功.");
+						//$('section.content').load('devops/devops_check_user.html', function() {
+						//alertSuccess(response.message, "订单申请成功.");
+						//});
+
+					} else {
+						alertError("ERROR", response.message);
+					}
+				}
+			});
+
+		});
+
+		$('#testCommandMysql').on('click', function() {
+			//提交命令
+			//var command = $('#command').val();
+			var command = "1";
+			alert("提交命令" + command);
+			$.ajax({
+				url : "ssh/exec/install/mysql",
+				type : "POST",
+				dataType : "json",
+				data : {
+					command : command,
+				},
+				success : function(response) {
+
+					if (response.status > -1) {
+						alertSuccess(response.message, "命令发送成功.");
+						//$('section.content').load('devops/devops_check_user.html', function() {
+						//alertSuccess(response.message, "订单申请成功.");
+						//});
+
+					} else {
+						alertError("ERROR", response.message);
+					}
+				}
+			});
+
+		});
+	</script>
+</body>

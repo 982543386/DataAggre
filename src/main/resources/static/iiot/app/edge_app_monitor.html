@@ -1,0 +1,301 @@
+<script type="text/javascript">
+<!--
+
+//-->	
+
+
+var deployUUID = null;
+$(document).ready(
+		function() {
+			initAppDeploy();
+		});
+		
+		
+		var table = null;
+		getEdgeAppList();
+		
+		
+		
+		$('#modalCreateDeployClose-btn').on( 'click', function () {
+			alert("开始部署");
+			/* var data = templateTable.row($(this).parents('tr')).data();
+			
+			sessionStorage.setItem("appID", data.id);
+			sessionStorage.setItem("temlateprojectId", data.projectId);
+			
+			
+			$('#modalDeployTitle').html('部署 <strong>' + data.name + '到指定节点 </strong>');
+			$('#modalDeployNote').html('描述: <strong>' + data.note + ' </strong>');
+				$.ajax({
+					url : "/nodeMonitor/getNodesList",
+					type : "GET",
+					success : function(data) {
+						var list = data.result;
+						for (i = 0; i < list.length; i++) {
+							//alert(list);
+							$("#nodes").append(
+									"<option value='"+list[i].ip+"'>"
+											+ list[i].ip + "</option>");
+						}
+
+					} */
+
+				});
+			
+			//alert(data.note);
+	        //$('.content').load('iiot/app/edge_app_view.html');
+			
+		
+		/* $('#appTable tbody').on( 'click', 'button.view', function () {
+			var data = table.row($(this).parents('tr')).data();
+		    $('.content').load('iiot/app/edge_app_view.html');
+			sessionStorage.setItem("appID", data['id']);
+		} ); */
+		
+		$('#appTable tbody').on( 'click', 'button.deploy', function () {
+			alert("deploy");
+			
+			var data = table.row($(this).parents('tr')).data();
+			alert(data.appId);
+			$.ajax({
+					url: "/iiot/project/application/deployDeployment",
+					type: "POST",
+					dataType: "json",
+					data: {
+						appId : data['appId']
+					},
+					success: function(response){
+						if(response['status'] > -1)
+						{
+							var _name = data['name']
+							var _div = $('<div>');
+							_div.load('alert_success.html', function(){
+								$(this).find('#title').html(response['message']);
+								$(this).find('#message').html("Project <strong>" + _name + "</strong> deployed successfully.");
+								var child = $(this).children();
+								child.fadeTo(3000, 500).slideToggle(500, function(){
+									child.alert('close');
+								});
+								$('.content').append(child);
+							});
+						}
+						else
+						{
+							var _div = $('<div>');
+							_div.load('alert_error.html', function(){
+								$(this).find('#title').html("ERROR");
+								$(this).find('#message').html(response['message']);
+								var child = $(this).children();
+								child.fadeTo(3000, 500).slideToggle(500, function(){
+									child.alert('close');
+								});
+								$('.content').append(child);
+							});
+						}
+					}
+				});
+		} );
+	
+	
+	
+	
+	
+	$('#appTable tbody').on('click', 'button.edit', function() {
+		alertSuccess("编辑");
+	});
+	$('#appTable tbody').on('click', 'button.delete', function() {
+		alertSuccess("删除申请已经提交");
+	});
+
+	$('#appTable tbody').on(
+			'click',
+			'button.view',
+			function() {
+
+				var data = table.row($(this).parents('tr')).data();
+
+				if (data.k8OrderType == "mysql") {
+					$('section.content').load(
+							'k8order/containerService/catalog/database.html?h='
+									+ new Date().getTime());
+				} else if (data.k8OrderType == "spark") {
+					$('section.content').load(
+							'k8order/containerService/catalog/bigdata.html?h='
+									+ new Date().getTime());
+				} else if (data.k8OrderType == "tomcat") {
+					$('section.content').load(
+							'k8order/containerService/catalog/middleware.html?h='
+									+ new Date().getTime());
+				}
+				sessionStorage.setItem("id", data.k8orderId);
+				sessionStorage.setItem('lastPage', 'home.html');
+
+				history.pushState(null, null, 'index');
+			});
+
+	$('#appTable tbody').on('click', 'button.status', function() {
+		var data = table.row($(this).parents('tr')).data();
+		var appName = data.appName;
+		$('.content').load('iiot/app/edge_pod_monitor.html');
+		sessionStorage.setItem("appName", appName);
+		$.getScript("js/iiot/pod.js")
+	});
+	$('.deployApp').click( function() {
+		$.getScript("../js/iiot/project.js");
+		$('.content').load('iiot/app/edge_app_deploy.html');
+		initAppDeploy();
+    } );
+</script>
+<div class="row" >
+    <!-- Main content -->
+   <!--  <section class="content"> -->
+<div class="col-xs-12">
+      <!-- Default box -->
+      <div class="box">
+<!--         <div class="box-header with-border">
+          <h3 class="box-title">Title</h3>
+          <div class="box-tools ">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                    title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div> -->
+        
+       <!--  <a href="javascript:void(0);" class="btn btn-primary btn-info">部署应用模版</a> -->
+       
+        <div class="box-body">
+<!-- <button class='btn btn-info  modalCreateDeploy' data-toggle='modal' data-target='#modalCreateDeploy'>新建边缘应用</button> -->
+				<span class="info-box-text"><h3>边缘应用监控</h3></span>
+				
+				<table id="appTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+					</thead>					
+				</table>
+				
+			</div>
+        <!-- /.box-body -->
+<!--         <div class="box-footer">
+          Footer
+        </div> -->
+        <!-- /.box-footer-->
+      </div>
+      <!-- /.box -->
+
+<div class="modal modal-primary fade" id="modalCreateDeploy">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<!-- <a>新建边缘应用</a> -->
+				<button type="button" class="close" data-dismiss="modal"
+					id="modalCreateDeployClose">
+					<span>X</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p id="modalDeployTitle"></p>
+				<p id="modalDeployNote"></p>
+				<div class="form-group">
+					<label for="exampleInputEmail1">应用名称</label> <input type="email"
+						style="width: 60%; color: #444444" class="form-control"
+						id="appName" placeholder="请输入应用名称">
+				</div>
+				<p id="modalMsgConfirm" />
+				<div class="form-group">
+							<label>选择应用模版</label> <select class="form-control"
+								style="width: 60%; color: #444444" id="templates">
+							</select>
+						</div>
+				<div class="form-group">
+					<label>请选择节点</label> <select class="form-control"
+						style="width: 60%; color: #444444" id="nodes">
+					</select>
+				</div>
+				
+
+						
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-outline" id="modalCreateDeployClose-btn"
+					data-dismiss="modal">部署</button>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+
+
+
+
+  <!--   </section> -->
+    <!-- /.content -->
+  <!-- /.content-wrapper -->
+ <!--  <div class="row">
+       
+
+        <div class="col-md-12">
+          Custom Tabs (Pulled to the right)
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs pull-left">
+              <li class="active"><a href="#tab_1-1" data-toggle="tab">监控</a></li>
+              <li><a href="#tab_2-2" data-toggle="tab">配置参数</a></li>
+              <li><a href="#tab_3-2" data-toggle="tab">Tab 3</a></li>
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  Dropdown <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Action</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Another action</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
+                  <li role="presentation" class="divider"></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Separated link</a></li>
+                </ul>
+              </li>
+              <li class="pull-right header"><i class="fa fa-th"></i> Custom Tabs</li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1-1">
+                <b>���ò���</b>
+
+                <p>Exactly like the original bootstrap tabs except you should use
+                  the custom wrapper <code>.nav-tabs-custom</code> to achieve this style.</p>
+                A wonderful serenity has taken possession of my entire soul,
+                like these sweet mornings of spring which I enjoy with my whole heart.
+                I am alone, and feel the charm of existence in this spot,
+                which was created for the bliss of souls like mine. I am so happy,
+                my dear friend, so absorbed in the exquisite sense of mere tranquil existence,
+                that I neglect my talents. I should be incapable of drawing a single stroke
+                at the present moment; and yet I feel that I never was a greater artist than now.
+              </div>
+              /.tab-pane
+              <div class="tab-pane" id="tab_2-2">
+                The European languages are members of the same family. Their separate existence is a myth.
+                For science, music, sport, etc, Europe uses the same vocabulary. The languages only differ
+                in their grammar, their pronunciation and their most common words. Everyone realizes why a
+                new common language would be desirable: one could refuse to pay expensive translators. To
+                achieve this, it would be necessary to have uniform grammar, pronunciation and more common
+                words. If several languages coalesce, the grammar of the resulting language is more simple
+                and regular than that of the individual languages.
+              </div>
+              /.tab-pane
+              <div class="tab-pane" id="tab_3-2">
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+                when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                It has survived not only five centuries, but also the leap into electronic typesetting,
+                remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+                sheets containing Lorem Ipsum passages, and more recently with desktop publishing software
+                like Aldus PageMaker including versions of Lorem Ipsum.
+              </div>
+              /.tab-pane
+            </div>
+            /.tab-content
+          </div>
+          nav-tabs-custom
+        </div>
+        /.col
+      </div> -->

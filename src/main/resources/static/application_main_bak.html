@@ -1,0 +1,313 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="addApplication">新增 Application</a>
+					</div>
+					<div class="col-sm-6 no-padding">
+						<button type="button" class="btn btn-primary pull-right" id="importApp_open" data-loading-text="<i class='fa fa-spin fa-cog'></i>">Import Application</button>
+						<div class="col-sm-5 input-group input-group-sm pull-right" id="importApp_div0" style="display:none;">
+							<input type="text" class="form-control" placeholder="Enter Service Name" id="importApp_input"/>
+							<span class="input-group-btn">
+							  <button type="button" data-loading-text="<i class='fa fa-spin fa-cog'></i>" class="btn btn-primary btn-flat" id="importApp_btn">Import</button>
+							</span>
+						</div>
+						<div class="col-sm-3 pull-right no-padding input-group-sm" id="importApp_div1" style="margin-right:5px;display:none;">
+							<select class="form-control" id="importApp_partition" data-toggle="tooltip" data-placement="top" title="Select the partition"/>
+						</div>
+					</div>
+            </div>
+			<div class="box-body">
+				<table id="appTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>应用名称</th>
+							<th>拥有者</th>
+							<th>版本</th>
+							<th>更新时间</th>
+							<th>状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >×</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to deploy</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" id="partModalDeploy" onclick="return deployApplication();">
+					部<span style="padding-left: 12px" />署
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+	
+    var table = $('#appTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"/application/getApplications",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+					{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+					{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+            switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+
+				//Deploying
+				case 1: $(row).find('td:eq(5)').html('');
+						$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+
+				//Deployed
+				case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+				break;
+
+				//Failed
+				case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+
+			   default: console.log('Unknown case..');
+			   break;
+			}
+        }
+    });
+
+	$('#addApplication').click( function() {
+		$('section.content').load('add_application.html?h=' + new Date().getTime());
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+    });
+
+	$('#importApp_open').click( function() {
+		var $caller = $(this).button("loading");
+		$.ajax({
+			url: "/application/getNamespacesByUser",
+			type: "GET",
+			dataType: "json",
+			success: function(d) {
+				if (d.data === null) {
+					alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+					return;
+				}
+				if (d.data.length === 0) {
+					alertError("ERROR", 'No partitions found<br/>Please verify User Groups');
+					return;
+				}
+
+				var $partition_select = $("#importApp_partition");
+				var $part_select = $('#importApp_partition').empty();
+				$.each(d.data, function(i, c) {
+					$.each(c.namespace, function(j, n) {
+						$("<option />").text(n).val(n).appendTo($part_select);
+					});
+				});
+				$caller.hide();
+				$('#importApp_div0, #importApp_div1').animate({width:'toggle'},500);
+			}
+		}).always(function() {
+			$caller.button("reset");
+		}).fail(function() {
+			alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+			return;
+		});
+    });
+
+	$('#importApp_btn').click( function() {
+		var $caller = $(this).button('loading');
+		var $namespace = $('#importApp_partition').attr('disabled', 'disabled').val();
+		var $serviceName = $('#importApp_input').attr('disabled', 'disabled');
+
+		$.ajax({
+			url: "/application/importApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				namespace:$namespace,
+				serviceName:$serviceName.val()
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess('SUCESS', response.message);
+					$serviceName.val('');
+				}
+				else
+				{
+					alertError('ERROR', response.message);
+				}
+			}
+		}).always(function() {
+			$caller.button('reset');
+			$('#importApp_input, #importApp_partition').removeAttr('disabled');
+			table.ajax.reload();
+		});
+    });
+
+	$('#appTable tbody').on( 'click', 'button.deploy', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+
+		getPartitions(data, caller);
+    });
+
+	$('#appTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('view_application.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+    });
+
+	$('#appTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete application <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+
+	$('#appTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_application.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+	});
+
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/application/deleteApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+
+	function deployApplication() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+			{
+				_namespaces.push($(this).val());
+			}
+		});
+
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+
+		$.ajax({
+			url: "/application/deployApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces)
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+    }
+</script>

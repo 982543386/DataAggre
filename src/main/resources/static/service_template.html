@@ -1,0 +1,394 @@
+<div name="servPanel">
+	<!-- Service -->
+	<div class="form-group no-margin-bottom">
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Name</label>
+				<div class="col-sm-7">
+					<input type="text" class="form-control lowercase validation sql-sname-validation" id="servName" placeholder='仅支持小写英文字母、数字及"-"'   onkeyup="this.value=this.value.toLowerCase(),this.value=this.value.replace(/[\u4e00-\u9fa5]/ig,'')"/>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Proxy Mode</label>
+				<div class="col-sm-7">
+					<select class="form-control" id="servProxyMode">
+						<option value="None">Round-Robin</option>
+						<option value="ClientIP">Session Affinity</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="form-group no-margin-bottom">
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Replica</label>
+				<div class="col-sm-7">
+					<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control validation number-validation" id="servReplica" placeholder="实例数量" value="1"/>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Host Network</label>
+				<div class="col-sm-7">
+					<select class="form-control" id="servHostNetwork">
+						<option value="false">False</option>
+						<option value="true">True</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="form-group no-margin-bottom">
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Version</label>
+				<div class="col-sm-7">
+					<input type="text" class="form-control validation allow-special lowercase" id="servVersion" placeholder="服务版本号" value="v1"/>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Notes</label>
+				<div class="col-sm-7">
+					<input type="text" class="form-control validation allow-special lowercase" id="servDescribe" placeholder="服务描述"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-info" >
+		<div class="panel-heading">
+			Labels
+		</div>
+		<div class="panel-body" name="labelForm">
+			<div class="form-group">
+				<label class="col-sm-3">Key</label>
+				<label class="col-sm-4">Value</label>
+			</div>
+			<div class="form-group" name="label">
+				<div class="col-sm-3">
+				<div class="form-group" style="padding-left:15px;">
+					<input type="text" class="form-control allow-uppercase no-validation" id="labelKey" placeholder="Key"/>
+				</div>
+				</div>
+				<div class="col-sm-4">
+				<div class="form-group" style="padding-left:15px;">
+					<input type="text" class="form-control allow-uppercase no-validation" id="labelValue" placeholder="Value"/>
+				</div>
+				</div>
+				<div class="btn-group col-sm-5" style="padding-left:15px;">
+					<button type="button" class="btn btn-primary vadd" onclick="addLabel(this)">+</button>
+					<button type="button" class="btn btn-primary vdel" onclick="delLabel(this)">-</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-info" >
+		<div class="panel-heading">
+			Volumes
+		</div>
+		<div class="panel-body" name="volumeForm">
+			<div class="form-group">
+				<label class="col-sm-3">Name</label>
+				<label class="col-sm-4">Host Path</label>
+			</div>
+			<div class="form-group" name="volume" data-vmtarget="vol_vm0">
+				<div class="col-sm-3">
+				<div class="form-group" style="padding-left:15px;">
+					<input type="text" class="form-control lowercase partial-validation vol_vm" id="volName" placeholder="Name"/>
+				</div>
+				</div>
+				<div class="col-sm-4">
+				<div class="form-group" style="padding-left:15px;">
+					<input type="text" class="form-control allow-uppercase no-validation vol_vm" id="volPath" placeholder="Host path (ex: /opt/mydir/)"/>
+				</div>
+				</div>
+				<div class="btn-group col-sm-5" style="padding-left:15px;">
+					<button type="button" class="btn btn-primary vadd" onclick="addVolume(this)">+</button>
+					<button type="button" class="btn btn-primary vdel" onclick="delVolume(this)">-</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-info" style="display:none;" id="configmapDiv">
+		<div class="panel-heading">
+			Config Maps
+		</div>
+		<div class="panel-body" name="confmapForm" style="max-height:140px; overflow-y:auto; overflow-x:hidden;"/>
+	</div>
+	<div class="panel panel-info" name="container">
+		<div class="panel-heading">
+			Containers&nbsp;
+			<div class="btn-group">
+				<button type="button" class="btn btn-primary" onclick="addContainer(this)">+</button>
+				<button type="button" class="btn btn-primary" onclick="delContainer(this)">-</button>
+			</div>
+		</div>
+		<div class="panel-body">
+			<div class="form-group no-margin-bottom">
+				<div class="col-sm-7">
+					<div class="form-group image">
+						<label class="col-sm-3 control-label">Image</label>
+						<div class="col-sm-7">
+							<button type="button" class="btn btn-primary choose" onclick="return chooseImage(this);">
+								选择镜像文件
+							</button>
+							<div class="row text-muted well well-sm no-shadow no-margin">
+								<div class="col-sm-12 no-padding">
+									<strong>Selected: </strong><span id="conImage"><i class="fa fa-refresh fa-spin"></i></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-5">
+					<div class="form-group">
+						<label class="col-sm-3 control-label">CPU</label>
+						<div class="col-sm-7">
+							<div class="input-group">
+								<input type="number" min="1" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="conCPU" placeholder="Unlimited" data-toggle="tooltip" data-placement="right" title="CPU tooltip explanation"/>
+								<span class="input-group-addon">Cores</span>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label">Memory</label>
+						<div class="col-sm-7">
+							<div class="input-group">
+								<input type="number" min="1" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="conMemory" placeholder="Unlimited" data-toggle="tooltip" data-placement="right" title="Memory tooltip explanation"/>
+								<span class="input-group-addon">Mi</span>
+							</div>
+						</div>	
+					</div>
+				</div>
+			</div>
+			<div class="form-group no-margin-bottom">
+				<div class="col-sm-offset-7 col-sm-5">
+				</div>
+			</div>
+			<div class="panel panel-info" >
+				<div class="panel-heading">
+					Container Ports
+				</div>
+				<div class="panel-body" name="portForm">
+					<div class="form-group">
+						<label class="col-sm-4">Container Port</label>
+						<label class="col-sm-4">Node Port</label>
+					</div>
+					<div class="form-group" name="port">
+						<div class="col-sm-4">
+						<div class="form-group" style="padding-left:15px;">
+							<input type="number" min="1" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control validation port-validation" id="conPort" placeholder="Port (1-65536)"/>
+						</div>
+						</div>
+						<div class="col-sm-4">
+						<div class="form-group" style="padding-left:15px;">
+							<input type="number" min="1" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control port-validation sql-port-validation" id="nodePort" placeholder="Port (1-65536)"/>
+						</div>
+						</div>
+						<div class="btn-group col-sm-4" style="padding-left:15px;">
+							<button type="button" class="btn btn-primary" onclick="addPort(this)">+</button>
+							<button type="button" class="btn btn-primary" onclick="delPort(this)">-</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- style="display:none;" -->
+			<div class="panel panel-info volMountPanel" >
+				<div class="panel-heading">
+					Volume Mounts
+				</div>
+				<div class="panel-body volMountDiv">
+					<div class="form-group no-margin-bottom vol_vm0" name="volMount">
+						<!-- <div class="col-sm-9"> -->
+							<div class="form-group">
+							<!-- id="volmountName" -->
+								<label class="col-sm-3 control-label" >Name</label>
+								<div class="col-sm-3">
+									<input type="text" class="form-control allow-uppercase allow-special no-validation" id="volmountName" placeholder="volumeMounts name"/>
+								</div>
+							</div>
+							<div class="form-group">
+							<!-- id="volmountName" -->
+								<label class="col-sm-4 control-label" >volumeMounts Path</label>
+								<div class="col-sm-4">
+									<input type="text" class="form-control allow-uppercase allow-special no-validation" id="volmountPath" placeholder="Path (ex: /opt/mydir/)"/>
+								</div>
+							<!-- </div> -->
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-info" >
+				<div class="panel-heading">
+					Environment Variables
+				</div>
+				<div class="panel-body" name="envVariableForm">
+					<div class="form-group">
+						<label class="col-sm-3">Name</label>
+						<label class="col-sm-4">Value</label>
+					</div>
+					<div class="form-group" name="envVariable">
+						<div class="col-sm-3">
+						<div class="form-group" style="padding-left:15px;">
+							<input type="text" class="form-control allow-uppercase no-validation" id="envName" placeholder="Name"/>
+						</div>
+						</div>
+						<div class="col-sm-4">
+						<div class="form-group" style="padding-left:15px;">
+							<input type="text" class="form-control allow-uppercase no-validation" id="envValue" placeholder="Value"/>
+						</div>
+						</div>
+						<div class="btn-group col-sm-5" style="padding-left:15px;">
+							<button type="button" class="btn btn-primary" onclick="addEnvVariable(this)">+</button>
+							<button type="button" class="btn btn-primary" onclick="delEnvVariable(this)">-</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-info" >
+				<div class="panel-heading">
+					Liveness Probe (Optional)
+				</div>
+				<div class="panel-body" name="liveProbeForm">
+					<div class="col-sm-9">
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Select</label>
+							<div class="col-sm-7">
+								<select class="form-control liveProbeType" onchange="changeLiveProbeType(this);">
+									<option value="">None</option>
+									<option value="httpGet">HTTPGet</option>
+									<option value="tcpSocket">TCPSocket</option>
+									<option value="exec">Exec</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="liveProbeDiv"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="imgModal modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+					</button>
+					<h4 class="modal-title">选择镜像文件</h4>
+				</div>
+				<div class="modal-body">
+					  <div class="box box-info" style="margin-bottom:0px;">
+						<form class="form-horizontal">
+						  <div class="box-body">
+						  <div class="form-group">
+							<div class="col-sm-12">
+							<input type="text" class="form-control no-validation" onkeyup="filterImages(this);" placeholder="Enter text here to filter images"/>
+							</div>
+						  </div>
+						  
+					  <div class="allImages"/>
+						  </div>
+						</form>
+					  </div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal"  onclick="fun1()">保<span style="padding-left: 12px" />存
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>	
+</div>
+<div class="form-group no-margin-bottom" id="volumeMountTemplate"  name="volMount" style="display:none;">
+	<div class="col-sm-9">
+		<div class="form-group">
+			<label class="col-sm-3 control-label" id="volmountName"/>
+			<div class="col-sm-9">
+				<input type="text" class="form-control allow-uppercase allow-special no-validation" id="volmountPath" placeholder="Path (ex: /opt/mydir/)"/>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="form-group no-margin-bottom" id="confMapTemplate"  name="confmap" style="display:none;">
+	<div class="col-sm-12">
+		<div class="form-group no-margin-bottom">
+			<div class="col-sm-4"><h5><input type="checkbox">&nbsp;&nbsp;&nbsp;<span/></h5></div>
+			<div class="col-sm-6">
+			<!-- style="display:none;" -->
+				<input type="text" class="form-control allow-uppercase allow-special no-validation"  id="confmapPath" placeholder="Path (ex: /opt/mydir/)"/>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col-sm-9 liveProbeTemplate" id="httpGetTemplate"style="display:none;">
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Path</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control allow-uppercase allow-special no-validation" id="liveProbePath" placeholder="Path (ex: /healthz)"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Port</label>
+		<div class="col-sm-9">
+			<input type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation port-validation" id="liveProbePort" placeholder="Port (1-65536)"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Initial Delay</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="liveProbeDelay" placeholder="Seconds" value="200"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Timeout</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="liveProbeTimeout" placeholder="Seconds" value="10"/>
+		</div>
+	</div>
+</div>
+<div class="col-sm-9 liveProbeTemplate" id="tcpSocketTemplate" style="display:none;">
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Port</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation port-validation" id="liveProbePort" placeholder="Port (1-65536)"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Initial Delay</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="liveProbeDelay" placeholder="Seconds" value="200"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Timeout</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="liveProbeTimeout" placeholder="Seconds" value="10"/>
+		</div>
+	</div>
+</div>
+<div class="col-sm-9 liveProbeTemplate" id="execTemplate" style="display:none;">
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Command</label>
+		<div class="col-sm-9">
+			<input type="text" class="form-control allow-uppercase allow-special no-validation" id="liveProbeCommand" placeholder="ex: netstat -tan | grep ESTABLISHED"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Initial Delay</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="liveProbeDelay" placeholder="Seconds" value="200"/>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Timeout</label>
+		<div class="col-sm-9">
+			<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control no-validation" id="liveProbeTimeout" placeholder="Seconds" value="10"/>
+		</div>
+	</div>
+</div>

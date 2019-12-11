@@ -1,0 +1,257 @@
+ <div class="ibox-title">
+                            <h5>MySql</h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                    <i class="fa fa-wrench"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-user">
+                                    <li><a href="#">Config option 1</a>
+                                    </li>
+                                    <li><a href="#">Config option 2</a>
+                                    </li>
+                                </ul>
+                                <a class="close-link">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                            </div>
+                        </div>
+
+<div class="form-group">
+                                                <label>Username *    </label>
+                                                <input id="userName" name="userName" type="text" class="form-control required">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Password *    </label>
+                                                <input id="password" name="password" type="text" class="form-control required">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Confirm Password *</label>
+                                                <input id="confirm" name="confirm" type="text" class="form-control required">
+                                            </div> 
+                                        
+                                        <div class="col-lg-4">
+                                            <div class="text-center">
+                                                <div style="margin-top: 20px">
+                                                    <i class="fa fa-sign-in" style="font-size: 180px;color: #e5e5e5 "></i>
+                                                </div>
+                                            </div>
+                                      </div> 
+<fieldset>
+                                        <h3>Radio</h3>
+                                        <p>Supports bootstrap brand colors: <code>.radio-primary</code>, <code>.radio-danger</code> etc.</p>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="radio">
+                                                    <input type="radio" name="radio1" id="radio1" value="option1" checked="">
+                                                    <label for="radio1">
+                                                        Small
+                                                    </label>
+                                                </div>
+                                                <div class="radio">
+                                                    <input type="radio" name="radio1" id="radio2" value="option2">
+                                                    <label for="radio2">
+                                                        Big
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="radio radio-danger">
+                                                    <input type="radio" name="radio2" id="radio3" value="option1">
+                                                    <label for="radio3">
+                                                        Next
+                                                    </label>
+                                                </div>
+                                                <div class="radio radio-danger">
+                                                    <input type="radio" name="radio2" id="radio4" value="option2" checked="">
+                                                    <label for="radio4">
+                                                        One
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                         <div class="form-group">
+                                                <label>First name *</label>
+                                                <input id="name" name="name" type="text" class="form-control required">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Last name *</label>
+                                                <input id="surname" name="surname" type="text" class="form-control required">
+                                            </div>
+                                     
+                                   
+
+
+
+
+
+
+
+                                           
+
+
+                                        
+                                        <div class="col-lg-6">
+                                            <div class="form-group">
+                                                <label>Email *</label>
+                                                <input id="email" name="email" type="text" >
+                                               <!--  class="form-control required email" -->
+                                            </div>
+
+                                             <div id="wrapper">
+
+        <div class="wrapper wrapper-content animated fadeInRight">
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="ibox float-e-margins">
+
+                        <div class="ibox-content">
+                            <h3>
+                                Sliders
+                            </h3>
+                            <p>
+                                Are perfect for range select option.
+                            </p>
+
+
+                            <div class="m-b-sm m-t">
+                                <small ><strong>Example of:</strong> Set diapason from 0 to 10, Set fractional step value: 0.1, Enable grid  </small>
+                            </div>
+                            <div id="ionrange_2"></div>
+
+
+                            <div>
+                            <a class="btn btn-white pull-right btn-sm" href="https://github.com/IonDen/ion.rangeSlider" target="_blank">Read about API</a>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+                    </div>
+                </div>
+
+
+
+
+                                            <div class="form-group">
+                                                <label>Address *</label>
+                                                <input id="address" name="address" type="text" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+  <script>
+        $(document).ready(function(){
+            $("#wizard").steps();
+            $("#form").steps({
+                bodyTag: "fieldset",
+                onStepChanging: function (event, currentIndex, newIndex)
+                {
+                    // Always allow going backward even if the current step contains invalid fields!
+                    if (currentIndex > newIndex)
+                    {
+                        return true;
+                    }
+
+                    // Forbid suppressing "Warning" step if the user is to young
+                    if (newIndex === 3 && Number($("#age").val()) < 18)
+                    {
+                        return false;
+                    }
+
+                    var form = $(this);
+
+                    // Clean up if user went backward before
+                    if (currentIndex < newIndex)
+                    {
+                        // To remove error styles
+                        $(".body:eq(" + newIndex + ") label.error", form).remove();
+                        $(".body:eq(" + newIndex + ") .error", form).removeClass("error");
+                    }
+
+                    // Disable validation on fields that are disabled or hidden.
+                    form.validate().settings.ignore = ":disabled,:hidden";
+
+                    // Start validation; Prevent going forward if false
+                    return form.valid();
+                },
+                onStepChanged: function (event, currentIndex, priorIndex)
+                {
+                    // Suppress (skip) "Warning" step if the user is old enough.
+                    if (currentIndex === 2 && Number($("#age").val()) >= 18)
+                    {
+                        $(this).steps("next");
+                    }
+
+                    // Suppress (skip) "Warning" step if the user is old enough and wants to the previous step.
+                    if (currentIndex === 2 && priorIndex === 3)
+                    {
+                        $(this).steps("previous");
+                    }
+                },
+                onFinishing: function (event, currentIndex)
+                {
+                    var form = $(this);
+
+                    // Disable validation on fields that are disabled.
+                    // At this point it's recommended to do an overall check (mean ignoring only disabled fields)
+                    form.validate().settings.ignore = ":disabled";
+
+                    // Start validation; Prevent form submission if false
+                    return form.valid();
+                },
+                onFinished: function (event, currentIndex)
+                {
+                    var form = $(this);
+
+                    // Submit form input
+                    form.submit();
+                }
+            }).validate({
+                        errorPlacement: function (error, element)
+                        {
+                            element.before(error);
+                        },
+                        rules: {
+                            confirm: {
+                                equalTo: "#password"
+                            }
+                        }
+                    });
+       });
+
+        $("#ionrange_2").ionRangeSlider({
+            min: 0,
+            max: 10,
+            type: 'single',
+            step: 0.1,
+            postfix: " carats",
+            prettify: false,
+            hasGrid: true
+        });
+
+
+
+
+
+    </script>
+                                

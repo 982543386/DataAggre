@@ -1,0 +1,141 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">容器服务详情 - （大自定义web应用）</h3>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="orderform">
+            
+                <div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<!-- <dl class="dl-horizontal">
+		                        <dt class="col-md-3">订单编号</dt>
+		                        <dd id="orderNo"/>
+		                   </dl> -->
+		                   <label class="col-sm-4 control-label">服务类型</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="orderNo" placeholder="订单号" readonly="readonly" />
+							</div>
+						</div>
+					</div>
+					
+				</div>
+                <div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<!-- <dl class="dl-horizontal">
+		                        <dt class="col-md-3">用户</dt>
+		                        <dd id="userId"/>
+		                   </dl> -->
+		                   <label class="col-sm-4 control-label">资源性能</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="userId" placeholder="用户" readonly="readonly" />
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<!-- <dl class="dl-horizontal">
+		                        <dt class="col-md-3">租户</dt>
+		                        <dd id="tenantName"/>
+		                   </dl> -->
+		                   <label class="col-sm-4 control-label">用户名</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="tenantName" placeholder="租户" readonly="readonly" />
+							</div>
+						</div>
+					</div>
+					
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">						
+		                   <label class="col-sm-4 control-label">密码</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="startTime" placeholder="开始日期" readonly="readonly" />
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						
+					</div>
+				</div>
+				
+				<div class="form-group no-margin-bottom">
+					
+				</div>
+				
+			    
+            </form>
+            <div class="row">
+                <div class="col-md-9 col-md-offset-1 no-padding">
+					<button type="button" class="btn btn-default pull-right" style="margin:20px 0 20px 0;" onclick="history.go(-1);">
+					返<span style="padding-left: 12px" />回
+                    </button>
+				</div>
+			</div>	
+         
+        </div>
+    </div>
+</div>	
+</div>
+<script>
+    $.getScript("js/date.format.js");
+    var orderId = sessionStorage.getItem("id");
+	$(document).ready(function(){
+		if(orderId !== null)
+		{
+			$.ajax({
+				url: "order/view",
+				type: "GET",
+				dataType: "json",
+				data: {id:orderId},
+				success: function(data){
+					
+					$("#orderNo").val(data.orderNo);
+					$("#orderId").val(data.orderId);
+					$("#remark").val(data.remark);
+					$("#startTime").val(new Date(data.startTime).format("yyyy-MM-dd HH:mm:ss"));
+					$("#endTime").val(new Date(data.endTime).format("yyyy-MM-dd HH:mm:ss"));
+					$("#tenantName").val(data.tenantName);
+					$("#userId").val(data.userId);
+					$('#zone').val(data.zoneId);
+				}
+			});
+			sessionStorage.removeItem("id");
+		}
+		else
+		{
+			alertError('ERROR', 'NO SESSION FOUND');
+		}
+	});
+	
+	$(document).ready(function(){
+		$.ajax({
+			url: "order/listOrderAblity",
+			type: "POST",
+			dataType: "json",
+			data: {
+				orderId:orderId
+			},
+			success: function(response){
+				var html='<ul class="todo-list m-t">';
+				
+				for ( var i =0; i<response.length; i++) {
+					var item = response[i];
+					
+					html+='<li>'+
+                    '<span class="m-l-xs">'+item.abilityName+'</span><p>'+item.abilityDesc+'</p> </li>';
+				}
+				html+=  '</ul>';
+				$('#ablity').html(html);
+				
+			}
+		});
+	});
+
+</script>

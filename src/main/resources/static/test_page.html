@@ -1,0 +1,146 @@
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+    var table = $('#userAbilityInstance').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"userAbilityInstance/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "id" },
+					{ "data": "abilityInstance" },
+					//{ "data": "tenantId" },
+					{ "data": "abilityName" },
+					{ "data": "abilityDesc" },
+					{ "data": "deliverDescribe" },
+					{ "data": "abilityStatus","render":function(data, type, row){
+						if(data=="0") return "未初始化";
+						else if(data=="1") return "已启用";
+						else if(data=="2") return "已注销";
+						else return "无效";
+						}
+					},
+					{ "data": "abilityType","render":function(data, type, row){
+						if(data=="1") return "大数据服务";
+						else if(data=="2") return "数据库服务";
+						else if(data=="3") return "业务服务";
+						else return "";
+						}
+					},
+					{ "data": "zoneId","render":function(data, type, row){
+						if(data=="1") return "亦庄数据中心";
+						else if(data=="2") return "廊坊数据中心";
+						else return "";
+						}
+					},
+					{ "data": "userId" },
+					{ "data": "createTime", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+					{ "data": "startTime", "render": function(data, type, row) {
+						    return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+					    }
+					},
+					{ "data": "endTime", "render": function(data, type, row) {
+					        return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+					    }
+					},
+        		]
+		
+    });
+</script>
+<body>
+<div class="container-fluid">
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+			     <div class="col-xs-4 text-center">
+			          <!-- small box -->
+			          <div class="small-box bg-aqua">
+			            <div class="inner">
+			              <h3 align="left">开始向导</h3>
+			
+			              <p align="left">Start Guides</p>
+			            </div>
+			            <div class="icon">
+			              <i class="ion ion-bag"></i>
+			            </div>
+			            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+			          </div>
+			        </div>
+			        <!-- ./col -->
+			      <div class="col-xs-4 text-center">
+			          <!-- small box -->
+			          <div class="small-box bg-green">
+			            <div class="inner">
+			              <h3 align="left">待办事项 </sup></h3>
+			
+			              <p align="left">To Do List</p>
+			            </div>
+			            <div class="icon">
+			              <i class="ion ion-stats-bars"></i>
+			            </div>
+			            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+			          </div>
+			        </div>
+			        <!-- ./col -->
+			       <div class="col-xs-4 text-center">
+			          <!-- small box -->
+			          <div class="small-box bg-yellow">
+			            <div class="inner">
+			              <h3 align="left">计费信息</h3>
+			
+			              <p align="left">Charing Information</p>
+			            </div>
+			            <div class="icon">
+			              <i class="ion ion-person-add"></i>
+			            </div>
+			            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+			          </div>
+			        </div>
+			        <!-- ./col -->
+    		</div>      
+			<div class="box-body">
+				<span class="info-box-text"><h3>已定能力</h3></span>
+				<table id="userAbilityInstance" class="table table-bordered table-hover"
+							style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>服务实例</th>
+							<th>服务名称</th>
+							<th>服务描述</th>
+							<th>服务方式</th>
+							<th>服务状态</th>
+							<th>服务类型</th>
+							<th>数据中心</th>
+							<th>用户</th>
+							<th>创建时间</th>
+							<th>起始日期</th>
+							<th>结束日期</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+</body>
+</html>

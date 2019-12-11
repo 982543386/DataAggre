@@ -1,0 +1,250 @@
+<div class="container" style ="background:#ECF0F5">
+	<div class="row" style ="background:#ECF0F5">
+		<section>
+        <div class="wizard" style ="background:#ECF0F5">
+            <div class="wizard-inner">
+                <div class="connecting-line"></div>
+                <ul class="nav nav-tabs" role="tablist">
+
+                    <li role="presentation" class="active">
+                        <a href="#step1" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">
+                            <span class="round-tab">
+                                <i class="glyphicon glyphicon-folder-open"></i>
+                            </span>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="disabled">
+                        <a href="#step2" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">
+                            <span class="round-tab">
+                                <i class="glyphicon glyphicon-pencil"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li role="presentation" class="disabled">
+                        <a href="#step3" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">
+                            <span class="round-tab">
+                                <i class="glyphicon glyphicon-picture"></i>
+                            </span>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="disabled">
+                        <a href="#complete" data-toggle="tab" aria-controls="complete" role="tab" title="Complete">
+                            <span class="round-tab">
+                                <i class="glyphicon glyphicon-ok"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <form role="form">
+                <div class="tab-content">
+                    <div class="tab-pane active" role="tabpanel" id="step1">
+                        <h3>第一步：选择数据库引擎</h3>
+                        <p></p>
+                        <!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
+						<!-- <button type="button" class="btn btn-primary">（首选项）Primary</button> -->
+						<!-- Single button -->
+<div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Action <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a href="#">Action</a></li>
+    <li><a href="#">Another action</a></li>
+    <li><a href="#">Something else here</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">Separated link</a></li>
+  </ul>
+</div>
+
+<!-- <select id="first-disabled" class="selectpicker" data-hide-disabled="true" data-live-search="true">
+    <optgroup disabled="disabled" label="disabled">
+      <option>Hidden</option>
+    </optgroup>
+    <optgroup label="Fruit">
+      <option>Apple</option>
+      <option>Orange</option>
+    </optgroup>
+    <optgroup label="Vegetable">
+      <option>Corn</option>
+      <option>Carrot</option>
+    </optgroup>
+  </select>
+ -->
+
+
+
+                        </p>
+                        <ul class="list-inline pull-right">
+                            <li><button type="button" class="btn btn-primary next-step">Save and continue</button></li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane" role="tabpanel" id="step2">
+                        <h3>配置选项</h3>
+                       <!--  <p>一系列多选分组菜单</p> -->
+                        <fieldset id="city_custom">
+
+						<legend>自定义选项</legend>
+
+						<p>数据库：<select class="first" data-value="Boolean" disabled="disabled"></select></p>
+
+						<p>引擎：<select class="second" data-value="0" disabled="disabled"></select></p>
+
+						<p>版本：<select class="third" disabled="disabled"></select></p>
+
+						<p>存储介质：<select class="fourth" disabled="disabled"></select></p>
+
+						<div class="input-group">
+  						<span class="input-group-addon" id="storage">存储空间：</span>
+  						<input type="text" class="form-control" placeholder="GB" aria-describedby="basic-addon1">
+						</div>
+						
+						
+						
+						<!-- <p>存储空间：<select class="fifth" disabled="disabled"></select></p>  -->
+						
+						
+						<div class="input-group">
+  						<span class="input-group-addon" id="user_info">自定义信息：</span>
+  						<input type="text" class="form-control" placeholder="实例名，首字母为英文" aria-describedby="basic-addon1">
+  						<input type="text" class="form-control" placeholder="用户名" aria-describedby="basic-addon1">
+  						<input type="text" class="form-control" placeholder="密码" aria-describedby="basic-addon1">
+  						
+						</div>
+						<!-- <p>自定义实例名：</p>
+						<p>用户名</p>
+						<p>密码：</p> -->
+						</fieldset>
+                        
+                        
+                        
+                        
+                        
+                        
+                        <ul class="list-inline pull-right">
+                            <li><button type="button" class="btn btn-default prev-step">Previous</button></li>
+                            <li><button type="button" class="btn btn-primary next-step">Save and continue</button></li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane" role="tabpanel" id="step3">
+                        <h3>备注</h3>
+                        <p>填写备注</p>
+                        <ul class="list-inline pull-right">
+                            <li><button type="button" class="btn btn-default prev-step">Previous</button></li>
+                            <li><button type="button" class="btn btn-default next-step">Skip</button></li>
+                            <li><button type="button" class="btn btn-primary btn-info-full next-step">Save and continue</button></li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane" role="tabpanel" id="complete">
+                        <h3>确认订单详情</h3>
+                        <p>显示订单详情</p>
+                        <input class="btn btn-default" type="submit" value="提交订单">
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </form>
+        </div>
+    </section>
+   </div>
+</div>
+<script src="js/jquery.cxselect.min.js"></script>
+<script>
+$(document).ready(function () {
+    //Initialize tooltips
+    $('.nav-tabs > li a[title]').tooltip();
+    
+    //Wizard
+    $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+
+        var $target = $(e.target);
+    
+        if ($target.parent().hasClass('disabled')) {
+            return false;
+        }
+    });
+
+    $(".next-step").click(function (e) {
+
+        var $active = $('.wizard .nav-tabs li.active');
+        $active.next().removeClass('disabled');
+        nextTab($active);
+
+    });
+    $(".prev-step").click(function (e) {
+
+        var $active = $('.wizard .nav-tabs li.active');
+        prevTab($active);
+
+    });
+});
+
+function nextTab(elem) {
+    $(elem).next().find('a[data-toggle="tab"]').click();
+}
+function prevTab(elem) {
+    $(elem).prev().find('a[data-toggle="tab"]').click();
+}
+
+$('#city_custom').cxSelect({
+
+	selects: ['first', 'second', 'third','fourth'],
+
+	required: true,
+
+	url: 
+		[
+			  {
+			    "v": 1,
+			    "n": "数据库",
+			    "s": [
+			    {
+			      "v": 1,
+			      "n": "MySQL",
+			      "s": [
+			        {
+			          "v": 1,
+			          "n": "8.0.1",
+			          "s": [
+			        	  {"v": 1,
+					          "n": "HDD"},{
+					        	  "v": 2,
+						          "n": "SSD"
+					          }
+			        	  ]
+			        },
+			        {
+			          "v": 2,
+			          "n": "5.7.18",
+			          "s": [
+			        	  {"v": 1,
+					          "n": "HDD"},{
+					        	  "v": 2,
+						          "n": "SSD"
+					          }
+			        	  ]
+			        },
+			        {
+			          "v": 3,
+			          "n": "5.6.36",
+			          "s": [
+			        	  {"v": 1,
+					          "n": "HDD"},{
+					        	  "v": 2,
+						          "n": "SSD"
+					          }
+			        	  ]
+			            }
+			      ]
+			    }]
+			  
+			  }
+			  
+			  
+			]
+
+});
+
+</script>

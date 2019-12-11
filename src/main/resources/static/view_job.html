@@ -1,0 +1,540 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-info">
+            <div class="box-header with-border">
+                <h3 class="box-title">View Jobs</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+			<div class="col-sm-4">
+                <dl class="dl-horizontal">
+                    <dt class="col-md-3">Job List Name</dt>
+                    <dd id="name"/>
+                    <dt class="col-md-3">Owner</dt>
+                    <dd id="owner"/>
+                </dl>
+			</div>
+			<div class="col-sm-6">
+				<dl class="dl-horizontal">
+                    <dt class="col-md-3">Version</dt>
+                    <dd id="version"/>
+					<dt class="col-md-3">Notes</dt>
+                    <dd id="note"/>
+                </dl>
+			</div>		
+			<div class="col-sm-9" id="error_app" style="display:none;">
+				<div class="callout callout-danger">
+				<h4><i class="icon fa fa-warning"></i> Error</h4>
+				<p>This Job list has no jobs</p>
+				</div>
+			</div>
+			<div class="col-sm-9" id="error_server" style="display:none;">
+				<div class="callout callout-danger">
+				<h4><i class="icon fa fa-warning"></i> Error</h4>
+				<p>Error while retrieving jobs</p>
+				</div>
+			</div>
+            </div>
+            <div class="row" id="job-div">
+				<div class="col-md-9 col-md-offset-1" id="scheduled_callout" style="display:none; padding:0;">
+					<div class="callout callout-warning">
+						<h4><i class="icon fa fa-calendar"></i> Scheduled Details 
+							<button type="button" class="btn btn-sm btn-danger pull-right" id="job_stop" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return stopJob(this);">
+								<i class="fa fa-stop"></i> Stop Job
+							</button>
+							<button type="button" class="btn btn-sm btn-success pull-right" id="job_start" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return startJob(this);">
+								<i class="fa fa-play"></i> Start Job
+							</button>
+							<button type="button" class="btn btn-sm btn-primary pull-right" id="job_log" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return getTaskLog(this);">
+								<i class="fa fa-search"></i> Logs
+							</button>
+							<hr style="border-color:#fff"/>
+						</h4>
+						<div class="row">
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label class="col-sm-5 control-label">Frequency: </label>
+									<p id="job_cron"></p>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label class="col-sm-5 control-label">Status: </label>
+									<p id="job_status"></p>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label class="col-sm-5 control-label">Last Run: </label>
+									<p id="job_last"></p>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label class="col-sm-5 control-label">Next Run: </label>
+									<p id="job_next"></p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="col-md-9 col-md-offset-1" id="borderdiv" style="border:1px solid #DDD; min-height:50px;">
+					<div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs" id="job-ul"/>
+						<div class="overlay" id="loading">
+						  <i class="fa fa-refresh fa-spin"></i>
+						</div>
+                        <div class="tab-content" id="job-content" style="display:none;"/>
+                    </div>
+				</div>
+            </div>
+			<div class="row">
+                <div class="col-md-9 col-md-offset-1 no-padding">
+					<button type="button" class="btn btn-default pull-right" style="margin:20px 0 20px 0;" onclick="history.go(-1);">
+					返<span style="padding-left: 12px" />回
+                    </button>
+				</div>
+			</div>	
+        </div>
+    </div>
+</div>
+<div class="modal modal-primary fade" id="toggleModal">
+  <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">
+		  <span>×</span></button>
+		<h4 class="modal-title">Please confirm</h4>
+	  </div>
+	  <div class="modal-body">
+		<p id="toggleModalMsg"/>
+	  </div>
+	  <div class="modal-footer">
+		<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-outline" id="modal-confirm" data-dismiss="modal">Confirm</button>
+	  </div>
+	</div>
+  </div>
+</div>
+<div class="modal fade" id="lblModal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">
+					<span>×</span>
+				</button>
+				<h4 class="modal-title">Update Labels</h4>
+			</div>
+			<div class="modal-body">
+		          <div class="box box-info" style="margin-bottom:0px;">
+		            <form class="form-horizontal">
+		              <div class="box-body">
+		                <div class="form-group">
+		                  <label class="col-sm-4">Key</label>
+		                  <label class="col-sm-7">Value</label>
+		                </div>
+						<div id="lblModalContent" name='labelForm'/>
+		              </div>
+		            </form>
+		          </div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" id="modal-confirm" data-dismiss="modal">
+					保<span style="padding-left: 12px" />存
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="logsModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close closeLog" data-dismiss="modal">
+					<span>×</span>
+				</button>
+				<h4 class="modal-title">Logs</h4>
+			</div>
+			<div class="modal-body">
+				<textarea id="logsText" style="height:500px;font-size:12px;margin-bottom:15px;width:100%;resize:vertical;"></textarea>
+			</div>
+			<div class="modal-footer">
+				<label class="pull-left" id="autorefreshlbl"><input type="radio" id="autorefresh"/> Auto-Refresh</label>
+				<button type="button" class="btn btn-default closeLog" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="logsHelperModal">
+  <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">
+		  <span >×</span></button>
+		<h4 class="modal-title">Please select the container to view logs</h4>
+	  </div>
+	  <div class="modal-body">
+		<div class="box box-info" style="margin-bottom:0px;">
+			<form class="form-horizontal">
+				<div class="box-body" id="logsHelperBody">
+				</div>
+			</form>
+		</div>
+	  </div>
+	  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">
+				关<span style="padding-left: 12px" />闭
+			</button>
+			<button type="button" class="btn btn-primary" data-dismiss="modal" id="modal-view">
+				View
+			</button>
+	  </div>
+	</div>
+  </div>
+</div>
+<div class="modal fade" id="statusModal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close closeLog" data-dismiss="modal">
+					<span>×</span>
+				</button>
+				<h4 class="modal-title">Pod Status</h4>
+			</div>
+			<div class="modal-body" id="statusText" style="word-break: break-all;">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default closeLog" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="form-group" id="lblModalTemplate" name="label" style="display:none;">
+  <div class="col-sm-4">
+	<input type="text" id="lbkey" class="form-control" />
+  </div>
+  <div class="col-sm-4">
+	<input type="text" id="lbval" class="form-control" />
+  </div>
+    <div class="col-sm-4">
+		<button type="button" class="btn btn-primary" onclick="addLabel(this)">+</button>
+		<button type="button" class="btn btn-primary" onclick="delLabel(this)">-</button>
+	</div>
+</div>
+<script>
+	var _id = sessionStorage.getItem("ku8ID");
+	var tabIndex = 0;
+	$.getScript("../js/project.js");
+	
+	$(document).ready(function(){
+		sessionStorage.removeItem("ku8ID");
+		if(_id !== null)
+		{
+			getJobSet(true);
+		}
+		else
+		{
+			alertError('ERROR', 'NO SESSION FOUND');
+		}
+	});
+	
+	function getJobSet(refresh)
+	{
+		$.ajax({
+			url: "/job/getJobSet",
+			type: "GET",
+			dataType: "json",
+			data: {ku8ID:_id},
+			success: function(data){
+				$("#name").html(data.name);
+				$("#version").html(data.version);
+				$("#owner").html(data.owner);
+				$("#note").html(data.note);
+				
+				if(data.jobType === 1)
+				{
+					$("#job_cron").html(data.cronExpression);
+					
+					//Set Start/Stop buttons
+					var stoggle;
+					if(data.taskStatus > 0)
+					{
+						stoggle = true;
+						$('#job_status').html("Running");
+					}
+					else
+					{
+						stoggle = false;
+						$('#job_status').html("Stopped");
+					}
+					$('#job_stop').data('jdata', data).toggle(stoggle);
+					$('#job_start').data('jdata', data).toggle(!stoggle);
+					
+					var _last = data.taskInfo.lastTime || "-";
+					var _next = data.taskInfo.nextTime || "-";
+					
+					if(_last !== '-')
+						_last = new Date(_last).toLocaleString('zh');
+						
+					if(_next !== '-')
+						_next = new Date(_next).toLocaleString('zh');
+						
+					$('#job_last').html(_last);
+					$('#job_next').html(_next);
+				}
+				if(refresh)
+					getJobs(data);
+			}
+		});
+	}
+	
+	function getJobs(data)
+	{
+		$.ajax({
+			url: "/job/getJob",
+			type: "GET",
+			dataType: "json",
+			data: {
+				ku8ID:_id
+			},
+			success: function(js){
+				if(js.data === null)
+				{
+					$('#error_server').show();
+					$('#job-div').hide();
+					return;
+				}
+				
+				if(js.data.length === 0)
+				{
+					if(data !== undefined && data.jobType === 0)
+					{
+						$('#error_app').show();
+						$('#job-div').hide();
+						return;
+					}
+					else
+					{
+						$('#scheduled_callout').fadeIn('normal', function(){
+							$('#borderdiv, #loading').hide();
+						});
+						return;
+					}
+				}
+				
+				//Get Jobs
+				var jcontent = $('#job-content').html('');
+				$.each(js.data, function(i, job) {
+					
+					//Set data
+					job.sindex = i;
+					
+					var tab = $('<li>').html("<a onclick='return set_sIndex(this);' href='#job_" + i + "' data-toggle='tab' data-tabindex='" + i + "'><strong>" + job.name + "</strong></a>").data('jobName', job.name);
+					var _div = $('<div>');
+					_div.load('job_details.html?h=' + new Date().getTime(), function(){
+						var tabpane = $(this).find('.tab-pane').attr('id', 'job_' + i);
+						$(this).find('#job_parallelism').html(job.parallelism).attr('id', 'job_parallelism_' + i);
+						$(this).find('#job_cron').html(job.cronExpression).attr('id', 'job_cron_' + i);
+						$(this).find('#job_resPart').html(job.resPart).attr('id', 'job_resPart_' + i);
+						$(this).find('#job_ku8Version').html(job.ku8Version).attr('id', 'job_ku8Version_' + i);
+						$(this).find('#label_title').attr('id', 'label_title_' + i);
+						$(this).find('#label_table').attr('id', 'label_table_' + i);
+						$(this).find('#container_table').attr('id', 'container_table_' + i);
+						$(this).find('#pod_table').attr('id', 'pod_table_' + i);
+						$(this).find('#pod_reloadBtn').attr('id', 'pod_reloadBtn_' + i).data("data", {name:'#pod_table_' + i});
+						$(this).find('.updatelbl').data("sdata", job);
+						
+						if(i === tabIndex)
+						{
+							tab.addClass("active");
+							tabpane.addClass("in active");
+						}
+						
+						$('#job-ul').append(tab);
+						jcontent.append(tabpane);
+						
+						//Get Labels
+						if(Object.keys(job.labels).length === 0)
+						{
+							$('#label_table_' + i + ', #label_title_' + i).hide();
+						}
+						else
+						{
+							$('#updatelbl_up').hide();
+							$.each(job.labels, function(lbKey, lbValue) {
+								buildLabelTable('#label_table_' + i, lbKey, lbValue);
+							});
+						}
+						
+						//Get Containers
+						$.each(job.containers, function(k, c) {
+							buildContainerTable('#container_table_' + i, c, _id, k, job.name, ku8Job);
+						});
+						
+						//Build Pod Table
+						getPods('#pod_table_' + i, job);
+					});
+				});
+				
+				//Only for Scheduled Jobs
+				if(data !== undefined && data.jobType === 1)
+					$('#scheduled_callout').fadeIn('normal');
+					
+				jcontent.fadeIn('normal', function(){
+					$('#loading').hide();
+				});
+			}
+		});
+	}
+	
+	function set_sIndex(e)
+	{
+		tabIndex = $(e).data("tabindex");
+	}
+	
+	function getPods(table, jdata)
+	{
+		$(table).DataTable({
+			autoWidth: false,
+			responsive: true,
+			"ajax":{
+				url : "/job/getPods",
+				data: {
+					ku8ID:_id,
+					name:jdata.name
+				},
+				error: function (XMLHttpRequest, textStatus, errorThrown) 
+				{
+					if(JSON.parse(XMLHttpRequest.status) === 403)
+					{
+						window.location.replace('/login.html');
+					}
+				}
+			},
+			"columns": [
+						{ "data": "name" },
+						{ "data": "pod_ip" },
+						{ "data": "host_ip" },
+						{ "defaultContent": "" },
+						{ "defaultContent": ""}
+					],
+			"createdRow": function ( row, data, i) {
+				var name = data.name;
+				var logBtn = $('<button/>').addClass('btn btn-primary btn-sm').data('btndata', jdata).html("<i class='fa fa-search'></i> Logs").attr('onclick', "return openLogs(" + _id + ", \"" + name + "\", ku8Job, this);");
+				var statusBtn = $('<button/>').addClass('btn btn-primary btn-xs').data('btndata', data).html("<i class='fa fa-search'></i>").attr('onclick', "return showPodStatus(this);");
+					
+				$(row).find('td:eq(3)').html(data.status).append("&nbsp;").append(statusBtn);
+				$(row).find('td:eq(4)').html(logBtn);
+			}
+		});
+	}
+	
+	function startJob(e)
+	{
+		var _data = $(e).data('jdata');
+		var _message = 'Job <strong>' + _data.name + '</strong> started';
+		
+		$('#toggleModalMsg').html('Do you want start job <strong>' + _data.name + '</strong>?');
+		$('#toggleModal').modal().one('click', '#modal-confirm', function() {
+			$(e).button('loading');
+			updateJob(_data, 1, _message, e);
+		});
+	}
+		
+	function stopJob(e)
+	{
+		var _data = $(e).data('jdata');
+		var _message = 'Job <strong>' + _data.name + '</strong> stopped';
+		
+		$('#toggleModalMsg').html('Do you want stop job <strong>' + _data.name + '</strong>?');
+		$('#toggleModal').modal().one('click', '#modal-confirm', function() {
+			$(e).button('loading');
+			updateJob(_data, 0, _message, e);
+		});
+	}
+	
+	function getTaskLog(e)
+	{	
+		$.ajax({
+			url: "/task/getTaskLog",
+			type: "GET",
+			dataType: "json",
+			data: {
+				jobId:_id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					var max = 50;
+					if(response.data.length < max)
+						max = response.data.length;
+						
+					var logs = "";
+					for(i = 0; i < max; i++)
+					{
+						var obj = response.data[i];
+						logs += "StartTime: " + new Date(obj.startTime).toLocaleString('zh') + "\tEndTime: " + new Date(obj.endTime).toLocaleString('zh') + "\tStatus: " + obj.status + "\tDetails: " + obj.hint + "\n";
+					}
+					
+					$('#logsModal').modal('toggle');
+					$('#autorefreshlbl').hide();
+					$('#logsText').val(logs);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+			}
+		});
+	}
+	
+	function updateJob(_data, _taskStatus, _message, _caller)
+	{
+		$.ajax({
+			url: "/task/updateTask",
+			type: "GET",
+			dataType: "json",
+			data: {
+				ku8ID:_id,
+				cronExpression:_data.cronExpression,
+				taskStatus:_taskStatus
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess(response.message, _message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				getJobSet(false);
+				$(_caller).button('reset');
+			}
+		});
+	}
+	
+	function reloadPodTable(e)
+	{
+		var data = $(e).data('data');
+		$(data.name).DataTable().ajax.reload();
+	}
+	
+	function reloadServices()
+	{
+		$('#job-ul').html('');
+		$('#job-content').fadeOut('normal', function(){
+			$('#loading').show();
+		});
+		getJobs();
+	}
+</script>

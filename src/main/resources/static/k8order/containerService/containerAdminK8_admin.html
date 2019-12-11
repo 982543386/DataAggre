@@ -1,0 +1,281 @@
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+ var table = $('#appTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"k8OrderHelm/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "charts" },					
+        			{ "data": "helmName"	},
+        			{ "data": "userId"	},
+        			{ "data": "time", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+					{"defaultContent":"<span class='btn-block bg-green btn-sm label-status'>Deployed</span>"},
+					{ "defaultContent": "<button class='btn btn-primary btn-sm view'>查看</button>&nbsp;<button class='btn btn-info btn-sm status'>状态</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>" }
+        		]
+    });
+    
+    
+
+	$('#add').click( function() {
+		$('section.content').load('guide/guide_all.html?h=' + new Date().getTime());
+
+		sessionStorage.setItem('lastPage', 'k8order/containerService/containerAdminK8.html');
+		history.pushState(null, null, 'index');
+    });
+    
+    $('#appTable tbody').on( 'click', 'button.delete', function () {
+		alertSuccess("删除申请已经提交");
+    });
+    
+    
+
+  $('#appTable tbody').on( 'click', 'button.view', function () {
+
+		var data = table.row($(this).parents('tr')).data();
+	//	alert(data.k8OrderType);
+		
+		if(data.k8OrderType=="mysql"){
+        	$('section.content').load('k8order/containerService/catalog/database.html?h=' + new Date().getTime());
+        }else if(data.k8OrderType=="spark"){
+        	$('section.content').load('k8order/containerService/catalog/bigdata.html?h=' + new Date().getTime());
+        }else if(data.k8OrderType=="tomcat"){
+        	$('section.content').load('k8order/containerService/catalog/middleware.html?h=' + new Date().getTime());
+        }
+		sessionStorage.setItem("id", data.k8orderId);
+		sessionStorage.setItem('lastPage', 'k8order/containerService/containerAdminK8.html');
+
+		history.pushState(null, null, 'index');
+    });
+
+  $('#appTable tbody').on( 'click', 'button.status', function () {
+		var data = table.row($(this).parents('tr')).data();
+        var repoName = data.helmName;
+        /*  alert(repoName); */ 
+        
+         $.ajax({
+         	type:"post",
+			url:"ssh/exec/status",
+			data:{
+				helmName:repoName
+			},
+			success: function(data){
+				/* data=data.replace(/STATUS/g,"<br />STATUS")
+				data=data.replace(/NAMESPACE/g,"<br />NAMESPACE")
+				data=data.replace(/RESOURCES/g,"<br /><br />RESOURCES")
+				data=data.replace(/==>/g,"<br />==>")
+				data=data.replace(/NAME /g,"<br />NAME ")
+				data=data.replace(/AGE/g,"AGE<br />")
+				data=data.substring(0,data.indexOf("NOTES")) */
+				$('#statusModalMsg').html(data);
+				$('#statusModal').modal()
+			},
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		});
+        
+		sessionStorage.setItem("id", data.orderId);
+		sessionStorage.setItem('lastPage', 'k8order/containerService/containerAdminK8.html');
+
+		history.pushState(null, null, 'index');
+    });
+
+
+</script>
+
+
+<!--  <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">Responsive Hover Table</h3>
+
+              <div class="box-tools">
+                <div class="input-group input-group-sm" style="width: 150px;">
+                  <input type="text" name="table_search" class="form-control pull-right" placeholder="Search">
+
+                  <div class="input-group-btn">
+                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            /.box-header
+            <div class="box-body table-responsive no-padding">
+              <table class="table table-hover">
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Reason</th>
+                </tr>
+                <tr>
+                  <td>183</td>
+                  <td>John Doe</td>
+                  <td>11-7-2014</td>
+                  <td><span class="label label-success">Approved</span></td>
+                  <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+                </tr>
+                <tr>
+                  <td>219</td>
+                  <td>Alexander Pierce</td>
+                  <td>11-7-2014</td>
+                  <td><span class="label label-warning">Pending</span></td>
+                  <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+                </tr>
+                <tr>
+                  <td>657</td>
+                  <td>Bob Doe</td>
+                  <td>11-7-2014</td>
+                  <td><span class="label label-primary">Approved</span></td>
+                  <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+                </tr>
+                <tr>
+                  <td>175</td>
+                  <td>Mike Doe</td>
+                  <td>11-7-2014</td>
+                  <td><span class="label label-danger">Denied</span></td>
+                  <td>Bacon ipsum dolor sit amet salami venison chicken flank fatback doner.</td>
+                </tr>
+              </table>
+            </div>
+            /.box-body
+          </div>
+          /.box
+        </div>
+      </div> -->
+
+
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				容器服务管理
+					
+					
+            </div>
+			<div class="box-body">
+				<!-- <table id="orderTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>订单号</th>
+							<th>租户</th>
+							<th>用户</th>
+							<th>创建时间</th>
+							<th>状态</th>
+							<th>备注</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table> -->
+				
+				<div class="box-body">
+				<!-- <table id="orderTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>订单号</th>
+							<th>租户</th>
+							<th>用户</th>
+							<th>创建时间</th>
+							<th>状态</th>
+							<th>备注</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table> -->
+				
+				<table id="appTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>应用名称</th>
+							<th>Helm名称</th>
+							<th>拥有者</th>
+<!-- 							<th>应用类型</th> -->
+							<th>创建时间</th>
+							<th>状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					
+				</table>
+				
+			</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModalConfirm">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsgConfirm"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	        <div class="modal modal-primary fade" id="statusModal">
+			  	<div class="modal-dialog">
+					<div class="modal-content">
+					  <div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+						  <span>×</span></button>
+						<h4 class="modal-title">查看状态</h4>
+					  </div>
+					  <div class="modal-body">
+						<p id="statusModalMsg"/>
+					  </div>
+					</div>
+				  </div>
+		       </div>
+	
+</div>

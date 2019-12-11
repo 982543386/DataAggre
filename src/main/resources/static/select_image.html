@@ -1,0 +1,133 @@
+<body>
+<script type="text/javascript" src="js/script.js"></script>
+
+<div id="multi_select_block">
+	
+	<div class="multi_select_content">
+	
+	<ul class="select">
+		<li class="select-list">
+			<dl id="select1">
+				<dt>镜像类型：</dt>
+				<dd class="select-all selected" tag="0"><a href="#">全部</a></dd>
+				<dd tag="database"><a href="#">数据库</a></dd>
+				<dd tag="middleware"><a href="#">中间件</a></dd>
+				<dd tag="bigdata"><a href="#">大数据能力</a></dd>
+				<dd tag="management"><a href="#">管理能力</a></dd>
+				<dd tag="no define"><a href="#">未定义</a></dd>
+				<dd tag="other"><a href="#">其他镜像</a></dd>
+			</dl>
+		</li>
+		<li class="select-list">
+			<dl id="select2">
+				<dt>镜像来源：</dt>
+				<dd class="select-all selected" tag="0"><a href="#">全部</a></dd>
+				<dd tag="1"><a href="#">租户上传</a></dd>
+				<dd tag="2"><a href="#">第三方来源</a></dd>
+				<dd tag="3"><a href="#">联通内部业务来源</a></dd>
+			</dl>
+		</li>
+		<li class="select-list">
+			<dl id="select3">
+				<dt>版本类型：</dt>
+				<dd class="select-all selected" tag="0"><a href="#">全部</a></dd>
+				<dd tag="1"><a href="#">开发板</a></dd>
+				<dd tag="2"><a href="#">稳定版</a></dd>
+				<dd tag="3"><a href="#">灰度版本</a></dd>
+			</dl>
+		</li>
+		<li class="select-result">
+			<dl>
+				<dt>已选条件：</dt>
+				<dd class="select-no">暂时没有选择过滤条件</dd>
+			</dl>
+		</li>
+		<button class="btn btn-primary" id="selectImage"   >查询</button>	
+	</ul>
+	</div>
+	<br/>
+</div>
+
+<div>
+				<table id="selectImageTable" class="table table-bordered table-hover"
+					style="font-size: 12px;" width="100%">
+					<thead>
+						<tr>
+							<th>title</th>
+							<th>image_name</th>
+							<th>version</th>
+							<th>version_type</th>
+							<th>category</th>
+							<th>source</th>
+							<th>last_updated</th>
+						</tr>
+					</thead>
+				</table>
+	</div>
+<input type="hidden" id="VersionType" value="0" /> 
+<input type="hidden" id="Source" value="0" /> 
+<input type="hidden" id="Category" value="0" /> 
+</div>
+
+<script type="text/javascript">
+
+$("#selectImage").click(function(){
+	//SetPara(); 
+	findImage();
+});
+
+/* 	function SetPara() { 
+		
+		alert("1.aspx?a=" + a + "&b=" + b + "&c=" + c); 
+	}; 
+ */
+	function findImage(){
+	 var Category = $("#Category").val(); 
+		var VersionType =  parseInt($("#VersionType").val()); 
+		var Source =  parseInt($("#Source").val()); 
+		
+	//var ImageName=$("#dockerName").val();	
+	$.ajax({
+	    url:"/selectimg/search",
+	    data:{
+	    	category:Category,
+	    	versionType:VersionType, 
+	    	source:Source
+	    },
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    		var tablelist="";
+		        $.each(data.data,function(i,item){
+		        	var date = new Date(item.lastUpdated);   
+	        		var Y = date.getFullYear() + '-';
+	        		var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+					var D = (date.getDate() < 10 ? '0'+(date.getDate()) : date.getDate()) + ' ';
+					var h = (date.getHours() < 10 ? '0'+(date.getHours()) : date.getHours()) + ':';
+					var m = (date.getMinutes() < 10 ? '0'+(date.getMinutes()) : date.getMinutes()) + ':';
+					var s = (date.getSeconds() < 10 ? '0'+(date.getSeconds()) : date.getSeconds());		
+
+		        	
+		        	tablelist+=[
+	  							'<tr>',
+	  							'<td>'+item.title+'</td>',
+	  							'<td>'+item.imageName+'</td>',
+	  							'<td>'+item.version+'</td>',
+	  							item.versionType==1?'<td>生产版</td>':'<td>开发版</td>',
+// 	  							item.publicImage==1?'<td>公共镜像</td>':'<td>私有镜像</td>',
+	  							'<td>'+item.category+'</td>',
+	  							'<td>'+item.source+'</td>',
+	  							'<td>'+Y+M+D+h+s+'</td>',
+	  							'</tr>'
+	  		            ].join('');
+		        }); 
+		    	
+		        $('#selectImageTable').find('td').remove();
+		        $('#selectImageTable').append(tablelist);
+	    	
+	    }
+	});
+}
+</script>
+
+</body>

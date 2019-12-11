@@ -1,0 +1,406 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="add">申请订单</a>
+							&nbsp;
+                     	<a class="btn btn-primary" id="uploadwar">war包上传</a> 
+					</div> 
+            </div>
+			<div class="box-body">
+				<table id="orderTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>订单号</th>
+							<th>租户</th>
+							<th>用户</th>
+							<th>创建时间</th>
+							<th>状态</th>
+							<th>备注</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModalConfirm">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsgConfirm"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+
+<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="warMode" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left">war上传</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<div class="box box-info" style="margin-bottom:0px;">
+						<div>
+						<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="warCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="warRegistrySureBtn" type="button"
+						class="btn btn-outline btn-primary">上传</button>
+						<!-- class在这里好像没什么用 -->
+				</div>
+						</div>
+						<div>  
+						    <!--用来存放item-->  
+						    <div>
+						    	<input id="thelist" name="thelist" style="height:30px;width:300px;margin-top:10px;" readonly="readonly" tmpFileId="" />
+						    </div>
+						    <div>  
+						     <div id="filePicker" style="margin-top:10px;margin-bottom:10px;float:left;">选择文件</div>  
+						     <div id="delwarlFile" class="webuploader-pick" style="margin-top:10px;">删除文件</div>
+						    </div>  
+						</div>  
+					</div>
+				</div>
+				<!-- <div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭
+					<button id="yamlCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="yamlSureBtn" type="button"
+						class="btn btn-outline btn-primary">上传</button>
+				</div>-->
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		
+		
+		<!-- /.modal -->
+	</div>
+	
+	
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+    var table = $('#orderTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"order/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "orderId" },
+        			{ "data": "orderNo" },
+        			//{ "data": "tenantId" },
+        			{ "data": "tenantName" },
+        			{ "data": "userId" },
+					{ "data": "createTime", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+					{ "data": "status","render":function(data, type, row){
+						if(data=="0") return "待处理";
+						else if(data=="1") return "处理中";
+						else if(data=="2") return "已处理";
+						else if(data=="3") return "拒绝";
+						else return "已发布并且全部服务异常"
+						}
+					},
+					{ "data": "remark" },
+					//{ "defaultContent":"<button class='btn btn-primary btn-sm update'>处理</button>"+"&nbsp;<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>" }
+					 { "defaultContent": "" }  
+        		],
+		 "createdRow": function ( row, data, index ) {
+			 switch (data.status)
+				{
+					//New
+					case 2: $(row).find('td:eq(7)').html("<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");
+					break;
+					case 3: $(row).find('td:eq(7)').html("<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");
+					break;
+				    default: $(row).find('td:eq(7)').html("<button class='btn btn-primary btn-sm update'>处理</button>&nbsp;<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");	
+				    break;
+				}
+           /*  if(data.status=="2"||data.status=="3"){
+				return $(row).find('td:eq(8)').html("<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");	
+			}else{
+				return $(row).find('td:eq(8)').html("<button class='btn btn-primary btn-sm update'>处理</button>&nbsp;<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");	
+			} */
+        } 
+    });
+    
+    
+
+	$('#add').click( function() {
+		$('section.content').load('order/order_add.html?h=' + new Date().getTime());
+
+		sessionStorage.setItem('lastPage', 'order/order_list_war.html');
+		history.pushState(null, null, 'index');
+    });
+	
+    //点击看的事件
+    $('#orderTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+       // $('section.content').load('order_add.html?h=' + new Date().getTime());
+        $('section.content').load('order/order_view.html?h=' + new Date().getTime());
+		sessionStorage.setItem("id", data.orderId);
+		sessionStorage.setItem('lastPage', 'order/order_list_war.html');
+
+		history.pushState(null, null, 'index');
+    });
+    //点击处理事件
+    $('#orderTable tbody').on( 'click', 'button.update', function () {
+		var data = table.row($(this).parents('tr')).data();
+       // $('section.content').load('order_add.html?h=' + new Date().getTime());
+        $('section.content').load('order/order_update.html?h=' + new Date().getTime());
+		sessionStorage.setItem("id", data.orderId);
+		sessionStorage.setItem('lastPage', 'order/order_list_war.html');
+
+		history.pushState(null, null, 'index');
+    });
+    //点击删除事件
+	$('#orderTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		if(data.status=="2"){
+			//alert("对不起，您所要删除的订单状态为已完成，所以不能做删除操作，谢谢！");
+			$('#deleteModalMsgConfirm').html('对不起，您所要删除的订单' + data.orderNo + '状态为已处理，所以不能做删除操作，谢谢！');
+			$('#deleteModalConfirm').modal().one('click', '#modal-delete', function() {
+				//$(e.target).button('loading');
+				return;
+			});
+			
+		}else{
+			$('#deleteModalMsg').html('你确定要删除这个订单 <strong>' + data.orderNo + '</strong>?');
+			$('#deleteModal').modal().one('click', '#modal-delete', function() {
+				$(e.target).button('loading');
+				confirmDelete(data);
+			});
+		}
+	});
+
+
+	function confirmDelete(data) {
+		$.ajax({
+			url: "order/delete",
+			type: "POST",
+			dataType: "json",
+			data: {
+				id:data.orderId
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+	//点击上传war包按钮
+	$("#uploadwar").on("click",function(){
+		$("#thelist").val('');
+		initUploadYaml();
+		$("#warMode").modal('show');
+	});
+	$("#warCancelBtn").on("click",function(){
+		$("#warMode").modal('hide');
+	});
+   //删除
+   $("#delwarFile").on('click',function(){
+	   $("#thelist").val('');
+	   initUploadYaml();
+   });
+	var uploader;
+	 function initUploadYaml(){  
+		   /*init webuploader*/  
+		   var $list=$("#thelist");   //这几个初始化全局的百度文档上没说明，好蛋疼。  
+		   var $btn =$("#warRegistrySureBtn");   //开始上传  
+		   var thumbnailWidth = 100;   //缩略图高度和宽度 （单位是像素），当宽高度是0~1的时候，是按照百分比计算，具体可以看api文档  
+		   var thumbnailHeight = 100;  
+		  
+		    if(uploader){
+		    	uploader.destroy();
+		    }
+		   
+		   uploader = WebUploader.create({  
+		       // 选完文件后，是否自动上传。  
+		       auto: false,  
+		  
+		       // swf文件路径  
+		       swf: '../js/Uploader.swf',  
+		  
+		       // 文件接收服务端。  
+		       server: '/publicservice/upload-warFile',  
+		  
+		       // 选择文件的按钮。可选。  
+		       // 内部根据当前运行是创建，可能是input元素，也可能是flash.  
+		       pick:{
+		    	   id:'#filePicker',
+		    	   multiple:false
+		       },
+		  
+		       // 只允许选择图片文件。  
+		       accept: {  
+		           title: 'Images',  
+		           extensions: 'yaml',  
+		           mimeTypes: 'yaml/*'  
+		       },  
+		       method:'POST',  
+		   });  
+		   // 当有文件添加进来的时候  
+		   uploader.on( 'fileQueued', function( file ) {  // webuploader事件.当选择文件后，文件被加载到文件队列中，触发该事件。等效于 uploader.onFileueued = function(file){...} ，类似js的事件定义。  
+		       $list.val(file.name);  
+		   	   $list.attr("tmpFileId",file.id);
+		   });  
+		   // 文件上传过程中创建进度条实时显示。  
+		   uploader.on( 'uploadProgress', function( file, percentage ) {  
+		       var $li = $( '#'+file.id ),  
+		           $percent = $li.find('.progress span');  
+		  
+		       // 避免重复创建  
+		       if ( !$percent.length ) {  
+		           $percent = $('<p class="progress"><span></span></p>')  
+		                   .appendTo( $li )  
+		                   .find('span');  
+		       }  
+		  
+		       $percent.css( 'width', percentage * 100 + '%' );  
+		   });  
+		  
+		   // 文件上传成功，给item添加成功class, 用样式标记上传成功。  
+		   uploader.on( 'uploadSuccess', function( file ) {  
+		       $( '#'+file.id ).addClass('upload-state-done');  
+		       //上传成功以后调用k8s接口发布服务
+		       var tmpFileObeject={
+		    		name:file.name	   
+		       };
+		       $.ajax({
+			        url : "publicservice/issueServiceByYaml",
+			        dataType : "json",
+			        type:"post",
+			        async: false,
+			        data :JSON.stringify(tmpFileObeject),
+			        contentType : "application/json; charset=utf-8",
+			        success : function(res)
+			        {
+			        	if(res.status!=200 && res.status!=201){
+			        		bootbox.alert(res.body);
+			        	}else{
+			 		      $("#yamlMode").modal('hide'); 
+			 		      bootbox.alert('上传成功');
+			        	}
+			        }
+			    });
+		   });  
+		  
+		   // 文件上传失败，显示上传出错。  
+		   uploader.on( 'uploadError', function( file ) {  
+		       var $li = $( '#'+file.id ),  
+		           $error = $li.find('div.error');  
+		       // 避免重复创建  
+		       if ( !$error.length ) {  
+		           $error = $('<div class="error"></div>').appendTo( $li );  
+		       }  
+		       $error.text('上传失败');  
+		       bootbox.alert('上传失败');
+		   });  
+		  
+		   // 完成上传完了，成功或者失败，先删除进度条。  
+		   uploader.on( 'uploadComplete', function( file ) {  
+		       $( '#'+file.id ).find('.progress').remove();  
+		   }); 
+		   
+		   uploader.on('error',function(type){
+			   if(type=='Q_TYPE_DENIED'){
+				   bootbox.alert('只能单个上传');
+			   }
+		   });
+		   
+		   //上传按钮
+	      $btn.on( 'click', function() {  
+	        uploader.upload(); //上传
+	      });  
+	      
+		  
+	}
+///上传按钮	
+	$('#warRegistrySureBtn').click( function() {
+		//$('section.content').load('order/order_add.html?h=' + new Date().getTime());
+		uploadwar();
+    });
+//开始上传
+	function uploadwar(){
+		 var warContent = $("#war_editor").val()
+		$.ajax({
+		    url:"/war/uploadwar",
+		    data:{
+		    	warContent:warContent
+		    },
+		    type: "POST",
+		    dataType:"json",
+		    success:function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		    	
+		});
+	}
+
+</script>

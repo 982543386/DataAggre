@@ -1,0 +1,132 @@
+
+<!-- <link href="plugins/icheck-1.x/skins/square/blue.css" rel="stylesheet">
+<script src="plugins/icheck-1.x/icheck.js"></script> -->
+
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">鐢宠璁㈠崟</h3>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="orderform">
+				<!-- <div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Application Name</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="name"
+							placeholder="椤圭洰鍚嶇О"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Version</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special lowercase validation" id="version"
+							placeholder="椤圭洰鐗堟湰鍙�" value="v1"/>
+							</div>
+						</div>
+					</div>
+				</div> -->
+				
+				
+				
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">User</label>
+							<div class="col-sm-7">
+								<!-- <input class="form-control layer-date" placeholder="YYYY-MM-DD hh:mm:ss" onclick="laydate({istime: true, format: 'YYYY-MM-DD hh:mm:ss'})"> -->
+								<input placeholder="user" class="form-control layer-date allow-special validation" id="user">
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">URL</label>
+							<div class="col-sm-7">
+								
+								<input placeholder="URL" class="form-control layer-date allow-special validation" id="url">
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Token</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special validation" id="token"
+							placeholder="token"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				
+				<div class="form-group no-margin-bottom">
+					
+				</div>
+				
+				
+				
+				
+				
+				
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" onclick="history.back(-1);">
+						杩�<span style="padding-left: 12px" />鍥�
+					</button>
+                    <button onclick="return 123order.addOrder()" type="button" class="btn btn-primary saveBtn" >
+						淇�<span style="padding-left: 12px" />瀛�
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+
+
+<script>
+    var start = {
+		  elem: '#start',
+		  format: 'YYYY/MM/DD hh:mm:ss',
+		  min: laydate.now(), //璁惧畾鏈�灏忔棩鏈熶负褰撳墠鏃ユ湡
+		  max: '2099-06-16 23:59:59', //鏈�澶ф棩鏈�
+		  istime: true,
+		  istoday: false,
+		  choose: function(datas){
+		     end.min = datas; //寮�濮嬫棩閫夊ソ鍚庯紝閲嶇疆缁撴潫鏃ョ殑鏈�灏忔棩鏈�
+		     end.start = datas //灏嗙粨鏉熸棩鐨勫垵濮嬪�艰瀹氫负寮�濮嬫棩
+		  }
+		};
+	var end = {
+	  elem: '#end',
+	  format: 'YYYY/MM/DD hh:mm:ss',
+	  min: laydate.now(),
+	  max: '2099-06-16 23:59:59',
+	  istime: true,
+	  istoday: false,
+	  choose: function(datas){
+	    start.max = datas; //缁撴潫鏃ラ�夊ソ鍚庯紝閲嶇疆寮�濮嬫棩鐨勬渶澶ф棩鏈�
+	  }
+	};
+	laydate(start);
+	laydate(end);
+</script>
+    
+<script>
+	$.getScript("js/order.js");
+
+
+	
+	
+</script>

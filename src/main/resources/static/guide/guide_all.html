@@ -1,0 +1,354 @@
+<html>
+  <head>
+    <meta name="generator"
+    content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
+    <script type="text/javascript">
+        $("#uploadwar").click(function(){
+        $(".content").load("war_manage_user.html");
+        });
+        
+        $("#addSpark").on('click',function(){
+        	$(".content").load("guide/bigdata/spark.html");
+        });
+        
+        $("#addMysql").click(function(){
+        $(".content").load("guide/database/mysql.html");
+        });
+        
+        $("#addCicd").click(function(){
+        $(".content").load("guide/cicd.html");
+        });
+        
+        $("#addDAS").click(function(){
+        $(".content").load("guide/applicationService/DAS.html");
+        });
+        
+        $("#addTomcat").click(function(){
+        $(".content").load("guide/middleware/tomcat.html");
+        });
+</script>
+    <title></title>
+  </head>
+  <body>
+    <ul id="myTab" class="nav nav-tabs">
+      <li class="active">
+        <a href="#bigdata" data-toggle="tab">大数据</a>
+      </li>
+      <li>
+        <a href="#middleware" data-toggle="tab">中间件</a>
+      </li>
+      <li>
+        <a href="#database" data-toggle="tab">数据库</a>
+      </li>
+       <li>
+        <a href="#cicd" data-toggle="tab">应用服务</a>
+      </li> 
+     <!--  <li>
+        <a href="#war_main" data-toggle="tab">镜像服务</a>
+      </li> -->
+    </ul>
+    <div id="myTabContent" class="tab-content">
+      <!-- bigdata-->
+      <div class="tab-pane fade in active" id="bigdata">        
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="box">
+              <div class="box-header">
+           
+              </div>
+            
+            <div class="box-body">
+            <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Spark + Zeppelin</strong></font></p>
+				  <p>用于大数据统计、计算、数据分析</p>
+				</div>
+				<div class="col-xs-4">
+				
+					<img src="../image/spark.jpg" width="60" height="40"/>
+			
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addSpark" >申请</button>
+				</div>
+            </div>
+            
+            <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>tensorflow</strong></font></p>
+				  <p>将复杂的数据结构传输至人工智能神经网中进行分析和处理过程的系统。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>kafka</strong></font></p>
+				  <p>Kafka是一种高吞吐量的分布式发布订阅消息系统</p>
+				</div>
+				<div class="col-xs-4">
+				
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+            <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Cassandra</strong></font></p>
+				  <p>高可靠的大规模分布式存储系统。高度可伸缩的、一致的、分布式的结构化key-value存储方案</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+     		</div>
+     		</div>
+          </div>
+        </div>
+        <script type="text/javascript"></script>
+      </div>
+      <!--  database-->
+      <div class="tab-pane fade" id="database">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="box">
+              <div class="box-header">
+              </div>
+              
+            <div class="box-body">
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Redis</strong></font></p>
+				  <p>开源的支持网络、可基于内存亦可持久化的日志型、Key-Value数据库。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Mysql</strong></font></p>
+				  <p>传统关系型数据库，可提供单例模式、单主集群模式、多主集群模式</p>
+				</div>
+				<div class="col-xs-4">
+					<img src="../image/mysql.jpg" width="100" height="60"/>
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addMysql">申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>etcd</strong></font></p>
+				  <p>高可用的键值存储系统,主要用于共享配置和服务发现。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Mongodb</strong></font></p>
+				  <p>MongoDB是一个基于分布式文件存储的数据库。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Postgresql</strong></font></p>
+				  <p>PostgreSQL 是一个自由的对象-关系数据库服务器(数据库管理系统)</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+            </div>
+            </div>
+            
+          </div>
+        </div>
+        <script type="text/javascript"></script>
+      </div>
+      <!-- cicd-->
+      <div class="tab-pane fade" id="cicd">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="box">
+              <div class="box-header">
+                <!-- <div class="col-sm-6 no-padding">
+                                                                <a href="javascript:void(0);" class="btn btn-primary" id="addCicd">申请cicd服务</a>
+                                                        </div> -->
+              </div>
+              <div class="box-body">
+               <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>DAS</strong></font></p>
+				  <p>DAS大数据能力开放平台</p>
+				</div>
+				<div class="col-xs-4">
+				<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addDAS" >申请</button>
+				</div>
+            </div>
+              
+            <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>gitlab</strong></font></p>
+				  <p>用于仓库管理系统的开源项目，使用Git作为代码管理工具，并在此基础上搭建起来的web服务。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addCicd" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>jenkins</strong></font></p>
+				  <p>一种持续集成工具，用于监控持续重复的工作，使软件的持续集成变成可能。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addCicd" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>wordpress</strong></font></p>
+				  <p>一款个人博客系统，并逐步演化成一款内容管理系统软件。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addCicd" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>openVpn</strong></font></p>
+				  <p>OpenVPN 是一个基于 OpenSSL 库的应用层 VPN 实现。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addCicd" disabled>申请</button>
+				</div>
+            </div>
+            
+             <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>minecraft</strong></font></p>
+				  <p>Introduction</p>
+				</div>
+				<div class="col-xs-4">
+				<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addCicd" disabled>申请</button>
+				</div>
+            </div>
+            
+            
+            
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--  middleware-->
+      <div class="tab-pane fade" id="middleware">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="box">
+              <div class="box-header">
+              </div>
+            
+            <div class="box-body">
+            <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>rebbitmq</strong></font></p>
+				  <p>缓存数据，用于应用的缓存数据存储，支持单例模式、Redis codis模式</p>
+				</div>
+				<div class="col-xs-4">
+				<!-- 	这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+       <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Nginx</strong></font></p>
+				  <p>高性能的HTTP和反向代理服务器，也是一个IMAP/POP3/SMTP服务器。</p>
+				</div>
+				<div class="col-xs-4">
+					<!-- 这里插入图片 -->
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="" disabled>申请</button>
+				</div>
+            </div>
+            
+           <div class="row">
+				<div class="col-xs-4">
+				  <p><font size = 4><strong>Tomcat</strong></font></p>
+				  <p>开源的Web 应用服务器，属于轻量级应用服务器。</p>
+				</div>
+				<div class="col-xs-4">
+					<img src="../image/tomcat.jpg" width="100" height="60"/>
+				</div>
+				<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" id="addTomcat">申请</button>
+				</div>
+            </div>
+            </div>
+            </div>
+         
+          </div>
+        </div>
+        <script type="text/javascript"></script>
+      </div>
+    
+    </div>
+  </body>
+</html>

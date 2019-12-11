@@ -1,0 +1,100 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">添加节点</h3>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+                <div class="form-group" name="service">
+                    <div class="col-sm-9 col-sm-offset-1">
+								<div class="panel panel-info">
+									<div class="panel-heading">
+										Master节点
+									</div>
+									<div class="panel-body" name="labelForm" id="masterNodes">
+										<div class="form-group">
+											<label class="col-sm-3">IP地址</label>
+											<label class="col-sm-3">用户名</label>
+											<label class="col-sm-3">密码</label>
+										</div>
+										<div class="form-group" name="label">
+											<div class="col-sm-3">
+											<div class="form-group" style="padding-left:15px;">
+												<input class="form-control allow-uppercase no-validation" name="nodeIp" placeholder="IP地址" type="text">
+											</div>
+											</div>
+											<div class="col-sm-3">
+											<div class="form-group" style="padding-left:15px;">
+												<input type="text" class="form-control allow-uppercase no-validation" value="root" name="sshUserName" placeholder="用户名"/>
+											</div>
+											</div>
+											<div class="col-sm-3">
+											<div class="form-group" style="padding-left:15px;">
+												<input type="text" class="form-control allow-uppercase no-validation" value="123456" name="sshUserPassword" placeholder="密码"/>
+											</div>
+											</div>
+											<div class="btn-group col-sm-2" style="padding-left:15px;">
+												<button type="button" class="btn btn-primary vadd" onclick="addLabel(this)">+</button>
+												<button type="button" class="btn btn-primary vdel" onclick="delLabel(this)">-</button>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="panel panel-info">
+									<div class="panel-heading">
+										Slave节点
+									</div>
+									<div class="panel-body" name="labelForm" id="slaveNodes">
+										<div class="form-group">
+											<label class="col-sm-3">IP地址</label>
+											<label class="col-sm-3">用户名</label>
+											<label class="col-sm-3">密码</label>
+										</div>
+										<div class="form-group" name="label">
+											<div class="col-sm-3">
+											<div class="form-group" style="padding-left:15px;">
+												<input class="form-control allow-uppercase no-validation" name="nodeIp" placeholder="IP地址" type="text">
+											</div>
+											</div>
+											<div class="col-sm-3">
+											<div class="form-group" style="padding-left:15px;">
+												<input type="text" class="form-control allow-uppercase no-validation" value="root" name="sshUserName" placeholder="用户名"/>
+											</div>
+											</div>
+											<div class="col-sm-3">
+											<div class="form-group" style="padding-left:15px;">
+												<input type="text" class="form-control allow-uppercase no-validation" value="123456" name="sshUserPassword" placeholder="密码"/>
+											</div>
+											</div>
+											<div class="btn-group col-sm-2" style="padding-left:15px;">
+												<button type="button" class="btn btn-primary vadd" onclick="addLabel(this)">+</button>
+												<button type="button" class="btn btn-primary vdel" onclick="delLabel(this)">-</button>
+											</div>
+										</div>
+									</div>
+								</div>
+
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px"></span>回
+					</button>
+                    <button onclick="return dcos.addNode()" type="button" class="btn btn-primary saveBtn">
+						保<span style="padding-left: 12px"></span>存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+
+<script>
+	$.getScript("../js/dcos.js");
+</script>

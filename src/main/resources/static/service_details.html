@@ -1,0 +1,106 @@
+<div class="tab-pane fade">
+	<div class="row">
+		<div class="col-xs-12">
+			<button type="button" class="btn btn-sm btn-warning updatelbl pull-right" id="updatelbl_up" onclick="return updateLabels(this, ku8App);">Update Labels</button>
+			<button type="button" class="btn btn-sm btn-danger pull-right service_stop" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return stopService(this);">
+				<i class="fa fa-stop"></i> Stop Service
+			</button>
+			<button type="button" class="btn btn-sm btn-success pull-right service_start" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return startService(this);">
+				<i class="fa fa-play"></i> Start Service
+			</button>
+		</div>
+	</div>
+	<div class="box-footer">
+		<div class="col-xs-7">
+			<ul class="nav nav-stacked">
+				<li style="padding: 5px 15px;">Current Replicas 
+					<span class="pull-right badge bg-blue" id="service_replica"/>
+				</li>
+				<li style="padding: 5px 15px;">
+				<div class="col-sm-6" style="padding-left: 0; padding-top: 5px;">
+					Scale Replicas
+				</div>
+				<div class="col-sm-6 input-group input-group-sm">
+                <input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control replica" placeholder="0-Infinite" id="service_newReplica"/>
+                    <span class="input-group-btn">
+                      <button type="button" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" class="btn btn-primary btn-flat" onclick="return setReplica(this);" id="replica_setBtn">Set</button>
+                    </span>
+				</div>
+				</li>
+			</ul>
+		</div>
+		<div class="col-xs-5">
+			<ul class="nav nav-stacked">
+				<li style="padding: 5px 15px;">Ku8 Version
+					<span class="pull-right badge bg-blue" id="service_ku8Version"/>
+				</li>
+				<li style="padding: 5px 15px;">Resource Partition
+					<span class="pull-right badge bg-blue" id="service_resPart"/>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<h4 id="label_title">Label Details
+		<button type="button" class="btn btn-sm btn-warning updatelbl" id="updatelbl_down" onclick="return updateLabels(this, ku8App);">Update Labels</button>
+	<hr/></h4>
+	<table id="label_table" class="table table-bordered table-hover" style="font-size: 12px; width:60%">
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+	<h4 id="volume_title">Volume Details<hr/></h4>
+	<table id="volume_table" class="table table-bordered table-hover" style="font-size: 12px; width:60%">
+		<thead>
+			<tr>
+				<th>Volume Name</th>
+				<th>Path</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+	<h4 id="confmap_title">Config Maps Details<hr/></h4>
+	<table id="confmap_table" class="table table-bordered table-hover" style="font-size: 12px; width:60%">
+		<thead>
+			<tr>
+				<th>Config Map Name</th>
+				<th>Path</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+	<h4>Container Details<hr/></h4>
+	<table id="container_table" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+		<thead>
+			<tr>
+				<th>Container Name</th>
+				<th>Image</th>
+				<th>CPU</th>
+				<th>Memory</th>
+				<th>Ports</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+	<h4>Pod Details 
+		<button type="button" id="pod_reloadBtn" class="btn btn-sm btn-primary" onclick="return reloadPodTable(this);" data-loading-text="<i class='fa fa-spin fa-refresh'></i>">
+			<i class='fa fa-refresh'></i> Reload
+		</button>
+	<hr/></h4>
+	<table id="pod_table" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+		<thead>
+			<tr>
+				<th>Pod Name</th>
+				<th>Pod IP</th>
+				<th>Host IP</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody/>
+	</table>
+</div>

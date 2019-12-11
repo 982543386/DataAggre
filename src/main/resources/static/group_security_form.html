@@ -1,0 +1,158 @@
+<div class="row">
+	<div class="box">
+		<div class="box-header with-border">
+			<h3 class="box-title"><span>增加</span>用户组</h3>
+		</div>
+		<div class="box-body">
+			<form class="form-horizontal" role="form" id="userGroupForm">
+				<div class="form-group">
+					<label class="col-xs-3 control-label">Group Name</label>
+					<div class="col-xs-7">
+						<input type="text" class="form-control" id="groupName" placeholder="groupName">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-xs-3 control-label">Parttion</label>
+					<div class="col-xs-7">
+						<select name="ku8ParttionIds" id="parttionList" size='16' multiple class="form-control">
+						</select>
+					</div>
+				</div>
+			</form>
+			<div class="box-footer">
+				<div class="box-tools pull-right">
+					<button id="submit" class="btn btn-primary" type="button">保存</button>
+					<button id="back" class="btn btn-default" type="button">返回</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(document).ready(function(){
+		function submit(flag,userGroup){
+			$("#submit").click(function() {
+				if(checkInput()){
+					var parttions = (function(){
+						var select = document.getElementById('parttionList');
+						var result = [];
+						for(var i=0;i<select.options.length;i=i+1) {  
+				            if(select.options[i].selected) {  
+				            	result.push(select.options[i].value);
+				            }
+			        	}
+						return result;
+					})();
+			        var para = {
+						'groupName':$('#groupName').val(),
+						'ku8ParttionIds':parttions.join(',')
+					};
+			        var s_url = "/usergroup/add";
+			        if(flag=="update"){
+			        	s_url = "/usergroup/"+userGroup.groupId+"/update";
+			        	para.tenantId = userGroup.tenantId;
+			        }
+			        $.ajax({
+				        url: s_url,
+				        type: "POST",
+				        dataType: "json",
+				        data: para,
+				        success: function(response, textStatus, jqXHR) {
+				            if (response['status'] > 0) {
+				            	$(".content").load("group_security.html");
+				            } else {
+				                var _div = $('<div/>');
+				                _div.load('alert_error.html',
+				                function() {
+				                    $(this).find('#title').html("ERROR");
+				                    $(this).find('#message').html(response['message']);
+				                    var child = $(this).children();
+				                    child.fadeTo(3000, 1,
+					                    function() {
+					                        setTimeout(function() {
+					                            child.slideToggle(2000,
+						                            function() {
+						                                child.alert('close');
+						                            })
+					                        },
+					                        5000);
+				                    });
+				                    $('.content').append(child);
+				                });
+				            }
+				        }
+				    }); 	
+				}
+			});
+		}
+		if(sessionStorage.getItem("userGroup")){
+			$(".box-header span").empty().html("修改");
+			var userGroup = JSON.parse(sessionStorage.getItem("userGroup"));
+			$('#groupName').val(userGroup.groupName);
+			sessionStorage.removeItem("userGroup");
+			submit("update",userGroup);
+		}else{
+			submit("add");
+		}
+		getPartionList();
+		function getPartionList(){
+			 $.ajax({
+				type: "GET",
+				url: '/usergroup/namespaces',
+				dataType: 'json',
+				success: function(data) {
+					$("#parttionList").html('');
+					$.each(data,function(i, item){
+						var text = "<option value='"+item+"'>"+item+"</option>";
+						$("#parttionList").append(text);  
+					}); 
+		        	var ku8ParttionIds = userGroup.ku8ParttionIds;
+					if(ku8ParttionIds!==""){
+						var parttions = ku8ParttionIds.split(',');
+						var select = document.getElementById('parttionList');
+						for(var i=0;i<select.options.length;i++) {  
+							for(var j=0;j<parttions.length;j++){
+								if(select.options[i].value==parttions[j]){
+									select.options[i].selected=true;
+									break;
+								}
+							}
+			        	}
+					}
+				}
+			}); 
+		}
+		$("#userGroupForm input").on('focusout',function (e) {
+			setFormTips($(e.target));
+		});
+		$("#back").click(function() {
+			$(".content").load("group_security.html");
+		});
+		function checkInput(){
+			var ret = true;
+			$('#userGroupForm input').each(function () {
+				if($(this).val() === '')
+				{
+					setFormTips(this);
+					ret = false;
+				}
+			});
+			return ret;
+		}
+		function setFormTips(field)
+		{
+			$(field).parent().find('.formtips').remove().end();
+			var v = $(field).val();
+			if(v === '')
+			{
+				$(field).closest('.form-group').addClass('has-error');
+	            $(field).parent().append('<span class="formtips text-red">不能为空!</span>');
+			}
+			else
+			{
+				$(field).closest('.form-group').removeClass('has-error').addClass('has-success');
+			}
+		}
+	});
+</script>

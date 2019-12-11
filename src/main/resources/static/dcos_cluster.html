@@ -1,0 +1,111 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增集群</button>
+			</div>
+			<div class="box-body">
+				<table id="clusterTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>集群名称</th>
+							<th>网卡信息</th>
+							<th>DNS</th>
+							<th>SSH-KEY</th>
+							<th>创建时间</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/date.format.js");
+
+	var table = $('#clusterTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/dcos/list",
+							type: "GET",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "id"
+								},
+								{
+									"data" : "name"
+								},
+								{
+									"data" : "network"
+								},
+								{
+									"data" : "resolvers"
+								},
+								{
+									"data" : "sshKey",
+									"render" : function(data, type, row) {
+										
+										if (data) {
+											return "<span title='"+data+"'>"+data.substring(0,20)+"</span>";
+										} else {
+											return "";
+										}
+										
+									}
+								},
+								{
+									"data" : "createTime",
+									"render" : function(data, type, row) {
+										return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+									}
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs update'>扩容</button>&nbsp;<button class='btn btn-primary btn-xs nodeList'>节点列表</button>&nbsp;<button class='btn btn-primary btn-xs logList'>集群日志</button>&nbsp;<button class='btn btn-primary btn-xs del' style='background-color:red'>删除集群</button>"
+								} ]
+					});
+	// 删除 需要确定删除方式  
+	$('#clusterTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "/dcos/" + data.id,
+		       type: "DELETE",
+		       contentType: "application/json; charset=utf-8", 
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		       }
+		   }); 
+		 alertSuccess('删除中', '删除需要几分钟的时间，请耐心等待！！！');
+	});
+	$('#clusterTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("dcos_cluster", JSON.stringify(data));
+		$('.content').load('dcos_cluster_addNode.html');
+	});
+	$('#clusterTable tbody').on('click', 'button.nodeList', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("dcos_cluster", JSON.stringify(data));
+		$('.content').load('dcos_cluster_node_list.html');
+	});
+	$('#clusterTable tbody').on('click', 'button.logList', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("dcos_cluster", JSON.stringify(data));
+		$('.content').load('dcos_cluster_log_list.html');
+	});
+	$("#add").click(function() {
+		if(sessionStorage.getItem("dcos_cluster")){
+			sessionStorage.removeItem("dcos_cluster");
+		}
+		$(".content").load("dcos_add_cluster.html");
+	});
+</script>

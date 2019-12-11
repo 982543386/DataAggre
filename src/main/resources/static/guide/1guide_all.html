@@ -1,0 +1,185 @@
+<html>
+  <head>
+    <meta name="generator"
+    content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
+    <script type="text/javascript">
+    $("#uploadwar").click(function(){
+		$(".content").load("war_manage_user.html");
+	});
+	
+	$("#addSpark").click(function(){
+		$(".content").load("guide/bigdata/spark.html");
+	});
+	
+	$("#addMysql").click(function(){
+		$(".content").load("guide/database/mysql.html");
+	});
+	
+	$("#addCicd").click(function(){
+		$(".content").load("guide/cicd.html");
+	});
+	
+	$("#addTomcat").click(function(){
+		$(".content").load("guide/middleware/tomcat.html");
+	});
+</script>
+    <title></title>
+  </head>
+  <body>
+    <ul id="myTab" class="nav nav-tabs">
+      <li class="active">
+        <a href="#bigdata" data-toggle="tab">大数据</a>
+      </li>
+      <li>
+        <a href="#middleware" data-toggle="tab">中间件</a>
+      </li>
+      <li>
+        <a href="#database" data-toggle="tab">数据库</a>
+      </li>
+      <li>
+        <a href="#cicd" data-toggle="tab">CICD</a>
+      </li>
+      <li>
+        <a href="#war_main" data-toggle="tab">镜像服务</a>
+      </li>
+    </ul>
+    <div id="myTabContent" class="tab-content">
+      <!-- bigdata-->
+      <div class="tab-pane fade in active" id="bigdata">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="box">
+              <div class="box-header">
+                <!-- <div class="col-sm-6 no-padding">
+                                                        <a href="javascript:void(0);" class="btn btn-primary" id="addBigData">申请大数据服务</a>
+                                                </div> -->
+              </div>
+			   <div class = "box-body">
+			   this is body
+				<!--<div>
+		            <p>
+		            <button type="button" class="btn btn-primary" id="">申请</button>myrid</p>
+		            <p>用于大数据统计、计算、数据分析</p>
+		          </div>
+		          <div>
+		            <p>
+		            <button type="button" class="btn btn-primary" id="">申请</button>Cassandra</p>
+		            <p>于基于column的结构化数据具有高伸展性</p>
+		          </div>
+		          <div>
+		            <p>
+		            <button type="button" class="btn btn-primary" id="addSpark">申请</button>Spark</p>
+		            <p>用于大数据统计、计算、数据分析</p>
+		          </div>
+		          <div>
+		            <p>
+		            <button type="button" class="btn btn-primary" id="">申请</button>Storm</p>
+		            <p>用于大数据统计、计算、数据分析</p>
+		          </div>-->
+			  </div> 
+			  <div class = "box-footer">
+			  	this is footer
+			  </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      <script type="text/javascript"></script>
+    </div>
+    <!--  database-->
+    <div class="tab-pane fade" id="database">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <!-- <div class="col-sm-6 no-padding">
+                                                        <a href="javascript:void(0);" class="btn btn-primary" id="addDatabase">申请数据库服务</a>
+                                                </div> -->
+            </div>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="">申请</button>Oracle</p>
+            <p>传统关系型数据库，单例模式</p>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="addMysql">申请</button> MySql</p>
+            <p>传统关系型数据库，可提供单例模式、单主集群模式、多主集群模式</p>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript"></script>
+    </div>
+    <!-- cicd-->
+    <div class="tab-pane fade" id="cicd">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <!-- <div class="col-sm-6 no-padding">
+                                                                <a href="javascript:void(0);" class="btn btn-primary" id="addCicd">申请cicd服务</a>
+                                                        </div> -->
+            </div>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="addCicd">申请</button>CICD</p>
+            <p>Introduction</p>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript"></script>
+    </div>
+    <!--  middleware-->
+    <div class="tab-pane fade" id="middleware">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <!-- <div class="col-sm-6 no-padding">
+                                                                <a href="javascript:void(0);" class="btn btn-primary" id="addMiddleware">申请中间件服务</a>
+                                                        </div> -->
+            </div>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="">申请</button>Redis</p>
+            <p>缓存数据，用于应用的缓存数据存储，支持单例模式、Redis codis模式</p>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="">申请</button>Ngix</p>
+            <p>轻量级前端Web服务器，用于请求分发</p>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="addTomcat">申请</button>Tomcat</p>
+            <p>轻量级前端Web服务器，用于请求分发</p>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript"></script>
+    </div>
+    <!--  war_main-->
+    <div class="tab-pane fade" id="war_main">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <!--    <div class="col-sm-6 no-padding">
+                                                                <a href="javascript:void(0);" class="btn btn-primary" id="uploadwar">申请war</a>
+                                                        </div> -->
+            </div>
+          </div>
+          <div>
+            <p>
+            <button type="button" class="btn btn-primary" id="">申请</button>镜像服务</p>
+            <p>Introduction</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

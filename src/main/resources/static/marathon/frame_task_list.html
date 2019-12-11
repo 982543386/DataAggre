@@ -1,0 +1,96 @@
+
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="box">
+				<!-- /.box-header -->
+				<div class="box-body"> 
+					<div style="padding-bottom: 5px;">
+							<button id="scaleBtn" class="btn btn-primary">设置实例</button>
+							<button id="restartBtn" class="btn btn-primary">重启服务</button>
+							<!-- 
+							<button id="suspendBtn" class="btn btn-primary">Suspend</button>
+							<button id="destoryBtn" class="btn btn-primary">Destory</button>
+							 -->
+							<button data-toggle="dropdown" class="btn btn-primary dropdown-toggle" >操作 <span class="caret"></span> </button>
+                             <ul class="dropdown-menu" style="top:45px;left:65px">
+                                 <li><div id="suspendBtn" style="text-align:center;font-size:15px">清空实例</div>
+                                 </li>
+                                 <li><div id="destoryBtn" style="text-align:center;font-size:15px">销毁服务</div>
+                                 </li>
+                             </ul>
+					</div>
+				</div>
+				<div class="box-body">
+					<table id="frameTaskTable" class="table table-bordered table-hover"
+						style="font-size: 12px;">
+						<thead>
+							<tr>
+								<th>任务ID</th>
+								<th>任务名称</th>
+								<th>主机</th>
+								<th>状态</th>
+								<th>启动时间</th>
+								<th>上次启动时间</th>
+								<th>版本</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+				<!-- /.box-body -->
+			</div>
+			<!-- /.box -->
+		</div>
+		<!-- /.col -->
+	</div>
+	
+	<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="scaleModel" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 500px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel" style="text-align:center;font-size:25px">Scale Service</h4>
+				</div>
+				<div class="modal-body">
+					<form role="form" id="addOrEditForm" action="">
+					   <div class="row">
+						 <div class="col-md-12" style="text-align">
+								<div class="form-group">
+									<label class="col-sm-12 control-label">How many instances would you like to scale to?</label>
+									<div class="col-sm-4">
+									</div>
+									<div class="col-sm-4">
+										<input type="number" id="scaleNum" name="scaleNum" class="form-control"
+											placeholder="请输入文本" maxlength="20" value="1">
+									</div>
+									<div class="col-sm-4">
+									</div>
+								</div>
+						 </div>
+					  </div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="scaleCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="scaleSureBtn" type="button"
+						class="btn btn-outline btn-primary">确定</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+	
+	<script src="/plugins/bootbox/bootbox.js"></script>
+	
+	<script src="/plugins/store/store.js"></script>
+	
+	<script src="/marathon/js/jquery_extends.js"></script>
+	<script src="/marathon/js/self.common.js"></script>
+	<script src="/marathon/frame_task_list.js"></script>
+

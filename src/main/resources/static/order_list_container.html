@@ -1,0 +1,100 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					
+					<!-- <div class="col-sm-6 no-padding">
+						<button type="button" class="btn btn-primary pull-right" id="importApp_open" data-loading-text="<i class='fa fa-spin fa-cog'></i>">Import Application</button>
+						<div class="col-sm-5 input-group input-group-sm pull-right" id="importApp_div0" style="display:none;">
+							<input type="text" class="form-control" placeholder="Enter Service Name" id="importApp_input"/>
+							<span class="input-group-btn">
+							  <button type="button" data-loading-text="<i class='fa fa-spin fa-cog'></i>" class="btn btn-primary btn-flat" id="importApp_btn">Import</button>
+							</span>
+						</div>
+						<div class="col-sm-3 pull-right no-padding input-group-sm" id="importApp_div1" style="margin-right:5px;display:none;">
+							<select class="form-control" id="importApp_partition" data-toggle="tooltip" data-placement="top" title="Select the partition"/>
+						</div>
+					</div> -->
+            </div>
+			<div class="box-body">
+				<table id="userAbilityInstance" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>服务名称</th>
+							<th>订单号</th>
+							<th>服务类型</th>
+							<th>服务状态</th>
+<!-- 							<th>详情页</th> -->
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+    var table = $('#userAbilityInstance').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"userAbilityInstance/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+// 					{ "data": "id" },
+// 					{ "data": "abilityInstance" },
+// 					{ "data": "tenantId" },
+					{ "data": "abilityName" },
+					{ "data": "abilityDesc" },
+// 					{ "data": "deliverDescribe" },
+					{ "data": "abilityType","render":function(data, type, row){
+						if(data=="1") return "大数据服务";
+						else if(data=="2") return "数据库服务";
+						else if(data=="3") return "业务服务";
+						else if(data=="4") return "Devops";
+						else return "";
+						}
+					},
+					{ "data": "abilityStatus","render":function(data, type, row){
+						if(data=="0") return "未初始化";
+						else if(data=="1") return "已启用";
+						else if(data=="2") return "已注销";
+						else return "无效";
+						}
+					},
+					{ "defaultContent": "<button class='btn btn-info btn-sm view'>详情页</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>" }
+        		]
+		
+    });
+    
+    
+
+
+
+</script>

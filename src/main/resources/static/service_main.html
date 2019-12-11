@@ -1,0 +1,406 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+                <div class="input-group input-group-sm">
+                	<a href="javascript:void(0);" class="btn btn-primary" id="addService">新增 Service</a>
+                	&nbsp;
+                	<a class="btn btn-primary" id="uploadYaml">Yaml方式新增Service</a> 
+                </div>
+            </div>
+			<div class="box-body">
+				<table id="serviceTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Owner</th>
+							<th>Version</th>
+							<th>Last Updated</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >×</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to deploy</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" onclick="return deployServiceAndRC();">
+					部<span style="padding-left: 12px" />署
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal" data-backdrop="static" data-keyboard="false">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+
+	<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="yamlMode" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left">yaml上传</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<div class="box box-info" style="margin-bottom:0px;">
+						<div>  
+						    <!--用来存放item-->  
+						    <div>
+						    	<input id="thelist" name="thelist" style="height:30px;width:300px;margin-top:10px;" readonly="readonly" tmpFileId="" />
+						    </div>
+						    <div>  
+						     <div id="filePicker" style="margin-top:10px;margin-bottom:10px;float:left;">选择文件</div>  
+						     <div id="delYamlFile" class="webuploader-pick" style="margin-top:10px;">删除文件</div>
+						    </div>  
+						</div>  
+					</div>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="yamlCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="yamlSureBtn" type="button"
+						class="btn btn-outline btn-primary">上传</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+<script src="/plugins/bootbox/bootbox.js"></script>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+    var table = $('#serviceTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        "ajax": {
+			url:"/publicservice/getServiceAndRCs",
+			error: function (XMLHttpRequest, textStatus, errorThrown) 
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+        			{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+        			{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+			switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+			   
+				//Deploying
+				case 1: $(row).find('td:eq(5)').html('');
+						$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+			   
+				//Deployed
+				case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+				break;
+				
+				//Failed
+				case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+			   
+			   default: console.log('Unknown case..');
+			   break;
+			}
+		}
+	});
+
+    $('#addService').on('click', function () {
+    	$('section.content').load('add_service.html?h=' + new Date().getTime());
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+    } );
+    
+	$('#serviceTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+		$('section.content').load('view_service.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+    } );
+	
+	$('#serviceTable tbody').on('click', 'button.deploy', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+		
+		getPartitions(data, caller);
+    });
+    
+    function deployServiceAndRC() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+				_namespaces.push($(this).val());
+		});
+		
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+        
+		$.ajax({
+			url: "/publicservice/deployServiceAndRC",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces)
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+	}
+	
+	$('#serviceTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_service.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	$('#serviceTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete service <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+	
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/publicservice/deleteService",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	//chenwei add upload
+	$("#uploadYaml").on("click",function(){
+		$("#thelist").val('');
+		initUploadYaml();
+		$("#yamlMode").modal('show');
+	});
+	$("#yamlCancelBtn").on("click",function(){
+		$("#yamlMode").modal('hide');
+	});
+   //删除
+   $("#delYamlFile").on('click',function(){
+	   $("#thelist").val('');
+	   initUploadYaml();
+   });
+	
+	var uploader;
+	 function initUploadYaml(){  
+		   /*init webuploader*/  
+		   var $list=$("#thelist");   //这几个初始化全局的百度文档上没说明，好蛋疼。  
+		   var $btn =$("#yamlSureBtn");   //开始上传  
+		   var thumbnailWidth = 100;   //缩略图高度和宽度 （单位是像素），当宽高度是0~1的时候，是按照百分比计算，具体可以看api文档  
+		   var thumbnailHeight = 100;  
+		  
+		    if(uploader){
+		    	uploader.destroy();
+		    }
+		   
+		   uploader = WebUploader.create({  
+		       // 选完文件后，是否自动上传。  
+		       auto: false,  
+		  
+		       // swf文件路径  
+		       swf: '../js/Uploader.swf',  
+		  
+		       // 文件接收服务端。  
+		       server: '/publicservice/upload-yamlFile',  
+		  
+		       // 选择文件的按钮。可选。  
+		       // 内部根据当前运行是创建，可能是input元素，也可能是flash.  
+		       pick:{
+		    	   id:'#filePicker',
+		    	   multiple:false
+		       },
+		  
+		       // 只允许选择图片文件。  
+		       accept: {  
+		           title: 'Images',  
+		           extensions: 'yaml',  
+		           mimeTypes: 'yaml/*'  
+		       },  
+		       method:'POST',  
+		   });  
+		   // 当有文件添加进来的时候  
+		   uploader.on( 'fileQueued', function( file ) {  // webuploader事件.当选择文件后，文件被加载到文件队列中，触发该事件。等效于 uploader.onFileueued = function(file){...} ，类似js的事件定义。  
+		       $list.val(file.name);  
+		   	   $list.attr("tmpFileId",file.id);
+		   });  
+		   // 文件上传过程中创建进度条实时显示。  
+		   uploader.on( 'uploadProgress', function( file, percentage ) {  
+		       var $li = $( '#'+file.id ),  
+		           $percent = $li.find('.progress span');  
+		  
+		       // 避免重复创建  
+		       if ( !$percent.length ) {  
+		           $percent = $('<p class="progress"><span></span></p>')  
+		                   .appendTo( $li )  
+		                   .find('span');  
+		       }  
+		  
+		       $percent.css( 'width', percentage * 100 + '%' );  
+		   });  
+		  
+		   // 文件上传成功，给item添加成功class, 用样式标记上传成功。  
+		   uploader.on( 'uploadSuccess', function( file ) {  
+		       $( '#'+file.id ).addClass('upload-state-done');  
+		       //上传成功以后调用k8s接口发布服务
+		       var tmpFileObeject={
+		    		name:file.name	   
+		       };
+		       $.ajax({
+			        url : "publicservice/issueServiceByYaml",
+			        dataType : "json",
+			        type:"post",
+			        async: false,
+			        data :JSON.stringify(tmpFileObeject),
+			        contentType : "application/json; charset=utf-8",
+			        success : function(res)
+			        {
+			        	if(res.status!=200 && res.status!=201){
+			        		bootbox.alert(res.body);
+			        	}else{
+			 		      $("#yamlMode").modal('hide'); 
+			 		      bootbox.alert('上传成功');
+			        	}
+			        }
+			    });
+		   });  
+		  
+		   // 文件上传失败，显示上传出错。  
+		   uploader.on( 'uploadError', function( file ) {  
+		       var $li = $( '#'+file.id ),  
+		           $error = $li.find('div.error');  
+		       // 避免重复创建  
+		       if ( !$error.length ) {  
+		           $error = $('<div class="error"></div>').appendTo( $li );  
+		       }  
+		       $error.text('上传失败');  
+		       bootbox.alert('上传失败');
+		   });  
+		  
+		   // 完成上传完了，成功或者失败，先删除进度条。  
+		   uploader.on( 'uploadComplete', function( file ) {  
+		       $( '#'+file.id ).find('.progress').remove();  
+		   }); 
+		   
+		   uploader.on('error',function(type){
+			   if(type=='Q_TYPE_DENIED'){
+				   bootbox.alert('只能单个上传');
+			   }
+		   });
+		   
+		   //上传按钮
+	      $btn.on( 'click', function() {  
+	        uploader.upload(); //上传
+	      });  
+	      
+		  
+	}
+	
+</script>

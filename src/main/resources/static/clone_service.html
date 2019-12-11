@@ -1,0 +1,51 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Add Service (Clone)</h3>
+        </div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+				<div class="form-group" name="service">
+                    <div class="col-sm-9 col-sm-offset-1 panel-body" id="service_panel"/>
+                </div>
+			</form>
+		<div class="modal-footer clearfix">
+                <div class="col-sm-9 col-sm-offset-1 no-padding">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+					<button onclick="return addServiceAndRC()" type="button" class="btn btn-primary saveBtn" disabled="disabled">
+						保<span style="padding-left: 12px" />存
+                    </button>
+                </div>
+        </div>	
+		</div>
+	</div>
+</div>
+</div>
+<script type="text/javascript">
+	var _id = sessionStorage.getItem("ku8ID");
+	$.getScript("../js/project.js");
+	
+	$(document).ready(function(){
+		sessionStorage.removeItem("ku8ID");
+		if(_id !== null)
+		{
+			$.ajax({
+				url: "/publicservice/getServiceAndRC",
+				type: "GET",
+				dataType: "json",
+				data: {ku8ID:_id},
+				success: function(data){
+					var json = JSON.parse(data.jsonSpec);
+					cloneService(json, $("#service_panel"), ku8Srv);
+				}
+			});
+		}
+		else
+		{
+			alertError('ERROR', 'NO SESSION FOUND');
+		}
+	});
+</script>

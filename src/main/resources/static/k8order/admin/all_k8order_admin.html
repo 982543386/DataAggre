@@ -1,0 +1,148 @@
+
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+    var table = $('#orderTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"k8Order/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "k8orderId" },
+        			{ "data": "startTime", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+        			{ "data": "k8orderType" },				
+					{ "data": "status","render":function(data, type, row){
+							/* if(data=="0") return "待处理";
+							else  */if(data=="1") return "已处理";
+							else if(data=="2") return "未处理";
+							else if(data=="3") return "提交更改申请";
+							else if(data=="4") return "已拒绝";
+							else return "已发布并且全部服务异常"
+						}
+					},
+					{ "defaultContent": ""}	
+				 ],
+	   	 "createdRow": function ( row, data, index ) {
+	   			 switch (data.status)
+	   					{
+	   						//New
+	   						case 1: $(row).find('td:eq(4)').html("<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");
+	   						break;
+	   						case 4: $(row).find('td:eq(4)').html("<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>");
+	   						break;
+	   					    default: $(row).find('td:eq(4)').html("<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>&nbsp;<button class='btn btn-primary btn-sm update'>处理</button>&nbsp");	
+	   					    break;
+	   					} 
+	   	 }
+    });
+
+
+    $('#orderTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+		if(data.k8orderType=="mysql"){
+        	$('section.content').load('catalog/database.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="spark"){
+        	$('section.content').load('catalog/bigdata.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="tomcat"){
+        	$('section.content').load('catalog/middleware.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="cicd"){
+        	$('section.content').load('cicd/order/cicd_detail_admin.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="das"){
+        	$('section.content').load('catalog/das.html?h=' + new Date().getTime());
+        }
+		
+		sessionStorage.setItem("id", data.k8orderId);
+		sessionStorage.setItem('lastPage', 'k8order/admin/all_k8order_admin.html');
+
+		history.pushState(null, null, 'index');
+    });
+    
+
+    $('#orderTable tbody').on( 'click', 'button.update', function () {
+		var data = table.row($(this).parents('tr')).data();
+		if(data.k8orderType=="mysql"){
+        	$('section.content').load('k8order/db_update.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="spark"){
+        	$('section.content').load('k8order/bigdata_update.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="tomcat"){
+        	$('section.content').load('k8order/middleware_update.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="cicd"){
+        	$('section.content').load('k8order/cicd_update.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="das"){
+        	$('section.content').load('k8order/das_update.html?h=' + new Date().getTime());
+        }
+		
+		sessionStorage.setItem("id", data.k8orderId);
+		sessionStorage.setItem('lastPage', 'k8order/admin/all_k8order_admin.html');
+		
+		history.pushState(null, null, 'index');
+	});
+
+	function confirmDelete(data) {
+		$.ajax({
+			url: "order/delete",
+			type: "POST",
+			dataType: "json",
+			data: {
+				id:data.orderId
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+
+</script>
+
+
+
+ <div class="box">
+        <div class="box-header with-border">
+        	<h3 class="box-title">订单详情</h3>
+        </div>
+        
+        <div class="box-body">
+          <div class="box-body">
+				<table id="orderTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<!-- <th>ID</th>
+							<th>订单号</th>
+							<th>租户</th> -->
+							<th>订单号</th>
+							<th>更新时间</th>
+							<th>服务类型</th>
+							<th>订单处理状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>					
+				</table>
+		  </div>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+        </div>
+        <!-- /.box-footer-->
+      </div>

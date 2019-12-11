@@ -1,0 +1,107 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>登录</title>
+	<style>
+		* { margin: 0; padding: 0; }
+		body { background: url(../img/bg.jpg) center center no-repeat; background-size: cover; font-family: '微软雅黑'; }
+		.login-wrap { position: relative; width: 1000px; height: 100%; margin: 0 auto; }
+		.logo { position: absolute; top: 20%; left: 0; width: 502px; height: 386px; }
+		.logo img { width: 100%; height: 100%; border: none; }
+		.login-box { position: absolute; top: 20%; right: 0; width: 440px; border-radius: 8px; box-shadow: 0px 2px 16px #555; overflow: hidden; }
+		.login-box h2 { width: 100%; height: 72px; line-height: 72px; text-align: center; background-color: #364850; border-bottom: 4px solid #3f84d9; font-size: 24px; color: #32b6f1; font-weight: normal; }
+		.login-box-form { width: 100%; height: 266px; padding-top: 16px; background-color: #edf1f5; }
+		.login-box-form-input { width: 360px; height: 44px; margin: 18px auto; background-color: #fff; border: 1px solid #fff; border-radius: 4px; overflow: hidden; }
+		.login-box-form-input.focus { box-shadow: 0 0 6px #226fe1; border: 1px solid #226fe1; }
+		.login-box-form-input b { float: left; width: 28px; height: 24px; margin: 12px 0; padding: 0 14px; background: url(../img/icon.png) 14px 2px no-repeat; border-right: 1px solid #226fe1; }
+		.login-box-form-input.password b { background-position: 18px -22px; }
+		.login-box-form-input input { float: left; width: 285px; height: 50px; padding-left: 15px; border: none; outline: none; font-size: 16px; color: #999; }
+		.login-box-errorTips { width: 360px; height: 30px; margin: 0 auto; line-height: 30px; color: #e12273; text-align: right; }
+		.login-box-form-submit { width: 360px; margin: 10px auto; overflow: hidden; }
+		.login-box-form-checkbox { float: left; margin-top: 15px; font-size: 16px; color: #666; cursor: pointer; }
+		.login-box-form-checkbox b { display: inline-block; width: 24px; height: 24px; background-color: #fff; border-radius: 4px; vertical-align: middle; }
+		.login-box-form-checkbox b i { display: inline-block; width: 18px; height: 14px; margin: 5px 3px; background: url(../img/icon.png) 0 -49px no-repeat; display: none; }
+		.login-box-form-checkbox b.checked i { display: block; }
+		.login-box-form-submit input[name="remember"]{ display: none; }
+		.login-box-form-submit .login-box-form-btn { float: right; width: 180px; height: 46px; background-color: #226fe1; border-radius: 4px; border: none; outline: none; line-height: 46px; text-align: center; font-size: 18px; color: #fff; cursor: pointer; font-family: '微软雅黑'; }
+	</style>
+</head>
+<body>
+	<div class="login-wrap">
+		<a href="" class="logo">
+			<img src="../img/logo.png" alt="" />
+		</a>
+		<div class="login-box">
+			<h2>Ku8 管理员 登录 </h2>
+			<div class="login-box-form">
+				<form id="login-form">
+					<div class="login-box-form-input">
+						<b></b>
+						<input type="text" id="username" placeholder="User Name" value="" />
+					</div>
+					<div class="login-box-form-input password">
+						<b></b>
+						<input type="password" id="password" placeholder="Password" value="" />
+					</div>
+					<div class="login-box-form-submit">
+					<a href="/login.html">普通用户登录</a>
+					</div>
+					<p class="login-box-errorTips"></p>
+					<div class="login-box-form-submit">
+						<label class="login-box-form-checkbox" for="remember">
+							<b><i></i></b>
+							记住密码
+						</label>
+						<input type="checkbox" name="remember" id="remember" />
+						<input type="submit" class="login-box-form-btn" value="登录" />
+					</div>
+					<div>
+					
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="../plugins/jQuery/jQuery-2.1.4.min.js"></script>
+	
+	<script>
+		$(function () {
+			// 聚焦/失焦样式
+			$('.login-box-form-input input').on('focus', function () {
+				$(this).parents().addClass('focus');
+			}).on('blur', function () {
+				$(this).parents().removeClass('focus');
+			});
+			// 记住密码
+			$('.login-box-form-checkbox').on('click', function () {
+				$(this).find('b').toggleClass('checked');
+			});
+
+			// 登录提交表单
+			$('#login-form').on('submit', function () {
+				console.debug("submit login..");
+				$('.login-box-errorTips').text('');
+				if( $('#username').val() == '' ){
+		            $('.login-box-errorTips').text('请填写用户名！');
+		            return false;
+		        };
+		        if( $('#password').val() == '' ){
+		            $('.login-box-errorTips').text('请填写密码！');
+		            return false;
+		        };
+		    	$.post("/manage/checklogin", {username:$('#username').val(),password:$('#password').val()},
+		  		   	    function(user){
+		  		   	    	if(user==null||user===''){
+		  		   	    	$('.login-box-errorTips').text("用户名或密码错误");
+		  		   	    	
+		  		   	    	}else{
+		  		   	    		location.href="/manage/index";
+		  		   	    	}
+		  		   	    });	
+		    
+				return false;
+			});
+		});
+	</script>
+</body>
+</html>

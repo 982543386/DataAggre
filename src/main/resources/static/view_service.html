@@ -1,0 +1,522 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-info">
+            <div class="box-header with-border">
+                <h3 class="box-title">View Service</h3>
+            </div>
+            <div class="box-body">	
+				<div class="col-sm-9" id="error_app" style="display:none;">
+					<div class="callout callout-danger">
+					<h4><i class="icon fa fa-warning"></i> Error</h4>
+					<p>This application has no services</p>
+					</div>
+				</div>
+				<div class="col-sm-9" id="error_server" style="display:none;">
+					<div class="callout callout-danger">
+					<h4><i class="icon fa fa-warning"></i> Error</h4>
+					<p>Error while retrieving services</p>
+					</div>
+				</div>
+            </div>
+            <div class="row" id="service-div">
+                <div class="col-md-9 col-md-offset-1" style="min-height:50px;">
+					<div class="nav-tabs-custom">
+						<div class="overlay" id="loading">
+						  <i class="fa fa-refresh fa-spin"></i>
+						</div>
+						<div id="service-content" style="display:none;">
+							<div class="row">
+								<div class="col-xs-7">
+									<h4 id="service_name"/>
+								</div>
+								<div class="col-xs-5">
+									<button type="button" class="btn btn-sm btn-warning updatelbl pull-right" id="updatelbl_up" onclick="return updateLabels(this, ku8Srv);">Update Labels</button>
+									<button type="button" class="btn btn-sm btn-danger pull-right" id="service_stop" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return stopService(this);">
+										<i class="fa fa-stop"></i> Stop Service
+									</button>
+									<button type="button" class="btn btn-sm btn-success pull-right" id="service_start" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" style="margin-right: 5px;" onclick="return startService(this);">
+										<i class="fa fa-play"></i> Start Service
+									</button>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-7" id="service_describe"/>
+							</div>
+							<div class="box-footer">
+								<div class="col-xs-7">
+									<ul class="nav nav-stacked">
+										<li style="padding: 5px 15px;">Current Replicas 
+											<span class="pull-right badge bg-blue" id="service_replica"/>
+										</li>
+										<li style="padding: 5px 15px;">
+										<div class="col-sm-6" style="padding-left: 0; padding-top: 5px;">
+											Scale Replicas
+										</div>
+										<div class="col-sm-6 input-group input-group-sm">
+										<input type="number" min="0" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control replica" placeholder="0-Infinite" id="service_newReplica">
+											<span class="input-group-btn">
+											  <button type="button" data-loading-text="<i class='fa fa-spin fa-refresh'></i>" class="btn btn-primary btn-flat" onclick="return setReplica(this);" id="replica_setBtn">Set</button>
+											</span>
+										</div>
+										</li>
+									</ul>
+								</div>
+								<div class="col-xs-5">
+									<ul class="nav nav-stacked">
+										<li style="padding: 5px 15px;">Ku8 Version
+											<span class="pull-right badge bg-blue" id="service_ku8Version"/>
+										</li>
+										<li style="padding: 5px 15px;">Resource Partition
+											<span class="pull-right badge bg-blue" id="service_resPart"/>
+										</li>
+									</ul>
+								</div>
+							</div>
+							<h4 id="label_title">Label Details
+								<button type="button" class="btn btn-sm btn-warning updatelbl" id="updatelbl_down" onclick="return updateLabels(this, ku8Srv);">Update Labels</button>
+							<hr/></h4>
+							<table id="label_table" class="table table-bordered table-hover" style="font-size: 12px; width: 60%">
+								<thead>
+									<tr>
+										<th>Key</th>
+										<th>Value</th>
+									</tr>
+								</thead>
+								<tbody/>
+							</table>
+							<h4 id="volume_title">Volume Details<hr/></h4>
+							<table id="volume_table" class="table table-bordered table-hover" style="font-size: 12px; width: 60%">
+								<thead>
+									<tr>
+										<th>Volume Name</th>
+										<th>Path</th>
+									</tr>
+								</thead>
+								<tbody/>
+							</table>
+							<h4 id="confmap_title">Confing Map Details<hr/></h4>
+							<table id="confmap_table" class="table table-bordered table-hover" style="font-size: 12px; width: 60%">
+								<thead>
+									<tr>
+										<th>Config Map Name</th>
+										<th>Path</th>
+									</tr>
+								</thead>
+								<tbody/>
+							</table>
+							<h4>Container Details<hr/></h4>
+							<table id="container_table" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+								<thead>
+									<tr>
+										<th>Container Name</th>
+										<th>Image</th>
+										<th>CPU</th>
+										<th>Memory</th>
+										<th>Ports</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody/>
+							</table>
+							<h4>Pod Details 
+								<button type="button" id="pod_reloadBtn" class="btn btn-sm btn-primary" onclick="return reloadPodTable();" data-loading-text="<i class='fa fa-spin fa-refresh'></i>">
+									<i class='fa fa-refresh'></i> Reload
+								</button>
+							<hr/></h4>
+							<table id="pod_table" class="table table-bordered table-hover" style="font-size: 12px; width: 100%">
+								<thead>
+									<tr>
+										<th>Pod Name</th>
+										<th>Pod IP</th>
+										<th>Host IP</th>
+										<th>Status</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody/>
+							</table>
+						</div>
+                    </div>
+				</div>
+            </div>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-8 col-md-offset-2 no-padding">
+                    <button type="button" class="btn btn-default" onclick="history.go(-1);">
+					返<span style="padding-left: 12px" />回
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="consModal" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog" style="width:70%">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">
+					<span>×</span></button>
+				<h4 class="modal-title">Console</h4>
+			</div>
+			<div class="modal-body" id="consModalContent" style="background:#111; height:500px;"/>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal modal-primary fade" id="replicaModal">
+  <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">
+		  <span>×</span></button>
+		<h4 class="modal-title">Please confirm</h4>
+	  </div>
+	  <div class="modal-body">
+		<p id="replicaModalMsg"/>
+	  </div>
+	  <div class="modal-footer">
+		<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-outline" id="modal-confirm" data-dismiss="modal">Confirm</button>
+	  </div>
+	</div>
+  </div>
+</div>
+<div class="modal fade" id="lblModal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">
+					<span>×</span>
+				</button>
+				<h4 class="modal-title">Update Labels</h4>
+			</div>
+			<div class="modal-body">
+		          <div class="box box-info" style="margin-bottom:0px;">
+		            <form class="form-horizontal">
+		              <div class="box-body">
+		                <div class="form-group">
+		                  <label class="col-sm-4">Key</label>
+		                  <label class="col-sm-7">Value</label>
+		                </div>
+						<div id="lblModalContent" name='labelForm'/>
+		              </div>
+		            </form>
+		          </div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" id="modal-confirm" data-dismiss="modal">
+					保<span style="padding-left: 12px" />存
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="logsModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close closeLog" data-dismiss="modal">
+					<span>×</span>
+				</button>
+				<h4 class="modal-title">Logs</h4>
+			</div>
+			<div class="modal-body">
+				<textarea id="logsText" style="height:500px;font-size:12px;margin-bottom:15px;width:100%;resize:vertical;"></textarea>
+			</div>
+			<div class="modal-footer">
+				<label class="pull-left"><input type="radio" id="autorefresh"/> Auto-Refresh</label>
+				<button type="button" class="btn btn-default closeLog" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="logsHelperModal">
+  <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">
+		  <span >×</span></button>
+		<h4 class="modal-title">Please select the container to view logs</h4>
+	  </div>
+	  <div class="modal-body">
+		<div class="box box-info" style="margin-bottom:0px;">
+			<form class="form-horizontal">
+				<div class="box-body" id="logsHelperBody">
+				</div>
+			</form>
+		</div>
+	  </div>
+	  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">
+				关<span style="padding-left: 12px" />闭
+			</button>
+			<button type="button" class="btn btn-primary" data-dismiss="modal" id="modal-view">
+				View
+			</button>
+	  </div>
+	</div>
+  </div>
+</div>
+<div class="modal fade" id="statusModal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close closeLog" data-dismiss="modal">
+					<span>×</span>
+				</button>
+				<h4 class="modal-title">Pod Status</h4>
+			</div>
+			<div class="modal-body" id="statusText" style="word-break: break-all;">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default closeLog" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="form-group" id="lblModalTemplate" name="label" style="display:none;">
+  <div class="col-sm-4">
+	<input type="text" id="lbkey" class="form-control" />
+  </div>
+  <div class="col-sm-4">
+	<input type="text" id="lbval" class="form-control" />
+  </div>
+    <div class="col-sm-4">
+		<button type="button" class="btn btn-primary" onclick="addLabel(this)">+</button>
+		<button type="button" class="btn btn-primary" onclick="delLabel(this)">-</button>
+	</div>
+</div>
+<script>
+	var _id = sessionStorage.getItem("ku8ID");
+	$.getScript("../js/project.js");
+	
+	$(document).ready(function(){
+		sessionStorage.removeItem("ku8ID");
+		if(_id !== null)
+		{
+			getPublicService();
+		}
+		else
+		{
+			alertError('ERROR', 'NO SESSION FOUND');
+		}
+	});
+	
+	function setReplica(e)
+	{
+		var data = $(e).data('sdata');
+		var _replicaNew = $('#service_newReplica').val();
+		
+		$('#formtips').remove().end();
+		if(_replicaNew === '' || _replicaNew === data.replica  || _replicaNew < 1)
+		{
+			$('#service_newReplica').closest('li').append('<span class="label label-danger" id="formtips" style="font-weight: lighter;">不能为空 / New and Old replicas must be different</span>');
+			return;
+		}
+		$('#replicaModalMsg').html('Do you want scale the replicas from <strong>' + data.replica + '</strong> to <strong>' + _replicaNew + '</strong?');
+		$('#replicaModal').modal().one('click', '#modal-confirm', function() {
+			$(e.target).button('loading');
+			confirmReplica(data, _replicaNew, e.target, null);
+		});
+	}
+	
+	function confirmReplica(data, _replica, _caller, _message)
+	{
+		$('#service-content :input').attr('disabled','disabled');
+		$(_caller).button('loading');
+		
+		$.ajax({
+			url: "/publicservice/setReplica",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:_id, 
+				replicas:_replica
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					if(_message === null)
+						_message = "Replicas scaled to <strong>" + _replica + "</strong> successfully.";
+					alertSuccess(response.message, _message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				reloadServices();
+				$(_caller).button('reset');
+				$('#service-content :input').removeAttr('disabled');
+			}
+		});
+	}
+	
+	function getPublicService()
+	{
+		$.ajax({
+			url: "/publicservice/getK8ServiceAndRC",
+			type: "GET",
+			dataType: "json",
+			data: {ku8ID:_id},
+			success: function(ss){
+				if(ss.data === null)
+				{
+					$('#error_server').show();
+					$('#service-div').hide();
+					return;
+				}
+				if(ss.data.length === 0)
+				{
+					$('#error_app').show();
+					$('#service-div').hide();
+					return;
+				}
+				//Get Services
+				var s = ss.data;
+				$('#service_name').html(s.name);
+				$('#service_describe').html(s.describe);
+				$('#service_replica').html(s.replica);
+				$('#replica_setBtn').data("sdata", s);
+				$('#service_resPart').html(s.resPart);
+				$('#service_ku8Version').html(s.ku8Version);
+				
+				//Set Start/Stop buttons
+				var stoggle;
+				s.replica > 0 ? stoggle = true : stoggle = false;
+				$('#service_stop').data("sdata", s).toggle(stoggle);
+				$('#service_start').data("sdata", s).toggle(!stoggle);
+				
+				$('.updatelbl').data("sdata", s);
+
+				//Get Labels
+				if(Object.keys(s.labels).length === 0)
+				{
+					$('#label_table, #label_title').hide();
+				}
+				else
+				{
+					$('#updatelbl_up').hide();
+					$('#label_table').find('tbody').html('');
+					$.each(s.labels, function(lbKey, lbValue) {
+						buildLabelTable('#label_table', lbKey, lbValue);
+					});
+				}
+				
+				//Get Volumes
+				if(s.volumes.length === 0)
+				{
+					$('#volume_table, #volume_title').hide();
+				}
+				else
+				{
+					$('#volume_table').find('tbody').html('');
+					$.each(s.volumes, function(j, v) {
+						buildVolumeTable('#volume_table', v);
+					});
+				}
+				
+				//Get Conf Maps
+				if(s.confmaps.length === 0)
+				{
+					$('#confmap_table, #confmap_title').hide();
+				}
+				else
+				{
+					$('#confmap_table').find('tbody').html('');
+					$.each(s.confmaps, function(l, cm) {
+						buildConfMapTable('#confmap_table', cm);
+					});
+				}
+				
+				//Get Containers
+				$('#container_table').find('tbody').html('');
+				$.each(s.containers, function(j, c) {
+					buildContainerTable('#container_table', c, _id, j, s.name, ku8Srv);
+				});
+				
+				//Build Pod Table
+				getPods(s);
+				$('#service-content').fadeIn('normal', function(){
+					$('#loading').hide();
+				});
+			}
+		});
+	}
+	
+	function getPods(service)
+	{
+		var showbtn;
+		
+		if(! $.fn.DataTable.isDataTable('#pod_table'))
+		{
+			$('#pod_table').on('preXhr.dt', function (e, settings, data) {
+				showbtn = true;
+			}).on('draw.dt', function () {
+				showbtn === true ? $('.con_updbtn').removeAttr('disabled') : $('.con_updbtn').attr('disabled', 'disabled');
+			}).DataTable({
+				autoWidth: false,
+				responsive: true,
+				"ajax":{
+					url: "/publicservice/getPods",
+					data: {
+						ku8ID:_id, 
+						name:service.name
+					},
+					error: function (XMLHttpRequest, textStatus, errorThrown) 
+					{
+						if(JSON.parse(XMLHttpRequest.status) === 403)
+						{
+							window.location.replace('/login.html');
+						}
+					}	
+				},
+				"columns": [
+							{ "data": "name" },
+							{ "data": "pod_ip" },
+							{ "data": "host_ip" },
+							{ "defaultContent": "" },
+							{ "defaultContent": ""}
+						],
+				"createdRow": function ( row, data, i) {
+					var name = data.name;
+					var logBtn = $('<button/>').addClass('btn btn-primary btn-sm').data('btndata', service).html("<i class='fa fa-search'></i> Logs").attr('onclick', "return openLogs(" + _id + ", \"" + name + "\", ku8Srv, this);");
+					var statusBtn = $('<button/>').addClass('btn btn-primary btn-xs').data('btndata', data).html("<i class='fa fa-search'></i>").attr('onclick', "return showPodStatus(this);");
+					
+					$(row).find('td:eq(3)').html(data.status).append("&nbsp;").append(statusBtn);
+					$(row).find('td:eq(4)').html("<button class='btn btn-danger btn-sm stop' onclick='return stopPod(this, ku8Srv);'><i class='fa fa-stop'></i> Stop</button>&nbsp;<button class='btn btn-primary btn-sm console' onclick='return openConsole(\"" + service.resPart + "\",\"" + service.name + "\",\"" + name + "\");'><i class='fa fa-terminal'></i> Console</button>&nbsp;").append(logBtn);
+					
+					//Check if Rolling Updates are allowed
+					if(data.status !== 'Running' && showbtn === true)
+						showbtn = false;
+				}
+			});
+		}
+		else
+		{
+			reloadPodTable();
+		}
+	}
+	
+	function reloadPodTable()
+	{
+		$('#pod_table').DataTable().ajax.reload();
+	}
+	
+	function reloadServices(e)
+	{
+		$('#service-content').fadeOut('normal', function(){
+			$('#loading').show();
+		});
+		getPublicService();
+	}
+</script>

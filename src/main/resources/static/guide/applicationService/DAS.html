@@ -1,0 +1,212 @@
+
+   <div id="wrapper">
+			
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        
+                        <div class="ibox-content">
+                           <div class="row">
+                           <div class="col-md-10">
+                            <h2>申请DAS服务</h2>
+                            </div>
+                            <div class="col-md-2">
+                            <button type="button" class="btn btn-primary" id="guide_all" style="padding-right:10px">返回服务目录</button>
+                            </div>
+                            </div>
+                            <div class="row">
+                            <div class="col-md-12">
+                            <p>您可以使用本向完成DAS服务的申请</p>
+                            </div>
+                            </div>
+                            <form id="form" action="#" class="wizard-big">
+                                <!-- 选项卡1 -->
+                                <h1>介绍    </h1>
+                                <fieldset>
+                                    <h2>介绍   </h2>
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                         <div class="form-group">
+                							中国联通秉承开放合作的宗旨，面向科研院所、创新企业、行业大数据应用合作者推出公共创新大数据能力开放平台——DAS，<br>
+                							旨在探索“数据+能力”的大数据开放合作模式，激发社会创新活力，汇聚社会化资源，共创“众创、众筹” 的大数据价值创造新模式。<br>
+											DAS针对业务人员和技术人员提供不同的数据挖掘方式，打造面向公共的产学研用示范基础能力平台。<br>
+              							</div>
+                                            
+                                    </div>
+									</div>
+                       
+								</fieldset>			
+								<!--/选项卡2-->
+								<!--选项卡3--> 
+                                <h1>添加备注</h1>
+                                <fieldset>
+                                	<div class="row">                              
+                                   <div class="col-lg-12">
+                                  
+			            <div class="form-group"> 
+				            <label>选择资源分区</label> 
+				            <select class="form-control select2" style="width: 100%;" id="resource_zone">           
+				            <option selected="selected" value="1">亦庄集群</option> 
+				            <option value="2">廊坊集群</option> 
+				            </select> 
+			           </div> 
+                                   
+		           <p>申请外部访问：</p> 
+            <div class="radio radio-info radio-inline"> 
+             <input type="radio" id="ext_service1" value="1" name="ext_service" checked="" /> 
+             <label for="ext_service1"> 是</label> 
+            </div> 
+            <div class="radio radio-inline"> 
+             <input type="radio" id="ext_service2" value="2" name="ext_service" /> 
+             <label for="ext_service2"> 否 </label> 
+            </div> 
+                                   
+                                   <div class="form-group">
+							                  <label>备注</label>
+							                  <textarea class="form-control" rows="3" placeholder="Enter ..." id="remark"></textarea>
+							        </div>
+							    </div>
+							    </div>     
+                                </fieldset>
+								<!--/选项卡3--> 
+								<!--选项卡4-->
+                                <h1>确认</h1>
+                                <fieldset>
+                                    <h2>确认订单</h2>
+									<input id="acceptTerms" name="acceptTerms" type="checkbox" class="required"> <label for="acceptTerms">我确认以上信息准确无误，提交订单</label>
+                                </fieldset>
+                                <!--/选项卡4--> 
+                            </form>
+                        </div>
+                    </div>
+                    </div>
+
+
+
+                </div>
+                
+            </div>
+    
+ <script>
+		 $("#guide_all").on("click",function(){
+				$(".content").html("");
+				$(".content").load("guide/guide_all.html");
+			});
+        $(document).ready(function(){
+        	
+            $("#wizard").steps();
+            $("#form").steps({
+                bodyTag: "fieldset",
+                onStepChanging: function (event, currentIndex, newIndex)
+                {
+                    // Always allow going backward even if the current step contains invalid fields!
+                    if (currentIndex > newIndex)
+                    {
+                        return true;
+                    }
+
+                    // Forbid suppressing "Warning" step if the user is to young
+                    if (newIndex === 3 && Number($("#age").val()) < 18)
+                    {
+                        return false;
+                    }
+
+                    var form = $(this);
+
+                    // Clean up if user went backward before
+                    if (currentIndex < newIndex)
+                    {
+                        // To remove error styles
+                        $(".body:eq(" + newIndex + ") label.error", form).remove();
+                        $(".body:eq(" + newIndex + ") .error", form).removeClass("error");
+                    }
+
+                    // Disable validation on fields that are disabled or hidden.
+                    form.validate().settings.ignore = ":disabled,:hidden";
+
+                    // Start validation; Prevent going forward if false
+                    return form.valid();
+                },
+                onStepChanged: function (event, currentIndex, priorIndex)
+                {
+                    // Suppress (skip) "Warning" step if the user is old enough.
+                    if (currentIndex === 2 && Number($("#age").val()) >= 18)
+                    {
+                        $(this).steps("next");
+                    }
+
+                    // Suppress (skip) "Warning" step if the user is old enough and wants to the previous step.
+                    if (currentIndex === 2 && priorIndex === 3)
+                    {
+                        $(this).steps("previous");
+                    }
+                },
+                onFinishing: function (event, currentIndex)
+                {
+                    var form = $(this);
+
+                    // Disable validation on fields that are disabled.
+                    // At this point it's recommended to do an overall check (mean ignoring only disabled fields)
+                    form.validate().settings.ignore = ":disabled";
+
+                    // Start validation; Prevent form submission if false
+                    return form.valid();
+                },
+                onFinished: function (event, currentIndex)
+                {
+                    var form = $(this);
+					addOrder();
+                    // Submit form input
+                    //form.submit();
+                }
+            }).validate({
+                        errorPlacement: function (error, element)
+                        {
+                            element.before(error);
+                        },
+                        rules: {
+                            confirm: {
+                                equalTo: "#password"
+                            }
+                        }
+                    });
+       });
+
+ function addOrder() {
+			 
+    	    if (checkInput('#form')) {
+    	   		var resource_zone = $("#resource_zone").val();
+    	   		var ex_service = $('[name = "ext_service" ]:checked').val();
+    			var remark = $("#remark").val();
+
+    	         $.ajax({
+    	            url: "k8Order/app/add",
+    	            type: "POST",
+    	            dataType: "json",
+    	            data: {
+    	                zone: resource_zone,
+    	                 exService:ex_service,
+    	                 remark:remark   
+    	            },
+    	            success: function(response) {
+    	                if (response.status > -1) {
+    						
+    						$('section.content').load('catalog/all_k8order.html', function() {
+    							alertSuccess(response.message, "订单申请成功.");
+    					    });
+    						
+    	                } else {
+    						alertError("ERROR", response.message);
+    	                }
+    	            }
+    	        });
+    	    } 
+    	}
+ 
+    </script>
+ 
+												
+								
+								
+								
+								

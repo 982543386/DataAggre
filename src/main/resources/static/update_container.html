@@ -1,0 +1,181 @@
+<div class="row">
+<div class="col-xs-12" name="servPanel">
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Update Container</h3>
+        </div>
+        <div class="box-body">
+			<div class="col-sm-9" id="error_server" style="display:none;">
+				<div class="callout callout-danger">
+				<h4><i class="icon fa fa-warning"></i> Error</h4>
+				<p>Error while retrieving container</p>
+				</div>
+			</div>
+            <form class="form-horizontal" role="form" id="ku8form">
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-1">
+                        <div class="panel-body" id="update-div">
+							<div class="panel panel-info">
+								<div class="panel-heading">
+									Container Image
+								</div>
+								<div class="panel-body" id="image-div"/>
+							</div>
+						</div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+                    <button onclick="return saveContainer()" type="button" class="btn btn-primary saveBtn" disabled="disabled" data-loading-text="<i class='fa fa-spin fa-cog'></i>">
+						保<span style="padding-left: 12px" />存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div id="other-div"/>
+</div>	
+<div class="modal modal-primary fade" id="confirmModal">
+  <div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">
+		  <span>×</span></button>
+		<h4 class="modal-title">Please confirm</h4>
+	  </div>
+	  <div class="modal-body">
+		<p>The existing container and pods will be deleted and a new container with the updated values will be created.<br/><br/>Are you sure you want to continue?</p>
+	  </div>
+	  <div class="modal-footer">
+		<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+		<button type="button" class="btn btn-outline" id="modal-confirm" data-dismiss="modal">Confirm</button>
+	  </div>
+	</div>
+  </div>
+</div>
+</div>
+<script>
+	var _id = sessionStorage.getItem("ku8ID");
+	var _cIndex = sessionStorage.getItem("cIndex");
+	var _name = sessionStorage.getItem("name");
+	var _ku8type = sessionStorage.getItem("ku8type");
+	$.getScript("../js/project.js");
+	
+	$(document).ready(function(){
+		sessionStorage.removeItem("ku8ID");
+		sessionStorage.removeItem("cIndex");
+		sessionStorage.removeItem("name");
+		sessionStorage.removeItem("ku8type");
+		
+		loadContainer();
+	});
+	
+	function loadContainer()
+	{
+		$.ajax({
+			url: "/" + _ku8type + "/getContainer",
+			type: "GET",
+			dataType: "json",
+			data: {
+				ku8ID:_id,
+				cIndex:_cIndex,
+				name:_name
+			},
+			success: function(c){
+				if(c.data === null || c.data.length === 0)
+				{
+					$('#error_server').show();
+					$('#ku8form').hide();
+					return;
+				}
+				
+				var _div = $('<div>');
+				var updateDiv = $("#update-div");
+				
+				_div.load('service_template.html?h=' + new Date().getTime(), function(){
+					var cTemplate = $(this).find('div[name=container]');
+					cTemplate.find('div[name=port]').closest('div.panel.panel-info').remove();
+					
+					$('#image-div').append(cTemplate.find('.image'));
+					updateDiv.append(cTemplate.find('.panel-info'));
+					$("#other-div").append($(this).find(".imgModal"), $(this).find(".liveProbeTemplate"));
+					
+					//Preselect image
+					if(c.data.selectedImageName !== null && c.data.selectedImageVersion != null)
+					{
+						var _imgData = {};
+						_imgData.imageName = c.data.selectedImageName;
+						_imgData.version = c.data.selectedImageVersion;
+						$("#conImage").data('imgData', _imgData);
+					}
+					getDockerImage('', $("#conImage"));
+
+					//Loop Volume Mount
+					$.each(c.data.volumes, function (k, vm) {
+						updateDiv.find("div.panel.volMountPanel").show();
+						var volMountDiv = updateDiv.find("div.form-group[name='volMount']:last");
+						if (k > 0) {
+
+							var $temp = volMountDiv.clone();
+							volMountDiv.after($temp);
+							volMountDiv = $temp;
+						}
+
+						volMountDiv.removeClass().addClass('form-group no-margin-bottom vol_vm' + vm.name);
+						volMountDiv.find('#volmountName').html(vm.name);
+						volMountDiv.find('#volmountPath').val(vm.path);
+					});
+
+					//Loop EnvVars
+					$.each(c.data.envVariables, function (l, e) {
+						var enVarsDiv = updateDiv.find("div.form-group[name='envVariable']:last");
+
+						if (l > 0) {
+							var $temp = enVarsDiv.clone();
+							enVarsDiv.after($temp);
+							enVarsDiv = $temp;
+						}
+
+						enVarsDiv.find("#envName").val(e.name);
+						enVarsDiv.find("#envValue").val(e.value);
+					});
+					
+					//Add Liveness Probe
+					if (c.data.livenessProbe !== undefined && c.data.livenessProbe !== null) {
+						var newTemplate = $("#other-div").find('#' + c.data.livenessProbe.type + 'Template').clone().removeAttr('id');
+						newTemplate.find('input').removeClass('no-validation');
+						newTemplate.show();
+
+						updateDiv.find("select.liveProbeType option[value='" + c.data.livenessProbe.type + "']").prop('selected', true);
+						updateDiv.find(".liveProbeDiv").html(newTemplate);
+						switch (c.data.livenessProbe.type) {
+						case 'httpGet':
+							newTemplate.find('#liveProbePath').val(c.data.livenessProbe.path);
+							newTemplate.find('#liveProbePort').val(c.data.livenessProbe.port);
+							break;
+						case 'tcpSocket':
+							newTemplate.find('#liveProbePort').val(c.data.livenessProbe.port);
+							break;
+						case 'exec':
+							newTemplate.find('#liveProbeCommand').val(c.data.livenessProbe.command);
+							break;
+						default:
+							break;
+						}
+						newTemplate.find('#liveProbeDelay').val(c.data.livenessProbe.initialDelaySeconds);
+						newTemplate.find('#liveProbeTimeout').val(c.data.livenessProbe.timeoutSeconds);
+					}
+					else
+					{
+						updateDiv.find("select.liveProbeType option[value='']").prop('selected', true);
+						updateDiv.find(".liveProbeDiv").html('');
+					}
+				});
+			}
+		});	
+	}
+</script>

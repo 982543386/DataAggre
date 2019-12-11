@@ -1,0 +1,190 @@
+<!-- 用户点击cicd类型订单详情页面 -->
+
+<script type="text/javascript">
+	var k8orderId = sessionStorage.getItem("id");
+    $(document).ready(function() {
+        if (k8orderId !== null) {
+            $.ajax({
+                url: "k8Order/cicd/viewByOrderId",
+                type: "GET",
+                dataType: "json",
+                data: {
+                    k8orderId: k8orderId
+                }, 
+                success: function(data) {
+                	$("#reponame").val(data.repoName);
+                	$("#orderNo").val(data.k8orderId);
+                	$("#password").val(data.sourcePassword);
+                    if (data.sourceType == 1) {
+                        $("#sourcetype").val("新申请git");
+                    } else  if (data.sourceType == 2) {
+                        $("#sourcetype").val("已有git");
+                    }else  if (data.sourceType == 3) {
+                        $("#sourcetype").val("新申请svn");
+                    }else  if (data.sourceType == 4) {
+                        $("#sourcetype").val("已有svn");
+                    }else  if (data.sourceType == 5) {
+                        $("#sourcetype").val("已有github");
+                    }
+                    
+                    if (data.cdtype == 1) {
+                        $("#cdtype").val("^");
+                    } else {
+                        $("#cdtype").val("maven");
+                    }
+                	//$("#remarkadmin").val(data.remarkAdmin);
+                	if (data.remarkAdmin == null) {
+                        $("#remarkadmin").val("暂无");
+                    } else {
+                        $("#remarkadmin").val(data.remarkAdmin);
+                    }
+                    
+                    $("#remark").val(data.remark);
+                    
+                    if (data.resourceType == 1) {
+                        $("#resource").val("动态");
+                    } else if (data.resourceType == 2) {
+                        $("#resource").val("CPU1,RAM2");
+                    } else if (data.resourceType == 3) {
+                        $("#resource").val("CPU2,RAM4");
+                    } else if (data.resourceType == 4) {
+                        $("#resource").val("CPU4,RAM8");
+                    }
+                    if (data.storageType == 1) {
+                        $('#storage').val("容器内");
+                    } else if (data.storageType == 2) {
+                        $('#storage').val("本地");
+                    } else if (data.storageType == 3) {
+                        $('#storage').val("网络");
+                    }
+                    
+					$("#sourceUrl").val(data.sourceUrl);
+					
+					$("#sourceUsername").val(data.sourceUsername);
+                }
+            });
+            sessionStorage.removeItem("k8orderId");
+        } else {
+            alertError('ERROR', 'NO SESSION FOUND');
+        }
+    });
+    
+    </script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-info">
+            <div class="box-header with-border">
+                <div class="col-sm-6 no-padding">
+                    <h3 class="box-title">查看CICD订单</h3>
+				</div>
+            </div>
+            <div class="box-body">
+                <form class="form-horizontal" role="form" id="orderform">
+                    <div class="form-group no-margin-bottom">
+                
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" >订单号</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control lowercase validation" id="orderNo" placeholder="订单号" readonly="readonly" value="orderNumber" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group no-margin-bottom">
+                    
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">项目名称</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="reponame" readonly="readonly" value="项目名称" /></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">项目源</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="sourcetype" readonly="readonly" value="项目来源" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group no-margin-bottom">
+                   
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">构建方式</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="cdtype" readonly="readonly" value="构建方式" /></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">URL</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="sourceUrl" readonly="readonly" value="源URL" /></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">用户名</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="sourceUsername" readonly="readonly" value="用户名" /></div>
+                            </div>
+                        </div>
+                         <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">密码</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="password" readonly="readonly" value="用户密码" /></div>
+                            </div>
+                        </div>
+                     
+                    </div>
+                    
+                       <div class="form-group no-margin-bottom">
+                       <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">备注</label>
+                                <div class="col-sm-8">
+                                    <textarea rows="5" type="text" class="form-control lowercase validation" id="remark" readonly="readonly" value="用户备注" /></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">管理员留言</label>
+                                <div class="col-sm-8">
+                                    <textarea rows="5" type="text" class="form-control lowercase validation" id="remarkadmin" readonly="readonly" value="管理员备注" />
+                                    </div>
+                            </div>
+                        </div>
+                        </div>
+                    
+                    <!-- <div class="form-group no-margin-bottom">
+                   
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">存储类型</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="storage" readonly="readonly" value="存储空间类型" /></div>
+                            </div>
+                        </div> 
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">用户备注</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="remark" placeholder="remark" readonly="readonly" value="remark" /></div>
+                            </div>
+                        </div>
+                    </div> -->
+                </form>
+                <div class="row">
+                    <div class="col-md-9 col-md-offset-1 no-padding">
+                        <button type="button" class="btn btn-default pull-right" style="margin:20px 0 20px 0;" onclick="history.go(-1);">返
+                            <span style="padding-left: 12px" />回</button>
+					</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

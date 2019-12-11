@@ -1,0 +1,118 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-body">
+				<table id="clusterTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>目标主机</th>
+							<th>命令描述</th>
+							<th>命令脚本</th>
+							<th>执行时间</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div class="box-footer">
+				<div class="box-tools pull-right">
+					<button id="back" class="btn btn-default" type="button">返回</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+	var cluster = JSON.parse(sessionStorage.getItem("dcos_cluster"));
+	console.log(cluster.id+"============");
+	var table = $('#clusterTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/dcos/log/"+cluster.id,
+							type: "GET",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+										{
+											"data" : "id"
+										},
+										{
+											"data" : "targetHost"
+										},
+										{
+											"data" : "processName"
+										},
+										{
+											"data" : "processScript",
+											"render" : function(data, type, row) {
+												return "<span title='"+data+"'>"+data.substring(0,50)+"</span>";
+											}
+										},
+										{
+											"data" : "processTime",
+											"render" : function(data, type, row) {
+												return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+											}
+										}]
+					});
+	// 删除 需要确定删除方式  
+	$('#clusterTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "/dcos/" + data.id,
+		       type: "DELETE",
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] > 0) {
+		        	   table.ajax.reload();
+		               var _name = data.name;
+		               var _div = $('<div/>');
+		               _div.load('alert_success.html',
+		               function() {
+		                   $(this).find('#title').html(response['message']);
+		                   $(this).find('#message').html("Delete <strong>" + _name + "</strong> successfully.");
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1).slideToggle(1000,
+		                    function() {
+		                        child.alert('close');
+		                    });
+		                   $('.content').append(child);
+		               });
+		           } else {
+		               var _div = $('<div/>');
+		               _div.load('alert_error.html',
+		               function() {
+		                   $(this).find('#title').html("ERROR");
+		                   $(this).find('#message').html(response['message']);
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1,
+		                    function() {
+		                        setTimeout(function() {
+		                            child.slideToggle(2000,
+			                            function() {
+			                                child.alert('close');
+			                            })
+		                        },
+		                        5000);
+		                   });
+		                   $('.content').append(child);
+		               });
+		           }
+		       }
+		   });
+	});
+	
+	// 补充back事件
+	$("#back").click(function() {
+		$(".content").load("dcos_cluster.html");
+	});
+</script>

@@ -1,0 +1,292 @@
+<head>
+<meta http-equiv="Content-Type"content="text/html;charset=utf-8"/>
+</head>
+
+   <div id="wrapper">
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        
+                        <div class="ibox-content">
+                                                  
+                            
+                            
+                            <div class="row">
+                            <div class="col-md-11">
+                            <h2>申请Tomcat服务</h2>
+                            </div>
+                            <div class="col-md-1">
+                            <button type="button" class="btn btn-primary" id="guide_all" style="padding-right:10px">返回</button>
+                            </div>
+                            <div class="col-md-12">
+                            <p>您可以使用本向导通过三步完成Tomcat服务的申请</p>
+                            </div>
+                            <form id="form" action="#" class="wizard-big">
+                                <!-- 选项卡1 -->
+                                <h1>版本选择    </h1>
+                                <fieldset>
+                                    <h2>第一步：版本选择    </h2>
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                         <div class="form-group">
+                							<label>Mysql版本</label>
+                							<select class="form-control select2" style="width: 100%;" id="version">
+							                  <option selected="selected">tomcat7</option>
+							                  <option >tomcat8</option>
+							                  <option >tomcat9</option>
+							                </select>
+              							</div>
+                                            
+                                    </div>
+									</div>
+                                </fieldset>
+                                <!-- /选项卡1 -->
+                                
+                                <!-- 选项卡2 -->
+                                <h1>资源    </h1>
+                                <fieldset>
+                                    <h2>选择资源    </h2>
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                        
+                                        <div class="form-group">
+								                <label>选择资源分区</label>
+								                <select class="form-control select2" style="width: 100%;" id="zone">
+								                  <option selected="selected" value ="1">亦庄集群</option>
+								                  <option value="2">廊坊集群</option>
+								                </select>
+								        </div>
+								        
+								        <div>
+										        <p>计算资源</p>
+		                                        <div class="radio radio-info radio-inline">
+		                                            <input type="radio" id="inlineRadio1" value="1" name="hardware" checked="">
+		                                            <label for="inlineRadio1"> 动态调整 </label>
+		                                        </div>
+		                                        <div class="radio radio-inline">
+		                                            <input type="radio" id="inlineRadio2" value="2" name="hardware">
+		                                            <label for="inlineRadio2"> CPU=1 RAM=2G </label>
+		                                        </div>
+		                                        <div class="radio radio-inline">
+		                                            <input type="radio" id="inlineRadio3" value="3" name="hardware">
+		                                            <label for="inlineRadio3"> CPU=2 RAM=4G </label>
+		                                        </div>
+		                                        <div class="radio radio-inline">
+		                                            <input type="radio" id="inlineRadio4" value="4" name="hardware">
+		                                            <label for="inlineRadio4"> CPU=4 RAM=8G </label>
+		                                        </div>
+										</div>
+										<div>
+			                                    <p>存储资源</p>
+			                                    <div class="radio radio-info radio-inline">
+			                                        <input type="radio" id="a1" value="1" name="storage" checked="">
+			                                        <label for="a1"> 容器内 </label>
+			                                    </div>
+			                                    <div class="radio radio-inline">
+			                                        <input type="radio" id="a2" value="2" name="storage">
+			                                        <label for="a2"> 本地挂载 </label>
+			                                    </div>
+			                                    <div class="radio radio-inline">
+			                                        <input type="radio" id="a3" value="3" name="storage">
+			                                        <label for="a3"> 网络挂载 </label>
+			                                    </div>
+
+                                        </div>
+									</div>
+								</div>
+								</fieldset>			
+								<!--/选项卡2-->
+								<!--选项卡3--> 
+                                <h1>管理设定</h1>
+                                <fieldset>
+                                	<div class="row">
+                                	<div class="col-lg-12">
+                                    <div class="text-center" style="margin-top: 10px">
+                                        		
+                                        <div class="col-md-6"><div class="form-group" style="width: 100%;">
+                                                <label>数据库实例名</label>
+                                                <input id="database_name" name="database_name" type="text" class="form-control required" placeholder="输入数据库实例名">
+                                        </div></div>
+                                        <div class="col-md-6"><div class="form-group" style="width: 100%;">
+                                                <label>管理员用户名</label>
+                                                <input id="username_root" name="username_root" type="text" class="form-control required">
+                                        </div></div>
+                                        <div class="col-md-6"><div class="form-group" style="width: 100%;">
+                                                <label>管理员密码   </label>
+                                                <input id="password" name="password" type="text" class="form-control required">
+                                            </div></div>
+                                       <div class="col-md-6"><div class="form-group" style="width: 100%;">
+                                                <label>确认管理员密码 *</label>
+                                                <input id="confirm" name="confirm" type="text" class="form-control required">
+                                        </div></div>     
+
+                                   </div>
+                                   <div>
+                                        <p>是否需要外部服务</p>
+                                        <div class="radio radio-info radio-inline">
+                                            <input type="radio" id="ext_service1" value=1  name=ext_service checked="">
+                                            <label for="ext_service1"> 是</label>
+                                        </div>
+                                        <div class="radio radio-inline">
+                                            <input type="radio" id="ext_service2" value=2  name="ext_service">
+                                            <label for="ext_service2"> 否 </label>
+                                        </div>
+                                    </div>    
+                                   <div class="form-group">
+							                  <label>备注</label>
+							                  <textarea class="form-control" rows="3" placeholder="Enter ..." id="remark"></textarea>
+							        </div>
+							    </div>
+							    </div>     
+                                </fieldset>
+								<!--/选项卡3--> 
+								<!--选项卡4-->
+                                <h1>Finish</h1>
+                                <fieldset>
+                                    <h2>Terms and Conditions</h2>
+									<input id="acceptTerms" name="acceptTerms" type="checkbox" class="required"> <label for="acceptTerms">I agree with the Terms and Conditions.</label>
+                                </fieldset>
+                                <!--/选项卡4--> 
+                            </form>
+                        </div>
+                    </div>
+                    </div>
+                    </div>
+
+                </div>
+            </div>
+
+<script>
+		$("#guide_all").on("click",function(){
+			$(".content").html("");
+			$(".content").load("guide/guide_all.html");
+		});
+        $(document).ready(function(){
+            $("#wizard").steps();
+            $("#form").steps({
+                bodyTag: "fieldset",
+                onStepChanging: function (event, currentIndex, newIndex)
+                {
+                    // Always allow going backward even if the current step contains invalid fields!
+                    if (currentIndex > newIndex)
+                    {
+                        return true;
+                    }
+
+                    // Forbid suppressing "Warning" step if the user is to young
+                    if (newIndex === 3 && Number($("#age").val()) < 18)
+                    {
+                        return false;
+                    }
+
+                    var form = $(this);
+
+                    // Clean up if user went backward before
+                    if (currentIndex < newIndex)
+                    {
+                        // To remove error styles
+                        $(".body:eq(" + newIndex + ") label.error", form).remove();
+                        $(".body:eq(" + newIndex + ") .error", form).removeClass("error");
+                    }
+
+                    // Disable validation on fields that are disabled or hidden.
+                    form.validate().settings.ignore = ":disabled,:hidden";
+
+                    // Start validation; Prevent going forward if false
+                    return form.valid();
+                },
+                onStepChanged: function (event, currentIndex, priorIndex)
+                {
+                    // Suppress (skip) "Warning" step if the user is old enough.
+                    if (currentIndex === 2 && Number($("#age").val()) >= 18)
+                    {
+                        $(this).steps("next");
+                    }
+
+                    // Suppress (skip) "Warning" step if the user is old enough and wants to the previous step.
+                    if (currentIndex === 2 && priorIndex === 3)
+                    {
+                        $(this).steps("previous");
+                    }
+                },
+                onFinishing: function (event, currentIndex)
+                {
+                    var form = $(this);
+
+                    // Disable validation on fields that are disabled.
+                    // At this point it's recommended to do an overall check (mean ignoring only disabled fields)
+                    form.validate().settings.ignore = ":disabled";
+
+                    // Start validation; Prevent form submission if false
+                    return form.valid();
+                },
+                onFinished: function (event, currentIndex)
+                {
+                    var form = $(this);
+					addOrder();
+                    // Submit form input
+                    form.submit();
+                }
+            }).validate({
+                        errorPlacement: function (error, element)
+                        {
+                            element.before(error);
+                        },
+                        rules: {
+                            confirm: {
+                                equalTo: "#password"
+                            }
+                        }
+                    });
+       });
+
+       
+ function addOrder() {
+			 
+    	    if (checkInput('#form')) {
+    	    	var type = "1";
+    	    	var version = $("#version").val();
+    			var resource_zone = $("#zone").val();
+    			var hardware = $('[name = "hardware"]:checked').val();
+    			var storage = $('[name = "storage" ]:checked').val();
+    			var database_name = $('#database_name').val();
+    			var username_root = $('#username_root').val();
+    			var password = $('#password').val();
+    			var ex_service = $('[name = "ext_service" ]:checked').val();
+    			var remark = $("#remark").val();
+    		
+
+    	        $.ajax({
+    	            url: "k8Order/middleware/add",
+    	            type: "POST",
+    	            dataType: "json",
+    	            data: {
+    	            	type: type,
+    	            	version: version,
+    	                zone: resource_zone,
+    	                hardware:hardware,
+    	                storage:storage,
+    	                database_name:database_name,
+    	                 username_root:username_root,
+    	                 password:password,
+    	                 exService:ex_service,
+    	                 remark:remark            
+    	            },
+    	            success: function(response) {
+    	            	
+    	                if (response.status > -1) {
+    						
+    						$('section.content').load('devops/devops_check_user.html', function() {
+    							alertSuccess(response.message, "订单申请成功.");
+    					    });
+    						
+    	                } else {
+    						alertError("ERROR", response.message);
+    	                }
+    	            }
+    	        });
+    	    }
+    	}
+
+    </script>

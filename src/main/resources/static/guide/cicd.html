@@ -1,0 +1,826 @@
+<style>
+.fileManage{
+    margin-top: 10px;
+	border:1px solid;
+}
+	
+	.fileManage-alltitle{
+		margin-left: 22px;
+    margin-top: 14px;
+    float: left;
+    width: 100%;
+	}
+	.fileManage-alltitle span{
+		margin-top: 2px;
+    	float: left;
+    	overflow: hidden;
+   	 	width: 250px;
+	}
+	.fileManage-all{
+	    margin-top: 2px;
+		float: left;
+    	width: 100%;
+    	padding: 3px;
+	}
+	.fileManage-all span{
+	
+    	float: left;
+    	overflow: hidden;
+   	 	width: 250px;
+	}
+	.fileManage-all img{
+		float:left;
+	}
+	.fl{
+		vertical-align: middle;
+    	width: 25px;
+    	height: 25px;
+    	margin-right: 10px;
+    	margin-left: -2%;
+	}
+	.f2{
+		vertical-align: middle;
+    	width: 25px;
+    	height: 25px;
+    	margin-right: 10px;
+	}
+	.webuploader-pick{
+	    height: 32px;
+    	width: 75px;
+    	margin-left: 15px;
+    	position: relative;
+    	display: inline-block;
+    	cursor: pointer;
+    	background: #367fa9;
+    	padding: 7px 5px 2px 5px;
+   	 	color: #fff;
+    	text-align: center;
+    	border-radius: 3px;
+    	overflow: hidden;
+    	font-size: 14px;
+	}
+	.uploader-list{
+		margin: 40% 30%;
+   		width: 80%;
+   		font-size: 9px;
+	}
+</style>
+ <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Title</h3>
+
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                    title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+         <form class="form-horizontal" role="form" id="orderform_cicd">
+           <div class="row">
+    <div class="container">   
+     
+      <!-- 
+     
+     <div class="row">
+     <div class="col-lg-12">
+     <div class="form-group">
+							<label class="col-sm-4 control-label">项目名称</label>
+							
+						</div>
+    </div>
+    </div> -->
+    <div class="row">
+                           <div class="col-md-11">
+                            <h2>申请CICD服务</h2>
+                            </div>
+                            <div class="col-md-1">
+                            <button type="button" class="btn btn-primary" id="guide_all" style="padding-right:10px">返回</button>
+                            </div>
+                            </div>
+    <div class="row">
+    
+          </div>
+    <!-- 模态框 -->
+    <div class="row">
+    <div class="col-lg-12">
+    <div class="box box-default">
+            <div class="box-header with-border">
+              <h3 class="box-title">设置项目名称</h3>
+            </div>
+            <div class="box-body">
+            
+            <div class="col-sm-7">
+								<input type="text" class="form-control allow-special validation" id="repo_name"
+							placeholder="输入项目名称，以小写字母开头"/>
+							</div>
+              
+            </div>
+          </div>
+          </div>
+        <div class="col-lg-12">
+          <div class="box box-default">
+            <div class="box-header with-border">
+              <h3 class="box-title">构建</h3>
+            </div>
+            <div class="box-body">
+            
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-code">
+                从代码构建
+              </button>
+              <button type="button" class="btn btn-primary" data-toggle="modal" id="button_biuld_from_war">
+                从war包构建
+              </button>
+              <div class="col-sm-7">
+                 <input type="text" class="form-control lowercase validation" id="affirm_file" placeholder="已选文件" readonly="readonly" value="filename" />
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+  <!-- =============================这是一个modal框======================================= -->                                     
+
+    <div class="modal fade" id="modal-code">
+          <div class="modal-dialog modal-lg" >
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">从代码构建</h4>
+              </div>
+              <div class="modal-body">
+              	<div class="box box-default">
+              	<div class="row">
+              	<div class="col-md-12">
+          <!-- Custom Tabs -->
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab_1" data-toggle="tab">申请SVN</a></li>
+            <!--   <li><a href="#tab_2" data-toggle="tab">已有svn</a></li>
+              <li class="disabled"><a href="#tab_3" data-toggle="tab">Github</a></li>
+              <li class="disabled"><a href="#tab_4" data-toggle="tab">Gitlab</a></li> -->
+              
+
+ 				<div class="row">
+                                        <div class="col-md-12">
+                                        <div class="form-horizontal">                                     
+							        <div class="form-group">
+                							<label>构建方式</label>
+                							<select class="form-control select2" style="width: 100%;" id="cd_type">
+							                  <option selected="selected" value=1>maven</option>
+							               <!--    <option value=2>maven</option>
+							                  <option value=3>maven</option> -->							                  
+							                </select>
+              							</div>
+                                            
+                                    </div>
+                                    </div>
+                                    </div>
+                                              
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab_1">
+             <div class="row" style="padding:15px">
+              
+             <div class="row">
+              <div class="col-md-12"> 
+              <div> 
+            <div class="radio radio-info radio-inline"> 
+             <input type="radio" id="a1" value="1" name="apply" checked="" /> 
+             <label for="a1"> 新申请 </label> 
+            </div> 
+            <div class="radio radio-inline"> 
+             <input type="radio" id="a2" value="2" name="apply" /> 
+             <label for="a2"> 已有 </label> 
+            </div>
+            </div>
+            
+            <div>
+              <div class="radio radio-info radio-inline"> 
+             <input type="radio" id="b1" value="1" name="git" checked="" /> 
+             <label for="b1"> GIT </label> 
+            </div> 
+            <div class="radio radio-inline"> 
+             <input type="radio" id="b2" value="2" name="git" /> 
+             <label for="b2"> SVN </label> 
+            </div>
+            <div class="radio radio-inline"> 
+             <input type="radio" id="b3" value="3" name="git" /> 
+             <label for="b3"> GitHub </label> 
+            </div>
+            </div>
+                 
+             </div>
+             </div>     
+               <div class="row">
+                <div class="col-md-12">
+               <div class="form-group">
+                  <label for="inputUserSvn">登录信息</label>
+                  <input class="form-control" id="inputSvnUrl" placeholder="请输入您的URL" type="text"  disabled="disabled">
+                  <input class="form-control" id="inputSvnUserName" placeholder="请输入您的用户名" type="text">
+                  <input class="form-control" id="inputSvnUserPassword" placeholder="请输入您的密码" type="text"><br>
+                </div>
+            </div>
+            </div>
+               
+               
+              </div>
+              </div>
+              <!-- /.tab-pane -->
+          <!--     <div class="tab-pane" id="tab_2">
+                <div class="row" style="padding:15px">
+                <div class="col-lg-12">
+                <div class="form-group">
+                  <label for="inputUserSvn">输入已有的SVN信息</label>
+                  <input class="form-control" id="inputSvnUserName" placeholder="请输入您的用户名" type="text">
+                  <input class="form-control" id="inputSvnUserPassword" placeholder="请输入您的密码" type="text">
+                </div>
+                </div>
+                
+                </div>
+              </div> -->
+              <!-- /.tab-pane -->
+     <!--          <div class="tab-pane" id="tab_3" >
+                Lorem
+              </div> -->
+              <!-- /.tab-pane -->
+          <!--     <div class="tab-pane" id="tab_4">
+                Lorem Ipsum is simply dummy 
+              </div> -->
+              <!-- /.tab-pane -->
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- nav-tabs-custom -->
+        </div>
+        <!-- /.col -->
+              	</div>
+              	<div class="row">
+              	<div class="col-md-4"></div>
+              
+              	</div>
+              
+              </div>
+            
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-right" data-dismiss="modal" >Close</button>
+  <!--               <button type="button" class="btn btn-primary" id="save_web_diy">Save changes</button> -->
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+        
+     <!-- =============================这是一个modal框======================================= -->                  
+              
+              
+              
+              
+      
+      
+      
+         <!-- ***************=============================这是一个modal框======================================= -->                                     
+
+    <div class="modal fade" id="modal-war">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+             	   <h4 class="modal-title">选择war包上传</h4>
+              </div>
+              <div class="modal-body"> 
+             	 <div class="container-fluid">
+              		<div class="row">
+              			<div class="box-body">
+              				<div class="row" style="padding-left:-15px;padding-right:-15px">
+	              				<div class="col-lg-12">
+									<div class="col-md-1" style="padding-left:-15px;padding-right:-15px" ><img class="fl" id="return" src="../img/file/return.png"/></div>
+										<div class="col-md-2" >路径：</div>
+											<div class="col-md-6">
+												<input id="path" type="text" value="/mnt/war"   readonly>
+												<!-- <input id="path" type="text" value="D:\war_file"   readonly>--> 
+											</div>
+											<div class="col-md-1">
+												<div class="btn btn-primary" id="dele" data-toggle="modal" data-target="#myModal2">删除</div> 
+											</div>
+											<div class="col-md-2">
+												<div class="btns" style="width:100%;float:right;">
+													<div id="picker" style="height:30px;width:100%;float:right;">上传文件</div>
+                       							</div>
+											</div>				
+								</div>
+							</div>
+							<div class="row" style="margin-top:15px">
+								<div>
+									<span>文件名称</span>
+									<span>更新日期</span>
+									<span>大小</span>
+								</div>
+								<div class="fileManage">
+								</div>
+							</div>
+					  	</div>
+
+              	   </div>
+              	   
+              	   <!-- /.row --> 
+              </div>
+
+           	</div>
+           	     <!-- /.modal-body -->
+             
+				<div class="modal-footer">
+                	<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+                	<!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+              	</div>
+              	
+              	  <!--进度条modal框开始 -->      
+ 			  <div class="modal-footer" id="myModal" tabindex="-1"  role="dialog" 
+				aria-labelledby="myModalLabel">
+			  	<div class="modal-dialog" role="document" >
+					<div class="modal-content"  >
+						<!--用来存放文件信息-->
+						<div id="thelist" class="uploader-list"></div>
+					</div>
+				</div>
+			  </div>   
+			  		 <!--进度条modal框结束 -->
+			  <div class="modal-footer">
+                	<button type="button" id="affirm" class="btn btn-primary pull-right" data-dismiss="modal">确认</button>
+              </div>    
+      	 
+              	
+              	
+              	
+     
+		</div>
+     <!-- /.modal-content -->
+ 
+	</div>
+    <!-- /.modal-dialog modal-lg-->
+</div>
+<!-- /.modal -->
+      
+    
+    <div class="row">
+        <div class="col-lg-12">
+          <div class="box box-default">
+            <div class="box-header with-border">
+              <h3 class="box-title">部署</h3>
+            </div>
+            <div class="box-body">
+            
+                                        <div class="col-md-12">
+                                        
+                                        
+								        
+								        
+								        
+				        		<div class="form-group">
+										        <p>部署方式</p>
+		                                        <div class="radio radio-info radio-inline">
+		                                            <input type="radio" id="cdOption1" value=1 name="cdOption" checked="">
+		                                            <label for="cdOption1"> web应用，请帮我部署 </label>
+		                                        </div>
+		                                        <div class="radio radio-inline">
+		                                            <input type="radio" id="cdOption2" value=2 name="cdOption">
+		                                            <label for="cdOption2"> 我要镜像包（打包进我的镜像库）</label>
+		                                        </div>
+		                                        <div class="radio radio-inline">
+		                                            <input type="radio" id="cdOption3" value=3 name="cdOption" disabled>
+		                                            <label for="cdOption3"> 我什么都不想做）</label>
+		                                        </div>
+		                                        </div>
+										
+								</div> 
+            
+            
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    <div class="row">
+        <div class="col-lg-12">
+          <div class="box box-default">
+            <div class="box-header with-border">
+              <h3 class="box-title">备注</h3>
+            </div>
+            <div class="box-body">
+            
+            
+             
+						
+			<div class="row">
+            <div class="col-md-12">
+                                   
+								<div class="form-horizontal">                                     
+							        <div class="form-group">
+							<!-- <label class="col-sm-2 control-label">备注</label> -->
+							<div class="col-sm-10">
+								<input type="text" class="form-control allow-special validation" id="remark"
+							placeholder="备注"/>
+							</div>
+						</div>
+						</div>
+						<!-- <input type="button" onclick="fuck()" value="删除">
+						<input type="button" onclick="order.addOrder()" value="提交"> -->
+						<!-- <button id="hi">hi
+						</button> -->
+							        
+							    </div>
+							    </div>	
+				<div class="row">
+            <div class="col-md-12">
+            <button type="button" class="btn btn-primary" onclick="order.addOrder()">提交</button>
+            <button type="button" class="btn btn-primary" id="guide_all" style="padding-right:10px">返回</button>
+            </div>
+            </div>			    
+
+				   
+</div>	
+            
+            
+            </div>
+          </div>
+        </div>
+      </div> 
+    
+                 
+    
+    
+                    
+						
+</div>								
+        </div>
+        
+        </div>
+        </form>
+        <!-- /.box-body -->
+        <div class="box-footer">
+          Footer
+        </div>
+        <!-- /.box-footer-->
+     
+      </div>
+      
+ </div>     
+ 
+																
+<script type="text/javascript">
+
+$('#button_biuld_from_war').on("click", function(){
+	$('#modal-war').modal()
+	var _path=$("#path").val();	
+	searchFile(_path);
+});
+
+
+		$("#guide_all").on("click",function(){
+			$(".content").html("");
+			$(".content").load("cicd/service/user/service_cicd_user.html");
+		});
+var source_type = 0;
+/* var _path=$("#path").val();	
+searchFile(_path);
+ */
+
+ 
+ 
+var order ={
+		 
+		 addOrder : function() {
+			   var a1=$('input:radio[name="apply"]:checked').val();
+			   var b1=$('input:radio[name="git"]:checked').val();
+			   var source_type =0;
+				if(a1=="1"&&b1=="1") {source_type=1;}
+					else if(a1=="2" && b1=="1") {source_type=2;}
+						else if(a1=="1" && b1=="2") {source_type=3;}
+							else if(a1=="2" && b1=="2") {source_type=4;}
+								else if( b1=="3") {source_type=5;}
+							
+								
+				var cdOption=$('input:radio[name="cdOption"]:checked').val();
+				var cd_type = $('#cd_type').val(); 
+				var repo_name = $('#repo_name').val();
+				var inputSvnUrl=$('#inputSvnUrl').val(); 
+				var inputSvnUserName = $('#inputSvnUserName').val(); 
+				var inputSvnUserPassword = $('#inputSvnUserPassword').val();
+				var remark = $('#remark').val(); 				
+				var orderType = "cicd";
+				var war_location = $('#path').val(); 
+				var war_name = $('#affirm_file').val(); 
+			        $.ajax({
+			            url: "/k8Order/cicd/add",
+			            type: "POST",
+			            dataType: "json",
+			            data: {
+			            	cdOption: cdOption,
+			            	cd_type: cd_type,
+			            	repo_name: repo_name,
+			            	inputSvnUrl: inputSvnUrl,
+			            	inputSvnUserName: inputSvnUserName,
+			            	inputSvnUserPassword: inputSvnUserPassword,
+			            	remark: remark,
+			            	source_type:source_type,
+			            	orderType:orderType,
+			            	war_location:war_location,
+			            	war_name:war_name
+			            },
+			            success: function(response) {
+			                if (response.status > -1) {
+								
+								$('section.content').load('catalog/all_k8order.html', function() {
+									alertSuccess(response.message, "订单申请成功.");
+							    });
+								
+			                } else {
+								alertError("ERROR", response.message);
+			                }
+			            }
+			        });
+			    
+			}
+ }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+//$('#currentUsername').html(loginUser.userId);
+//var abc = loginUser.userId;
+//$('currentUsername').val(abc);
+//var currentUsername=currentUsername.val(loginUser.userId);
+//$('#currentUsername').html(currentUsername);
+/* $("#build_image").click(function(){
+	//$(".content").load("bulid_image_add.html");
+}); */
+
+
+function searchFile(_path){
+	
+		var	user_id=loginUser.userId;
+		//alert(user_id)
+	$.ajax({
+	    url:"/extresources/listfiles",
+	    data:{
+	    	path:_path,
+	    	user_id:user_id
+	    },
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    		if(data.err=="1"){
+	    			alert(data.msg);
+	    			var path=$("#path").val();
+	    			var path_old=path.split("/");
+	    			var path_new="";
+	    			for(var i=1;i<path_old.length-1;i++){
+	    				path_new+="/"+path_old[i];
+	    			}
+	    			if(path_new!=""){
+	    				$("#path").attr("value",path_new);
+		    			searchFile(path_new);
+	    			}
+	    		}else{
+	    			var pathString="";
+		        	var fileString="";
+			        $.each(data.result,function(i,item){
+			        	if(item.type=="path"){
+			        		pathString += [
+			        						'<div class="fileManage-all" c="file" name="'+item.name+'">',
+			        						'<img src="../img/file/file.png" alt=""/>',
+			        						'<span>'+item.name+'</span>',
+			        						'<span>'+item.date+'</span>',
+			        						'<span></span>',
+			        						'</div>'
+			 				            ].join('');
+			    		}else{
+			    			fileString += [
+			        						'<div class="fileManage-all" c="other" name="'+item.name+'">',
+			        						'<img src="../img/file/'+item.pic+'" alt=""/>',
+			        						'<span>'+item.name+'</span>',
+			        						'<span>'+item.date+'</span>',
+			        						'<span>'+item.size+'KB</span>',
+			        						'</div>'
+							            ].join('');
+			    		}
+			        }); 
+			        $(".fileManage").html(pathString+fileString);
+
+			        $(".fileManage").find(".fileManage-all[c=file]").dblclick(function(){
+			        	var path=$("#path").val();
+			        	var name=$(this).attr('name');
+			        	$("#path").attr("value",path+"/"+name);
+			        	searchFile(path+"/"+name);
+			        	
+			        });
+			        
+			        $(".fileManage").find(".fileManage-all").click(function(){
+			        	$(".fileManage").unbind();
+			        	$("#dele").unbind();
+			        	$(".fileManage-all").css({'background':''});
+			        	$(this).css({'background':'#eeeeee'});
+			        	var _pathOrFile="";
+			        	var path=$("#path").val();
+			        	var path_new=$(this).attr('name');
+			        	_pathOrFile=path+"/"+path_new;
+			        	$("#dele").click(function(){
+			        		$.ajax({
+				        	    url:"/extresources/deleteFileOrPath",
+				        	    data:{
+				        	    	pathOrFile:_pathOrFile
+				        	    },
+				        	    type: "GET",
+				        	    dataType:"json",
+				        	    success: function(data){
+				        	    	var _path=$("#path").val();	
+				        	    	searchFile(_path);
+				        	    },
+				        	    error:function(){
+				        	    	alert("删除失败");
+				        	    }
+				        	});
+			        		
+			        	});
+			        	$('#affirm').on("click", function(){
+			        		var affirm_file_name=path_new;
+			        		$("#affirm_file").val(path_new);
+			        		//alert(_pathOrFile)
+			        	});
+			        });
+			        
+	    		}
+	        	
+	    }
+	});
+}
+$("#return").click(function(){
+	var path=$("#path").val();
+	if(path.lastIndexOf("/")==0){
+		alert("已经到达跟目录，不允许查看其他目录");
+	}else{
+		var path_old=path.split("/");
+		var path_new="";
+		for(var i=1;i<path_old.length-1;i++){
+			path_new+="/"+path_old[i];
+		}
+		$("#path").attr("value",path_new);
+		searchFile(path_new);
+	}
+	
+	
+});
+function uploadimagesall(_path) {
+    var $ = jQuery,
+    $list = $('#thelist'),
+    state = 'pending',
+    uploader;
+uploader = WebUploader.create({
+	// 不压缩image
+    resize: true,
+
+    // swf文件路径
+    swf: '../js/Uploader.swf',
+
+    // 文件接收服务端。
+    //server: '/dockerimg/upload-image',
+    server: '/extresources/upload-file',
+    // 选择文件的按钮。可选。
+    // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+    pick: '#picker',
+    formData:{
+    	path:_path,
+    	name:"zzzzzzzzz"
+    },
+    duplicate:true,
+    sendAsBinary:true,
+    accept: {
+    	title:null,
+        extensions:'war',
+        mimeTypes:null
+    },
+    auto:true
+});
+
+//uploader.options.formData.uid = $("#path").val();//全局参数
+//局部参数
+uploader.on('uploadBeforeSend', function(obj, data, headers) {
+	var path_update=$("#path").val();
+	data['path']=path_update;
+});
+
+//当有文件添加进来的时候
+uploader.on( 'fileQueued', function( file ) {
+    file.name=loginUser.userId+"_"+file.name;
+    $list.append( '<div id="' + file.id + '" class="item">' +
+        '<h4 class="info">' + file.name + '</h4>' +
+        '<p class="state">等待上传...</p>' +
+    '</div>' );
+});
+
+//文件上传过程中创建进度条实时显示。
+uploader.on( 'uploadProgress', function( file, percentage ) {
+	$('#myModal').modal({backdrop: 'static', keyboard: false});
+    var $li = $( '#'+file.id ),
+        $percent = $li.find('.progress .progress-bar');
+
+    // 避免重复创建
+    if ( !$percent.length ) {
+        $percent = $('<div class="progress progress-striped active">' +
+          '<div class="progress-bar" role="progressbar" style="width: 0%">' +
+          '</div>' +
+        '</div>').appendTo( $li ).find('.progress-bar');
+    }
+
+    $li.find('p.state').text('上传中');
+
+    $percent.css( 'width', percentage * 100 + '%' );
+});
+
+uploader.on( 'uploadSuccess', function( file ) {
+	$( '#'+file.id ).find('p.state').text('已上传');
+    var path_update=$("#path").val();
+    searchFile(path_update);
+});
+
+uploader.on( 'uploadError', function( file ) {
+    $( '#'+file.id ).find('p.state').text('上传出错');
+});
+uploader.on( 'uploadComplete', function( file ) {
+	$("#myModal").modal('hide'); 
+    $( '#'+file.id ).find('.progress').fadeOut();
+});
+
+}
+
+var path_update=$("#path").val();
+uploadimagesall(path_update);
+
+
+var val=$('input:radio[name="cdOption"]:checked').val();
+
+$('#hi').on('click'),function(){
+	var cdOption=$('input:radio[name="cdOption"]:checked').val();
+	alert(cdOption);
+};
+
+
+function fuck(){
+	var cdOption=$('input:radio[name="cdOption"]:checked').val();
+	var cd_type = $('#cd_type').val(); 
+	var repo_name = $('#repo_name').val();
+	var inputSvnUserName = $('#inputSvnUserName').val(); 
+	var inputSvnUserPassword = $('#inputSvnUserPassword').val();
+	var remark = $('#remark').val();
+	
+	alert(cdOption+"==="+cd_type+"==="+repo_name+"==="+inputSvnUserName+"==="+inputSvnUserPassword+"==="+remark+"==="+source_type);
+	alert(typeof(cdOption)+"变量类型"+typeof(cd_type)+"变量类型"+typeof(repo_name)+"变量类型"+typeof(inputSvnUserName)+"变量类型"+typeof(inputSvnUserPassword)+"变量类型"+typeof(remark));
+};
+
+
+$('#save_web_diy').on('click',function(){
+	 source_type =2;	 
+	});
+
+$('#save_war').on('click',function(){
+	 source_type =3;	 
+	});
+
+var cdOption;
+$('#cdOption1').on('ifChecked', function(event){
+	cdOption= $("#cdOption1").val();  
+	alert(cdOption);
+	//alert(event.type + ' callback');
+	});
+		$('#a1').change(function(){
+			$('#inputSvnUrl').attr("disabled",'disabled');
+		});
+		
+		$('#a2').change(function(){
+		alert("已有用户需要提供URL");
+			$('#inputSvnUrl').removeAttr("disabled");
+		});
+		
+</script>								
+								
+								
+								

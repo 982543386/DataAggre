@@ -1,0 +1,137 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">添加规则</h3>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+            	<input type="hidden" name="ruleId" id="ruleId">
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">规则名称</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="ruleName" name="ruleName"
+							placeholder="规则名称"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">DCOS集群</label>
+							<div class="col-sm-7">
+								<select name="clusterId" class="form-control allow-special lowercase validation" id="clusterId">
+									<option value="1">亦庄数据中心</option>
+									<option value="2">廊坊数据中心</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">应用信息</label>
+							<div class="col-sm-7">
+								<select name="appId" class="form-control allow-special lowercase validation" id="appId">
+									<option value="hadoop2">hadoop2</option>
+									<option value="hadoop1">hadoop1</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">性能指标名称</label>
+							<div class="col-sm-7">
+								<select name="counterName" class="form-control allow-special lowercase validation" id="counterName">
+									<option value="mem_percent">内存使用率</option>
+									<option value="cpu_percent">CPU使用率</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">持续几次</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="span" name="span"
+							placeholder="持续几次"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">比较类型</label>
+							<div class="col-sm-7">
+								<select name="conditionType" class="form-control allow-special lowercase validation" id="conditionType">
+									<option value="1">大于</option>
+									<option value="2">小于</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">比较值</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="conditionValue" name="conditionValue"
+							placeholder="比较值"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">执行操作</label>
+							<div class="col-sm-7">
+								<select name="ruleType" class="form-control allow-special lowercase validation" id="ruleType">
+									<option value="-1">缩减集群</option>
+									<option value="1">扩大集群</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+                    <button onclick="return dcos.addMonitorRule()" type="button" class="btn btn-primary saveBtn">
+						保<span style="padding-left: 12px" />存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+<script>
+	$.getScript("../js/dcos.js");
+
+	$(document).ready(function(){
+		var data = JSON.parse(sessionStorage.getItem("monitor_rule"));
+		
+		if (data) {
+			$("#ruleId").val(data.id);
+			$("#ruleName").val(data.ruleName);
+			$("#conditionValue").val(data.conditionValue);
+			$("#span").val(data.span);
+			$("#clusterId option[value='"+data.clusterId+"']").attr("selected", true);
+			$("#appId option[value='"+data.appId+"']").attr("selected", true);
+			$("#conditionType option[value='"+data.conditionType+"']").attr("selected", true);
+			$("#counterName option[value='"+data.counterName+"']").attr("selected", true);
+			$("#ruleType option[value='"+data.ruleType+"']").attr("selected", true);
+		}
+		
+		
+	});
+</script>

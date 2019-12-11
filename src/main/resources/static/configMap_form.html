@@ -1,0 +1,308 @@
+<div class="row">
+	<div class="box">
+		<div class="box-header">
+			<h3 class="box-title"><span>新增</span>配置</h3>
+		</div>
+		<div class="box-body">
+			<form class="form-horizontal" role="form" id="configForm">
+				<div class="form-group">
+					<label class="col-xs-2 control-label">Name</label>
+					<div class="col-xs-5">
+						<input type="text" class="form-control" id="name" placeholder="name" maxlength="30">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-xs-2 control-label">Namespace</label>
+					<div class="col-xs-5">
+						<select class="form-control" id="namespace">
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-1">
+                    	<div class="panel panel-info" >
+							<div class="panel-heading">
+								Config
+							</div>
+							<div class="panel-body" name="configMapForm">
+								<div class="form-group">
+									<label class="col-sm-4">File Name</label>
+									<label class="col-sm-6">Value</label>
+								</div>
+								<div class="form-group" name="configMap">
+									<div class="col-sm-4">
+										<div class="form-group" style="padding-left:15px;">
+											<input type="text" class="form-control no-validation" name="mn" id='mapName' placeholder="Name"/>
+										</div>
+									</div>
+									<div class="col-sm-6">
+										<div class="form-group" style="padding-left:15px;">
+											<textarea id="mapValue" style="height:150px;font-size:12px;width:100%;resize:vertical;" name="mv" id='mapValue' placeholder="Enter your values here"></textarea>
+										</div>
+									</div>
+									<div class="btn-group col-sm-2" style="padding-left:15px;">
+										<button type="button" class="btn btn-primary" onclick="addConfigMap(this)">+</button>
+										<button type="button" class="btn btn-primary" onclick="delConfigMap(this)">-</button>
+									</div>
+								</div>
+							</div>
+						</div>
+                    </div>
+                </div>
+			</form>
+				<div class="box-tools pull-right">
+					<button id="submit" class="btn btn-primary" type="button">保存</button>
+					<button class="btn btn-default" type="button" onclick="history.go(-1);">返回</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+$.getScript("../js/project.js");
+function addConfigMap(obj) {
+    var $configMap = $(obj).closest("div[name='configMap']"),
+    	$clone = $configMap.clone();
+    $clone.find("input").on('focusout',function (e) {
+    	setFormTips($(e.target));
+    });
+    if($clone.find("input").attr('name')=='mn'){
+    	$clone.find("input").focusout();
+    }
+    $configMap.after($clone);
+}
+
+function delConfigMap(obj) {
+    var $configMapForm = $(obj).closest("div[name='configMapForm']");
+    if ($($configMapForm).find("div[name='configMap']").length > 1) {
+        $(obj).closest("div[name='configMap']").slideUp("normal", function() {
+            $(this).remove();
+        });
+    }
+}
+// if update 填充内容
+function initPageForUpdate(data){
+
+	$.ajax({
+		url: "/configmaps/get",
+		type: "GET",
+		dataType: "json",
+		data: {ku8ID:data.id},
+		success: function(d){
+			var isfirst = true;
+			$.each(d.data, function(index_i, cm) {
+				var $configMap = $("div[name='configMap']").last();
+				if(isfirst){
+					isfirst = false;
+				}else{
+					var addMap = $configMap.clone();
+					$configMap.after(addMap);
+					$configMap = addMap;
+				}
+				$configMap.find("input[id='mapName']").val(cm.filename);
+				$configMap.find("textarea[id='mapValue']").val(cm.value);
+			});
+		},
+		error: function(){
+			alertError("ERROR",'Could not load Config Map <strong>' + data.oldname + '</strong>');
+			history.go(-1);
+		}
+	});
+}
+var flag = "";
+var data = sessionStorage.getItem("config_map");
+var config;
+$(function (){
+	if(data){
+		config = JSON.parse(data);
+		
+		if(config.name !== null)
+		{
+			$(".box-header span").empty().html("修改");
+			$('#name').val(config.name).prop('disabled', true);
+			initPageForUpdate(config);
+			submit("/configmaps/update", true);	
+			flag = "update";
+		}
+		else
+		{
+			$(".box-header span").empty().html("复制");
+			initPageForUpdate(config);
+			submit("/configmaps/create");
+		}
+		sessionStorage.removeItem("config_map");
+	}else{
+		if(config) config = null;
+		submit("/configmaps/create");
+	}
+
+	mkNameSelect();
+	
+});
+
+function mkNameSelect(){
+	$.ajax({
+        url: "/application/getNamespacesByUser",
+        type: "GET",
+        dataType: "json",
+		success: function(d) {
+			if (d.data === null) {
+				$('#configForm :input').attr('disabled', true);
+				alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+				return;
+			}
+			if (d.data.length === 0) {
+				$('#configForm :input').attr('disabled', true);
+				alertError("ERROR", 'No partitions found<br/>Please verify User Groups');
+				return;
+			}
+			
+			var $select = $('#namespace').empty();
+        	$.each(d.data, function(i, c) {
+				$.each(c.namespace, function(j, n) {
+					$("<option />").text(n).val(n).appendTo($select);
+				});
+			});
+			if(flag !== "")
+			{
+				$select.find("option[value='" + config.namespace + "']").attr("selected",true);
+				$select.prop('disabled', true);
+    		}
+		}
+    }); 
+}
+// 给所有的input 添加校验 
+$('#configForm input').on('focusout',function (e) {
+	setFormTips($(e.target));
+});
+function checkInput(){
+	var ret = true;
+	$("#configForm input[type='text']").each(function () {
+		if($(this).val() === '')
+		{
+			setFormTips(this);
+			ret = false;
+		}else if($(this).attr('name') === 'mn'){
+			if(!checkMapNameUnique(this)){
+				ret = false;
+			}
+		}
+	});
+	return ret;
+}
+function setFormTips(field)
+{
+	$(field).parent().find('.formtips').remove().end();
+	var v = $(field).val();
+	var f_name=$(field).attr('name');
+	
+	if( v === '')
+	{
+		$(field).closest('.form-group').addClass('has-error');
+        $(field).parent().append('<span class="formtips text-red">不能为空!</span>');
+	}
+	else if($(field).attr('name')=='mn'){
+		checkMapNameUnique(field);
+	}
+	else 
+	{
+		$(field).closest('.form-group').removeClass('has-error').addClass('has-success');
+	}
+}
+function checkMapNameUnique(field){
+	$(field).parent().find('.formtips').remove().end();
+	var result = true;
+	//console.info("now go into name==mn");
+	var $notMeInput = $("div[name='configMapForm'] input[name='mn']").not($(field)[0]);
+	//console.info($notMeInput);
+	//console.info("$notMeInput.length");console.info($notMeInput.length);
+	if($notMeInput.length){
+		var meInput = $(field);
+		var meValue = meInput.val();
+		//console.info('meValue');console.info(meValue);
+	    $.each($notMeInput, function(index, input) {
+	    	//console.info('feimeValue');console.info($(input).val());
+	    	if($(input).val() == meValue){
+	    		$(field).parent().find('.formtips').remove().end();
+	    		$(field).closest('.form-group').addClass('has-error');
+	            $(field).parent().append('<span class="formtips text-red">存在name值和这个相等!</span>');
+	            result = false;
+	            return false; 
+	    	}else{
+	    		$(field).closest('.form-group').removeClass('has-error').addClass('has-success');
+	    	}
+	    });
+	}else{
+		$(field).closest('.form-group').removeClass('has-error').addClass('has-success');
+	}
+	return result;
+}
+function getMapConfigParams(){
+	var $configMaps = $("div[name='configMap']");
+    var configMaps = [];
+    $.each($configMaps, function(index_o, configMap) {
+        var $cf = {};
+        $cf.name = "configmapkey" + index_o;
+		$cf.filename = $(configMap).find("input[id='mapName']").val();
+        $cf.value = $(configMap).find("textarea[id='mapValue']").val();
+        if ($cf.filename !== "" && $cf.value !== "") {
+        	configMaps.push($cf);
+        }
+    });
+	return configMaps;
+}
+// 补充submit事件
+function submit(surl,isUpdate){
+	$("#submit").click(function() {
+		if(checkInput()){
+			var para ={};
+			if(isUpdate){
+				para = {
+					'id':config.id,
+					'json':JSON.stringify(getMapConfigParams())
+				};
+			}else{
+		        para = {
+					'name':$('#name').val(),
+					'json':JSON.stringify(getMapConfigParams()),
+					'namespace':$('#namespace').val()
+				};
+			}
+			if(!isUpdate){
+				if(para.clusterId === "" || para.clusterId === null){
+					alert("此租户下没有cluster，请先去添加cluster，否则添加配置操作将会失败！");
+					return false;
+				}
+				if(para.namespace === "" || para.namespace === null){
+					alert("此cluster下没有namespace，请先去添加资源分区，否则添加配置操作将会失败！");
+					return false;
+				}
+			}
+	        $.ajax({
+		        url: surl,
+		        type: "POST",
+		        dataType: "json",
+		        data: para,
+		        success: function(response, textStatus, jqXHR) {
+		        	if (response['status'] > 0) {
+						var msg = "Config Map " + $('#name').val(); 
+						if(isUpdate)
+						{
+							msg += " updated";
+						}
+						else
+						{
+							msg += " added";
+						}
+						alertSuccess("SUCCESS", msg)
+		        		$(".content").load("configMap_list.html?_f=" + $.now());
+			        } else {
+			        	alertError("ERROR", response['message']);
+			       }
+		        }
+		    }); 	
+		}
+	});
+}
+</script>

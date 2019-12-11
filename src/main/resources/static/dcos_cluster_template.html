@@ -1,0 +1,80 @@
+<div class="panel panel-info" >
+	<div class="panel-heading">
+		Bootstrap节点
+	</div>
+	<div class="panel-body" name="labelForm" id="bootstrapNode">
+		<div class="form-group">
+			<label class="col-sm-4">IP地址</label>
+		</div>
+		<div class="form-group" name="label">
+			<div class="col-sm-4">
+			<div class="form-group" style="padding-left:15px;">
+				<input type="text" class="form-control allow-uppercase no-validation" id="labelValue" placeholder="IP地址"/>
+			</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="panel panel-info" >
+	<div class="panel-heading">
+		Master节点
+	</div>
+	<div class="panel-body" name="labelForm" id="masterNodes">
+		<div class="form-group">
+			<label class="col-sm-4">IP地址</label>
+		</div>
+		<div class="form-group" name="label">
+			<div class="col-sm-4">
+			<div class="form-group" style="padding-left:15px;">
+				<input type="text" class="form-control allow-uppercase no-validation" id="labelValue" placeholder="IP地址"/>
+			</div>
+			</div>
+			<div class="btn-group col-sm-5" style="padding-left:15px;">
+				<button type="button" class="btn btn-primary vadd" onclick="addLabel(this)">+</button>
+				<button type="button" class="btn btn-primary vdel" onclick="delLabel(this)">-</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="panel panel-info" >
+	<div class="panel-heading">
+		Slave节点
+	</div>
+	<div class="panel-body" name="labelForm" id="slaveNodes">
+		<div class="form-group">
+			<label class="col-sm-4">IP地址</label>
+		</div>
+		<div class="form-group" name="label">
+			<div class="col-sm-4">
+			<div class="form-group" style="padding-left:15px;">
+				<input type="text" class="form-control allow-uppercase no-validation" id="labelValue" placeholder="IP地址"/>
+			</div>
+			</div>
+			<div class="btn-group col-sm-5" style="padding-left:15px;">
+				<button type="button" class="btn btn-primary vadd" onclick="addLabel(this)">+</button>
+				<button type="button" class="btn btn-primary vdel" onclick="delLabel(this)">-</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="panel panel-info" >
+	<div class="panel-heading">
+		DNS信息
+	</div>
+	<div class="panel-body" name="labelForm" id="dnsInfo">
+		<div class="form-group">
+			<label class="col-sm-4">DNS地址</label>
+		</div>
+		<div class="form-group" name="label">
+			<div class="col-sm-4">
+			<div class="form-group" style="padding-left:15px;">
+				<input type="text" class="form-control allow-uppercase no-validation" id="labelValue" value="8.8.8.8" placeholder="DNS地址"/>
+			</div>
+			</div>
+			<div class="btn-group col-sm-5" style="padding-left:15px;">
+				<button type="button" class="btn btn-primary vadd" onclick="addLabel(this)">+</button>
+				<button type="button" class="btn btn-primary vdel" onclick="delLabel(this)">-</button>
+			</div>
+		</div>
+	</div>
+</div>

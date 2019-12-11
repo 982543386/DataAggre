@@ -1,0 +1,347 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="addJob">新增 Job</a>
+					</div>
+            </div>
+			<div class="box-body">
+				<table id="jobTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Owner</th>
+							<th>Version</th>
+							<th>Job Type</th>
+							<th>Last Updated</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal" data-backdrop="static" data-keyboard="false">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >×</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to run</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div id="partModalJobType">
+							<div class="form-group" style="margin-top:5px; margin-bottom:0px;">
+								<label class="col-md-offset-1 col-sm-5"><input type="radio" name="jobtype" id="jobsingle" checked="true"> Run Once</label>
+								<label class="col-sm-6"><input type="radio" name="jobtype" id="jobmulti"> Scheduled Run</label>
+							</div>
+						</div>
+						<div id="partModalJob" style="display:none; margin-top:15px;">
+							<div class="form-group">
+								<label class="col-sm-2 control-label">定时规则</label>
+								<div class="col-sm-3">
+									<div class="form-group">
+									<label class="col-sm-3 control-label">月:</label>
+									<div class="col-sm-9">
+										<input type="text" class="form-control" id="month" placeholder="1-12或*">
+									</div>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">星期:</label>
+										<div class="col-sm-7">
+											<select class="form-control" id="week">
+												<option value=*>*</option>
+												<option value=1>一</option>
+												<option value=2>二</option>
+												<option value=3>三</option>
+												<option value=4>四</option>
+												<option value=5>五</option>
+												<option value=6>六</option>
+												<option value=0>日</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-3 control-label">日:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" id="day" placeholder="1-31或*">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group ">
+								<div class="col-sm-offset-2 col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-3 control-label">时：</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" id="hour" placeholder="0-23或*">
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">分:</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" id="min" placeholder="0-59或*">
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-12 control-label" style="font-size:12px">'*'代表每一个时间点</label>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">状态</label>
+								<div class="col-sm-6">
+									<select class="form-control" id="jobStatus">
+										<option value=1>开启</option>
+										<option value=0>关闭</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" id="partModalDeploy" onclick="return runJob();">
+					部<span style="padding-left: 12px" />署
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+    var table = $('#jobTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"/job/getJobs",
+			error: function (XMLHttpRequest, textStatus, errorThrown) 
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+					{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+					{ "data": "jobType", "render": function(data, type, row) {
+							if(data === 0)
+								return "Single Run";
+							else
+								return "Scheduled Run";
+						}
+					},
+					{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+            switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm run' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Run</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+			   
+				//Deploying
+				case 1: $(row).find('td:eq(6)').html('');
+						$(row).find('td:eq(5)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+			   
+				//Running
+				case 2: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-green btn-sm label-status'>Running</span>");
+				break;
+				
+				//Scheduled
+				case 3: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-purple btn-sm label-status'>Scheduled</span>");
+				break;
+				
+				//Failed
+				case -1: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm run' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Run</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(5)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+			   
+			   default: console.log('Unknown case..');
+			   break;
+			}
+        }
+    });
+	
+	$('#addJob').click( function() {
+		$('section.content').load('add_job.html?h=' + new Date().getTime());
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.run', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+		
+		getPartitions(data, caller);
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('view_job.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete job <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+	
+	$('#jobTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_job.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/job/deleteJob",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	function runJob() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		
+		var _cronExpression = "";
+		if($('#jobmulti').is(':checked'))
+			_cronExpression = getCron();
+		
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+			{
+				_namespaces.push($(this).val());
+			}
+		});
+		
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+		
+		$.ajax({
+			url: "/job/runJob",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces),
+				cronExpression:_cronExpression,
+				taskStatus:$('#jobStatus').val()
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	function getCron(){
+		var min = $('#min').val() || '*';
+		var hour = $('#hour').val() || '*';
+		var day = $('#day').val() || '*';
+		var week = $('#week').val() || '*';
+		var month = $('#month').val() || '*';
+		return min + " " + hour + " " + day + " " + month + " " + week + " ?";
+	}
+</script>

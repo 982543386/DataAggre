@@ -1,0 +1,122 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增资源分区</button>
+			</div>
+			<div class="box-body">
+				<table id="resPartionTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>Partition Name</th>
+							<th>Node Number</th>
+							<th>Cpu Limit</th>
+							<th>Memory Limit</th>
+							<th>Pods Limits</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	var table = $('#resPartionTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/respartions",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "groupName"
+								},
+								{
+									"data" : "nodeAccount"
+								},
+								{
+									"data" : "cpuLimit"
+								},
+								{
+									"data" : "memoryLimit",
+									"render" : function(data, type, row) {
+										return data + "Ki";
+									}
+								},
+								{
+									"data" : "podLimit"
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs update'>Update</button>&nbsp;<button class='btn btn-primary btn-xs del'>Delete</button>"
+								} ],
+						buttons : {
+							buttons : [ {
+								text : 'Reload',
+								action : function(e, dt, node, config) {
+									dt.ajax.reload();
+								}
+							} ]
+						}
+					});
+	$('#resPartionTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("groupName", data.groupName);
+		$('.content').load('respartion_grouping.html');
+	});
+	$('#resPartionTable tbody').on('click', 'button.del', function() {
+		var groupName = table.row($(this).parents('tr')).data().groupName;
+		$.ajax({
+		       url: "/respartions/nodes/" + groupName +"/del",
+		       type: "POST",
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] > 0) {
+		        	   table.ajax.reload();
+		               var _name = groupName;
+		               var _div = $('<div/>');
+		               _div.load('alert_success.html',
+		               function() {
+		                   $(this).find('#title').html(response['message']);
+		                   $(this).find('#message').html("Delete <strong>" + _name + "</strong> group successfully.");
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1).slideToggle(1000,
+		                    function() {
+		                        child.alert('close');
+		                    });
+		                   $('.content').append(child);
+		               });
+		           } else {
+		               var _div = $('<div/>');
+		               _div.load('alert_error.html',
+		               function() {
+		                   $(this).find('#title').html("ERROR");
+		                   $(this).find('#message').html(response['message']);
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1,
+		                    function() {
+		                        setTimeout(function() {
+		                            child.slideToggle(2000,
+			                            function() {
+			                                child.alert('close');
+			                            })
+		                        },
+		                        5000);
+		                   });
+		                   $('.content').append(child);
+		               });
+		           }
+		       }
+		   });
+	});
+	$("#add").click(function() {
+		$(".content").load("respartion_grouping.html");
+	});
+</script>

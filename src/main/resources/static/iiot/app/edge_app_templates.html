@@ -1,0 +1,336 @@
+<div class="row" id="templates">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="input-group input-group-sm">
+					<a href="javascript:void(0);"
+						class="btn btn-primary addApplication">新建应用模版</a>
+				</div>
+			</div>
+			<!-- /.box-header -->
+			<div class="box-body">
+				<table id="templateTable" class="table table-bordered table-hover"
+					style="font-size: 12px;" width="100%">
+					<thead></thead>
+					<!-- <thead>
+						<tr>
+						<th>ID</th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th>操作</th>
+						</tr>
+					</thead> -->
+				</table>
+			</div>
+			<!-- /.box-body -->
+		</div>
+		<!-- 	<div class="panel panel-default">
+  <div class="panel-heading">Panel heading without title</div>
+  <div class="panel-body">
+    Panel content
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Panel title</h3>
+  </div>
+  <div class="panel-body">
+    Panel content
+  </div>
+</div> -->
+		<!-- /.box -->
+	</div>
+	<!-- /.col -->
+</div>
+<!-- <button class="btn btn-primary btn-lg" data-toggle="modal"
+	data-target="#modalDeploy" id="deployAppToNodes">开始演示模态框</button> -->
+
+<div class="modal modal-primary fade" id="modalDeploy">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<a>部署应用到节点</a>
+				<button type="button" class="close" data-dismiss="modal"
+					id="modalDeployClose">
+					<span>X</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p id="modalDeployTitle"></p>
+				<p id="modalDeployNote"></p>
+				<div class="form-group">
+					<label for="exampleInputEmail1">应用名称</label> <input type="email"
+						style="width: 60%; color: #444444" class="form-control"
+						id="appName" placeholder="请输入应用名称">
+				</div>
+				<p id="modalMsgConfirm" />
+				<div class="form-group">
+					<label>请选择节点</label> <select class="form-control"
+						style="width: 60%; color: #444444" id="nodes">
+					</select>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-outline" id="modalDeploy-btn"
+					data-dismiss="modal">部署</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- /.row -->
+<script type="text/javascript">
+	var templateTable = null;
+	getTemplateTable();
+	//模态框 部署 
+	$('#modalDeploy-btn').on( 'click', function () {
+		//var data = templateTable.row($(this).parents('tr')).data();
+		var appID = sessionStorage.getItem("appID");
+		//alert(data.note);
+        //$('.content').load('iiot/app/edge_app_view.html');
+		//sessionStorage.setItem("appID", data.id);
+		var temlateprojectId = sessionStorage.getItem("temlateprojectId");
+		var name = $('#appName').val();
+		var modalDeployNote = $('#modalDeployNote').val();
+		if (name.length == 0) {
+			//alert("请输入应用名称");
+			//$('#appName').focus();
+			return;
+		}
+		var node = $('#nodes').val();
+		
+		var params = {};
+		params["name"] = name;
+		params["node"] = node;
+		params["template"] = temlateprojectId;
+		params["modalDeployNote"] = modalDeployNote;
+		
+		
+		$.ajax({
+			url : "/iiot/project/deployAppToNode",
+			type : "POST",
+			data : params,
+			//data: JSON.stringify(json1),
+			success : function(response) {
+				if (response.status > -1) {
+					/* 					goback(response.message, "App <strong>" + name
+					 + "</strong> added successfully.",
+					 'iiot/app/edge_app_monitor.html',alert(success));
+					 */
+					 alert("成功了！");
+					 $(".content").load("/iiot/app/edge_app_monitor.html",
+								function() {
+									getEdgeAppList();
+								})
+							
+				} else {
+					alertError("ERROR", response.message);
+				}
+			}
+		});
+	/* 	接口：deployAppToNode
+		name/node/template */
+		$.ajax({
+			url: "/iiot/project/application/deploy",
+			type: "POST",
+			dataType: "json",
+			data: {
+				id:appID
+			},
+			success: function(response){
+				if(response['status'] > -1)
+				{
+					var _name = data['name']
+					var _div = $('<div>');
+					_div.load('alert_success.html', function(){
+						$(this).find('#title').html(response['message']);
+						$(this).find('#message').html("Project <strong>" + _name + "</strong> deployed successfully.");
+						var child = $(this).children();
+						child.fadeTo(3000, 500).slideToggle(500, function(){
+							child.alert('close');
+						});
+						$('.content').append(child);
+					});
+				}
+				else
+				{
+					var _div = $('<div>');
+					_div.load('alert_error.html', function(){
+						$(this).find('#title').html("ERROR");
+						$(this).find('#message').html(response['message']);
+						var child = $(this).children();
+						child.fadeTo(3000, 500).slideToggle(500, function(){
+							child.alert('close');
+						});
+						$('.content').append(child);
+					});
+				}
+			}
+		});
+		sessionStorage.removeItem("appID");
+    } );
+	$('#modalDeployClose').on( 'click', function () {
+		sessionStorage.removeItem("appID");
+		sessionStorage.removeItem("temlateprojectId");
+    } );
+	
+	$('.addApplication').click( function() {
+		$('.content').load('iiot/app/edge_app_add.html');
+		$.getScript("../js/iiot/project.js");
+    } );
+	
+	$('#templateTable tbody').on( 'click', 'button.update', function () {
+		var data = templateTable.row($(this).parents('tr')).data();
+		$('.content').load('build_application.html');
+		sessionStorage.setItem("appID", data['id']);
+    } );
+	
+	
+	$('#templateTable tbody').on( 'click', 'button.view', function () {
+		var data = templateTable.row($(this).parents('tr')).data();
+		
+		//alert(data.note);
+        $('.content').load('iiot/app/edge_app_view.html');
+		sessionStorage.setItem("appID", data.id);
+    } );
+	
+	$('#templateTable tbody').on( 'click', 'button.deployAppToNodes', function () {
+		var data = templateTable.row($(this).parents('tr')).data();
+		
+		sessionStorage.setItem("appID", data.id);
+		sessionStorage.setItem("temlateprojectId", data.projectId);
+		
+		
+		$('#modalDeployTitle').html('部署 <strong>' + data.name + '到指定节点 </strong>');
+		$('#modalDeployNote').html('描述: <strong>' + data.note + ' </strong>');
+			$.ajax({
+				url : "/nodeMonitor/getNodesList",
+				type : "GET",
+				success : function(data) {
+					var list = data.result;
+					for (i = 0; i < list.length; i++) {
+						//alert(list);
+						$("#nodes").append(
+								"<option value='"+list[i].ip+"'>"
+										+ list[i].ip + "</option>");
+					}
+
+				}
+
+			});
+		
+		//alert(data.note);
+        //$('.content').load('iiot/app/edge_app_view.html');
+		
+    } );
+	
+	
+	$('#templateTable tbody').on( 'click', 'button.delete', function () {
+		var data = templateTable.row($(this).parents('tr')).data();
+		
+		templateID = data.projectId;
+		//alert(templateID);
+		deleteTemplateItem(templateID);
+		
+		//alert(data.note);
+        //$('.content').load('iiot/app/edge_app_view.html');
+		sessionStorage.setItem("appID", data.id);
+    } );
+	//TODO
+/* 	$('#deviceTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('确定删除 <strong>' + data.deviceName + '</strong>？');
+		$('#deleteModal').modal().one('click', '#modal-btn', function() {
+			$(e.target).button('loading');
+			removeDevice(data);
+			table.ajax.reload();
+			//table.ajax.url("/iiot/device/queryAllDevice").load();
+		});
+	}); */
+	
+	
+	
+	$('#templateTable tbody').on( 'click', 'button.deploy', function () {
+		var data = templateTable.row($(this).parents('tr')).data();
+        
+		$.ajax({
+				url: "/iiot/project/application/deploy",
+				type: "POST",
+				dataType: "json",
+				data: {
+					id:data['id']
+				},
+				success: function(response){
+					if(response['status'] > -1)
+					{
+						var _name = data['name']
+						var _div = $('<div>');
+						_div.load('alert_success.html', function(){
+							$(this).find('#title').html(response['message']);
+							$(this).find('#message').html("Project <strong>" + _name + "</strong> deployed successfully.");
+							var child = $(this).children();
+							child.fadeTo(3000, 500).slideToggle(500, function(){
+								child.alert('close');
+							});
+							$('.content').append(child);
+						});
+					}
+					else
+					{
+						var _div = $('<div>');
+						_div.load('alert_error.html', function(){
+							$(this).find('#title').html("ERROR");
+							$(this).find('#message').html(response['message']);
+							var child = $(this).children();
+							child.fadeTo(3000, 500).slideToggle(500, function(){
+								child.alert('close');
+							});
+							$('.content').append(child);
+						});
+					}
+				}
+			});
+    } );
+	
+	$('input', $('#appModal')).focusout(function() {
+		setFormTips(this);
+	});
+	
+	$('#appModal').on('hidden.bs.modal', function () {
+		$(this).find('input,textarea,select').val('').end();
+		$(this).find('.form-group').removeClass('has-error').removeClass('has-success').end();
+		$(this).find(".formtips").remove().end();
+		$('#addResult').hide();
+	});
+	
+	function setFormTips(field)
+	{
+		$(field).parent().find('.formtips').remove().end();
+		var v = $(field).val();
+		if(v === '')
+		{
+			$(field).closest('.form-group').addClass('has-error');
+            $(field).parent().append('<span class="formtips" style="color:#dd4b39">不能为空!</span>');
+		}
+		else
+		{
+			$(field).closest('.form-group').removeClass('has-error').addClass('has-success');
+		}
+	}
+	
+	function checkInput(){
+		var ret = true;
+		$('input', $('#appModal')).each(function () {
+			if($(this).val() === '')
+			{
+				setFormTips(this);
+				ret = false;
+			}
+		});
+		return ret;
+	}
+</script>

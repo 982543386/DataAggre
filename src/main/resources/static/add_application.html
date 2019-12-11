@@ -1,0 +1,139 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">Add Application</h3>
+			</div>
+			<div class="col-sm-6 no-padding">
+				<button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button> 
+				<!--  <button type="button" class="btn btn-default" onclick="location.href='application_main_new.html'">
+					返<span style="padding-left: 12px" />回
+				</button> -->
+				<button type="button" class="btn btn-primary pull-right" id="template_open">Use Template</button>
+				<div class="col-sm-12 input-group input-group-sm pull-right" id="template_div" style="display:none;">
+					<input type="text" class="form-control" placeholder="Paste JSON here" id="template_input"/>
+					<span class="input-group-btn">
+					  <button type="button" class="btn btn-primary btn-flat" id="template_import">Import</button>
+					</span>
+				</div>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Application Name</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="name"
+							placeholder="项目名称"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Version</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special lowercase validation" id="version"
+							placeholder="项目版本号" value="v1"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Notes</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special validation" id="note"
+							placeholder="笔记"/>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="form-group" name="service">
+                    <div class="col-sm-9 col-sm-offset-1">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+								Service&nbsp;
+								<div class="btn-group">
+                                    <button type="button" class="btn btn-primary" onclick="addService(this)">+</button>
+                                    <button type="button" class="btn btn-primary" onclick="delService(this)">-</button>
+                                    <button type="button" class="btn btn-primary" name="expand" data-parent="#selector" data-toggle="collapse" data-target="#service_panel_0" onclick="hide_show(this)">></button>
+                                </div>
+                            </div>
+                            <div class="panel-body" id="service_panel_0"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+                	<!--   "location.href='test.html'"-->
+                    <button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button> 
+					
+                    <button onclick="return addApplication()" type="button" class="btn btn-primary saveBtn" disabled="disabled">
+						保<span style="padding-left: 12px" />存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+<script>
+	$.getScript("../js/project.js");
+
+	$(document).ready(function(){
+		var _div = $('<div>');
+		_div.load('service_template.html?h=' + new Date().getTime(), function(){
+			$(this).find("#servVersion").closest('.form-group').remove();
+			$(this).find("#servDescribe").closest('.form-group').remove();
+			$("#service_panel_0").append($(this).children());
+			getDockerImage('', $("#service_panel_0").find('#conImage'));
+			getConfigMaps($("#service_panel_0"));
+		});
+	});
+	
+	$('#template_open').click( function() {
+		$(this).hide();
+		$('#template_div').animate({width:'toggle'},500);
+	});
+	
+	$('#template_import').click( function() {
+		
+		var json;
+
+		try
+		{
+			json = JSON.parse($('#template_input').val());
+		}
+		catch (e)
+		{
+			alertError("ERROR", "You entered an Invalid Template.");
+			return;
+		}
+					
+		//Loop Services
+		$("#service_panel_0").html('');
+		$.each(json.services, function(i, s) {
+			
+			if(i > 0)
+			{
+				var $service = $("div.form-group[name='service']:last");
+				var $new_service = $service.clone();
+				$new_service.find("button[name='expand']").attr("data-target", "#service_panel_" + i);
+				$new_service.find(".panel-body").attr("id", "service_panel_" + i).html('');
+				$service.after($new_service);
+			}
+			
+			var servicePanel = $("#service_panel_" + i);
+			cloneService(s, servicePanel, ku8App);
+		});
+	});
+</script>

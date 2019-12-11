@@ -1,0 +1,102 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增用户组</button>
+			</div>
+			<div class="box-body">
+				<table id="groupTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>Group Name</th>
+							<th>Parttions</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	var table = $('#groupTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/usergroup/list",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "groupName"
+								},
+								{
+									"data" : "ku8ParttionIds"
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs update'>Update</button>&nbsp;<button class='btn btn-primary btn-xs del'>Delete</button>"
+								} ]
+					});
+	$('#groupTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "usergroup/" + data.groupId +"/del",
+		       type: "POST",
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] > 0) {
+		        	   table.ajax.reload();
+		               var _name = data.groupName;
+		               var _div = $('<div/>');
+		               _div.load('alert_success.html',
+		               function() {
+		                   $(this).find('#title').html(response['message']);
+		                   $(this).find('#message').html("Delete <strong>" + _name + "</strong> user group successfully.");
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1).slideToggle(1000,
+		                    function() {
+		                        child.alert('close');
+		                    });
+		                   $('.content').append(child);
+		               });
+		           } else {
+		               var _div = $('<div/>');
+		               _div.load('alert_error.html',
+		               function() {
+		                   $(this).find('#title').html("ERROR");
+		                   $(this).find('#message').html(response['message']);
+		                   var child = $(this).children();
+		                   child.fadeTo(3000, 1,
+		                    function() {
+		                        setTimeout(function() {
+		                            child.slideToggle(2000,
+			                            function() {
+			                                child.alert('close');
+			                            })
+		                        },
+		                        5000);
+		                   });
+		                   $('.content').append(child);
+		               });
+		           }
+		       }
+		   });
+	});
+	$('#groupTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("userGroup", JSON.stringify(data));
+		$('.content').load('group_security_form.html');
+	});
+	$("#add").click(function() {
+		if(sessionStorage.getItem("userGroup")){
+			sessionStorage.removeItem("userGroup");
+		}
+		$(".content").load("group_security_form.html");
+	});
+</script>

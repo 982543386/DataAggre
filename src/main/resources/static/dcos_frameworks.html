@@ -1,0 +1,558 @@
+<style type="text/css">
+    #all_info_show_cpu_div {
+        width: 350px;
+        height: 250px;
+        display: inline-block;
+    }
+    .myTitle{
+        font-size: 20px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box-header">
+            <div class="box-header" style="border:1px solid #F0F0F0;">
+                <button id="btn-list-style" class="btn btn-primary" type="button">List</button>
+                <button id="btn-grid-style" class="btn btn-primary" type="button">Grid</button>
+            </div>
+
+        <div class="box-header" style="border:1px solid #F0F0F0;float:right">
+            <button id="btn-cpu-used" class="btn btn-primary" type="button">Cpu</button>
+            <button id="btn-mem-used" class="btn btn-primary" type="button">Memory</button>
+        </div>
+        
+            <div class="box-body" id="div-list-style">
+                <div class="box-body">
+                    <select id="select-framework-filter">
+                    </select>
+                </div>
+                <div class="box-body">
+                    <table id="table-node-list" class="table table-bordered table-hover" style="font-size: 12px;">
+                        <thead>
+                        <tr>
+                            <th>IP地址</th>
+                            <th>任务数</th>
+                            <th>CPU使用率</th>
+                            <th>Mem使用率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="box-body" id="div-grid-style">
+                <div style="float:left;width:20%;border:1px solid #F0F0F0;">
+                    <ul id="framework_name_ul">
+                    </ul>
+                </div>
+                <div style="float:right;width:80%;height:100%;border:1px solid #F0F0F0;">
+                    <div id="all_info_show_cpu_container" style="width:100%;float:right">
+                    </div>
+                    <div id="all_info_show_mem_container" style="width:100%;float:right">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var myRadius = 70;
+    var myCenter = ['50%', '40%'];
+    var dataStyle = {
+        normal : {
+            label : {
+                show : false
+            },
+            labelLine : {
+                show : false
+            }
+        }
+    };
+
+    var addDivDone = false;
+    var echarts_cpu = [];
+    var echart_cpu_option = [];
+    var echarts_mem = [];
+    var echart_mem_option = [];
+    var framework_name_dic = [];
+    var slave_cache_info = [];
+    var framework_filter_value = ":";
+    function updateNodesState() {
+        $.ajax({
+            url: "/nodes/states/used",
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: null,
+            async: false,
+            success: function (response) {
+                var nodeStateUsedInfo = $.parseJSON(response.body);
+                if (!nodeStateUsedInfo) {
+                    return;
+                }
+
+                var hostnames= new Array();
+
+                updateFrameworkNameAndColorDic(nodeStateUsedInfo["frameworks"]);
+                updateHostnameDic(nodeStateUsedInfo["slaves"]);
+
+                $("#table-node-list tbody").empty();
+                nodeStateUsedInfo["slaves"].forEach(function (slave) {
+                    var legend_datas_cpu = [];
+                    var series_datas_cpu = [];
+                    var legend_datas_mem = [];
+                    var series_datas_mem = [];
+                    series_datas_cpu.push({value:100, name:'未使用'});
+                    series_datas_mem.push({value:100, name:'未使用'});
+                    nodeStateUsedInfo["frameworks"].forEach(function(framework) {
+                        legend_datas_cpu.push(framework.name);
+                        series_datas_cpu.push({value:0, name:framework.name});
+                        legend_datas_mem.push(framework.name);
+                        series_datas_mem.push({value:0, name:framework.name});
+                    });
+
+                    var framework_ids = [];
+                    slave["framework_ids"].forEach(function(framework_id) {
+                        framework_ids.push(framework_id);
+                    });
+
+                    var option_data_cpu = {};
+                    option_data_cpu.legend_data = legend_datas_cpu;
+                    option_data_cpu.series_data = series_datas_cpu;
+                    option_data_cpu.framework_ids = framework_ids;
+                    option_data_cpu.totalUsedPercent = 0;
+                    echart_cpu_option[slave.hostname] = option_data_cpu;
+
+                    var option_data_mem = {};
+                    option_data_mem.legend_data = legend_datas_mem;
+                    option_data_mem.series_data = series_datas_mem;
+                    option_data_mem.framework_ids = framework_ids;
+                    option_data_mem.totalUsedPercent = 0;
+                    echart_mem_option[slave.hostname] = option_data_mem;
+
+                    if(!addDivDone){
+                        hostnames.push(slave.hostname);
+                        var cpu_div = '<div id="dcos_nodes_cpu_' + slave.hostname + '" style="float:left;width:350px;height:250px;"></div>';
+                        $("#all_info_show_cpu_container").append(cpu_div);
+
+                        var mem_div = '<div id="dcos_nodes_mem_' + slave.hostname + '" style="float:left;width:350px;height:250px;"></div>';
+                        $("#all_info_show_mem_container").append(mem_div);
+
+                        var cpu_domain =document.getElementById('dcos_nodes_cpu_' + slave.hostname);
+                        echarts_cpu[slave.hostname] = echarts.init(cpu_domain);
+
+                        var mem_domain =document.getElementById('dcos_nodes_mem_' + slave.hostname);
+                        echarts_mem[slave.hostname] = echarts.init(mem_domain);
+
+                        updateCpuEchatOption(slave.hostname);
+                        updateMemEchatOption(slave.hostname);
+                    }
+
+                    var cpu_used_percent = accMul(changeTwoDecimal(accDiv(slave["used_resources"].cpus, slave["resources"].cpus)), 100);
+                    var mem_used_percent = accMul(changeTwoDecimal(accDiv(slave["used_resources"].mem, slave["resources"].mem)), 100);
+
+                    var node_list_line = "";
+                    node_list_line +='<tr id="table-line-'+slave.hostname+'">';
+                    node_list_line +=   '<td>'+slave.hostname+'</td>';
+                    node_list_line +=   '<td>'+slave.TASK_RUNNING+'</td>';
+                    node_list_line +=   '<td>'+cpu_used_percent+'%</td>';
+                    node_list_line +=   '<td>'+mem_used_percent+'%</td>';
+                    node_list_line +='</tr>';
+                    $("#table-node-list tbody").append(node_list_line);
+                });
+                addDivDone = true;
+
+                $("#framework_name_ul").empty();
+                $("#framework_name_ul").append('<li><a target="_blank" href="javascript:void(0)" onclick="showAllSlaves()">All</a></li>');
+                $("#select-framework-filter").empty();
+                $("#select-framework-filter").append('<option value=":">All</option>');
+                nodeStateUsedInfo["frameworks"].forEach(function (framework) {
+                    var framework_li_html = "";
+                    framework_li_html += '<li>';
+                    framework_li_html +=    '<a id="'+framework.id+'" target="_blank" href="javascript:void(0)" onclick="frameworkSelected(id)">'+framework.name+'</a>';
+                    framework_li_html += '</li>';
+                    $("#framework_name_ul").append(framework_li_html);
+
+                    var select_framework_filter_option = "";
+                    select_framework_filter_option += '<option value="'+framework.id+'">';
+                    select_framework_filter_option += framework.name;
+                    select_framework_filter_option += '</option>';
+                    $("#select-framework-filter").append(select_framework_filter_option);
+                });
+
+                $("#select-framework-filter option[value='"+framework_filter_value+"']").attr("selected", true);
+                filterTableLines(framework_filter_value);
+            }
+        });
+
+        $.ajax({
+            url: "/nodes/states/tasks",
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: null,
+            success: function (response) {
+                var frameworkUsedResourceInfo = $.parseJSON(response.body);
+                if (!frameworkUsedResourceInfo) {
+                    return;
+                }
+
+                emptyOptionData();
+                frameworkUsedResourceInfo["frameworks"].forEach(function(framework) {
+                    framework["tasks"].forEach(function (task) {
+                        var slave_info = slave_cache_info[task.slave_id];
+                        var taskUsedCpus = task.resources.cpus;
+                        var taskExecutorUsedCpus = getExecutorUsedCpus(task.executor_id, framework["executors"]);
+                        var usedCpus = accMul(changeTwoDecimal(accDiv(accAdd(taskUsedCpus, taskExecutorUsedCpus), slave_info.cpus)), 100);
+                        setCpuOptionData(slave_info.hostname, framework_name_dic[framework.name], framework.name, usedCpus);
+
+                        var taskUsedMem = task.resources.mem;
+                        var taskExecutorUsedMem = getExecutorUsedMem(task.executor_id, framework["executors"]);
+                        var usedMem = accMul(changeTwoDecimal(accDiv(accAdd(taskUsedMem, taskExecutorUsedMem), slave_info.mem)), 100);
+                        setMemOptionData(slave_info.hostname, framework_name_dic[framework.name], framework.name, usedMem);
+                    });
+                });
+
+                for (var key in echart_cpu_option) {
+                    updateCpuEchatOption(key);
+                }
+                for (var key in echart_mem_option) {
+                    updateMemEchatOption(key);
+                }
+            }
+        });
+    }
+
+    function getExecutorUsedCpus(executorId, executorsJson) {
+        executorsJson.forEach(function(executorInfo) {
+            if(executorId == executorInfo.executor_id)
+                return executorInfo.resources.cpus;
+        });
+
+        return 0;
+    }
+
+    function getExecutorUsedMem(executorId, executorsJson) {
+        executorsJson.forEach(function(executorInfo) {
+            if(executorId == executorInfo.executor_id)
+                return executorInfo.resources.mem;
+        });
+
+        return 0;
+    }
+
+    function emptyOptionData() {
+        for (var key in echart_cpu_option) {
+            echart_cpu_option[key].series_data.forEach(function(data) {
+                data.value = 0;
+            });
+            echart_cpu_option[key].totalUsedPercent = 0;
+        }
+
+        for (var key in echart_mem_option) {
+            echart_mem_option[key].series_data.forEach(function(data) {
+                data.value = 0;
+            });
+            echart_mem_option[key].totalUsedPercent = 0;
+        }
+    }
+
+    function setCpuOptionData(slaveHostname, frameworkId, frameworkName, usedPercent) {
+        echart_cpu_option[slaveHostname].framework_ids.forEach(function(id) {
+            if(frameworkId == id) {
+                echart_cpu_option[slaveHostname].series_data.forEach(function(series_data) {
+                    if(frameworkName == series_data.name) {
+                        series_data.value += usedPercent;
+                    }
+                });
+
+                echart_cpu_option[slaveHostname].totalUsedPercent += usedPercent;
+                updateSlaveResourceCpuUnsed(slaveHostname, 100 - echart_cpu_option[slaveHostname].totalUsedPercent);
+            }
+        });
+    }
+
+    function setMemOptionData(slaveHostname, frameworkId, frameworkName, usedPercent) {
+        echart_mem_option[slaveHostname].framework_ids.forEach(function(id) {
+            if(frameworkId == id) {
+                echart_mem_option[slaveHostname].series_data.forEach(function(series_data) {
+                    if(frameworkName == series_data.name) {
+                        series_data.value += usedPercent;
+                    }
+                });
+
+                echart_mem_option[slaveHostname].totalUsedPercent += usedPercent;
+                updateSlaveResourceMemUnsed(slaveHostname, 100 - echart_mem_option[slaveHostname].totalUsedPercent);
+            }
+        });
+    }
+
+    function updateSlaveResourceCpuUnsed(slaveHostname, cpuUsed) {
+        echart_cpu_option[slaveHostname].series_data.forEach(function(series_data) {
+            if('未使用' == series_data.name) {
+                series_data.value = cpuUsed;
+            }
+        });
+    }
+
+    function updateSlaveResourceMemUnsed(slaveHostname, memUsed) {
+        echart_mem_option[slaveHostname].series_data.forEach(function(series_data) {
+            if('未使用' == series_data.name) {
+                series_data.value = memUsed;
+            }
+        });
+    }
+
+    function updateCpuEchatOption(slave_host_name) {
+        var all_info_show_cpu_div_option = {
+            title: {
+                text: slave_host_name + '-cpu',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                y: 'top',
+                data: echart_cpu_option[slave_host_name].legend_data
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: myRadius,
+                    center: myCenter,
+                    itemStyle: dataStyle,
+                    data: echart_cpu_option[slave_host_name].series_data
+                }
+            ]
+        };
+        echarts_cpu[slave_host_name].setOption(all_info_show_cpu_div_option);
+    }
+
+    function updateMemEchatOption(slave_host_name) {
+        var all_info_show_mem_div_option = {
+            title: {
+                text: slave_host_name + '-mem',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                y: 'top',
+                data: echart_mem_option[slave_host_name].legend_data
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: myRadius,
+                    center: myCenter,
+                    itemStyle: dataStyle,
+                    data: echart_mem_option[slave_host_name].series_data
+                }
+            ]
+        };
+        echarts_mem[slave_host_name].setOption(all_info_show_mem_div_option);
+    }
+
+    function updateFrameworkNameAndColorDic(frameworkNameJsons) {
+        frameworkNameJsons.forEach(function(frameworkNameJson) {
+            framework_name_dic[frameworkNameJson.name] = frameworkNameJson.id;
+        });
+    }
+
+    function updateHostnameDic(hostnameJsons) {
+        hostnameJsons.forEach(function(hostnameJson) {
+            slave_cache_info[hostnameJson.id] = {hostname:hostnameJson.hostname, cpus:hostnameJson.resources.cpus, mem:hostnameJson.resources.mem};
+        });
+    }
+
+    function changeTwoDecimal(num, prex) {
+        if (num == null || num == "") {
+            return 0;
+        }
+        if (isNaN(num)) {;
+            return 0;
+        }
+        if (prex == null || prex == "") {
+            prex = 2;
+        }
+        if (isNaN(prex)) {
+            prex = 2;
+        }
+        /**
+         * 格式化为数字
+         */
+        num = parseFloat(num)
+
+        return num.toFixed(prex);
+    }
+
+    function accAdd(arg1,arg2){
+        var r1,r2,m;
+        try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+        try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+        m=Math.pow(10,Math.max(r1,r2))
+        return (arg1*m+arg2*m)/m
+    }
+
+    function accSub(arg1,arg2){
+        var r1,r2,m,n;
+        try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+        try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+        m=Math.pow(10,Math.max(r1,r2));
+        n=(r1>=r2)?r1:r2;
+        return ((arg1*m-arg2*m)/m).toFixed(n);
+    }
+
+    //返回值：arg1乘以arg2的精确结果
+    function accMul(arg1, arg2) {
+        var m = 0, s1 = arg1.toString(), s2 = arg2.toString();
+        try {
+            m += s1.split(".")[1].length
+        } catch (e) {
+        }
+        try {
+            m += s2.split(".")[1].length
+        } catch (e) {
+        }
+        return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m)
+    }
+
+    //浮点数除法运算
+    function accDiv(arg1, arg2) {
+        var r1 = 0, r2 = 0, m, s1 = arg1.toString(), s2 = arg2.toString();
+        try {
+            if (s1.split(".")[1] != undefined)
+                r1 = s1.split(".")[1].length;
+        } catch (e) {
+        }
+        try {
+            if (s2.split(".")[1] != undefined)
+                r2 = s2.split(".")[1].length;
+        } catch (e) {
+        }
+        m = Math.pow(10, Math.max(r1, r2));
+        return (accMul(arg1, m)) / (accMul(arg2, m));
+    }
+
+    function frameworkSelected(id) {
+        for(var key in echart_cpu_option) {
+            var isShowDiv = false;
+            var option_data = echart_cpu_option[key];
+
+            option_data.framework_ids.forEach(function(framework_id){
+                if(framework_id == id)
+                    isShowDiv = true;
+            });
+
+            if(isShowDiv) {
+                document.getElementById("dcos_nodes_cpu_"+key).style.visibility="visible";
+            } else {
+                document.getElementById("dcos_nodes_cpu_"+key).style.visibility="hidden";
+            }
+        }
+
+        for(var key in echart_mem_option) {
+            var isShowDiv = false;
+            var option_data = echart_mem_option[key];
+
+            option_data.framework_ids.forEach(function(framework_id){
+                if(framework_id == id)
+                    isShowDiv = true;
+            });
+
+            if(isShowDiv) {
+                document.getElementById("dcos_nodes_mem_"+key).style.visibility="visible";
+            } else {
+                document.getElementById("dcos_nodes_mem_"+key).style.visibility="hidden";
+            }
+        }
+    }
+
+    function showAllSlaves() {
+        for(var key in echart_cpu_option) {
+            document.getElementById("dcos_nodes_cpu_"+key).style.visibility="visible";
+        }
+
+        for(var key in echart_mem_option) {
+            document.getElementById("dcos_nodes_mem_"+key).style.visibility="visible";
+        }
+    }
+
+    function filterTableLines(id) {
+        for(var key in echart_cpu_option) {
+            var isShowDiv = false;
+            var option_data = echart_cpu_option[key];
+
+            option_data.framework_ids.forEach(function(framework_id){
+                if(id == ":" || framework_id == id)
+                    isShowDiv = true;
+            });
+
+            var row = document.getElementById("table-line-"+key);
+            if(isShowDiv) {
+                if(null != row) {
+                    row.style.display = (document.all ? "block" : "table-row");
+                }
+            } else {
+                if(null != row) {
+                    row.style.display = "none";
+                }
+            }
+        }
+    }
+
+    $("#btn-cpu-used").click(function() {
+        $("#all_info_show_mem_container").hide();
+        $("#all_info_show_cpu_container").show();
+    });
+
+    $("#btn-mem-used").click(function() {
+        $("#all_info_show_cpu_container").hide();
+        $("#all_info_show_mem_container").show();
+    });
+
+    $("#btn-list-style").click(function() {
+        $("#div-grid-style").hide();
+        $("#div-list-style").show();
+        $("#btn-cpu-used").hide();
+        $("#btn-mem-used").hide();
+    });
+
+    $("#btn-grid-style").click(function() {
+        $("#div-list-style").hide();
+        $("#div-grid-style").show();
+        $("#btn-cpu-used").show();
+        $("#btn-mem-used").show();
+    });
+
+    $("#select-framework-filter").change(function(){
+        framework_filter_value = $(this).children("option:selected").val();
+        filterTableLines(framework_filter_value);
+    });
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if(!isDcosFrameworkPageLoaded) {
+            setInterval("updateNodesState()", 30000);
+            isDcosFrameworkPageLoaded = true;
+        }
+        setTimeout("updateNodesState()", 200);
+        $("#div-grid-style").hide();
+        $("#all_info_show_mem_container").hide();
+    });
+</script>

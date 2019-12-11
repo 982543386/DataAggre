@@ -1,0 +1,33 @@
+<!-- Main content -->
+<div class="container-fluid">
+	<div id="nodeDetail">
+      	<div class="col-xs-9">
+	      	<div class="col-sm-3">
+				<select id="timeGap">
+					<option value='180000'>3分钟</option>
+					<option value='300000'>5分钟</option>
+					<option value='600000'>10分钟</option>
+					<option value='1800000'>30分钟</option>
+					<option value='3600000'>60分钟</option>
+				</select>
+			</div>
+			<div class="col-sm-3">
+				<select id="podname">
+					<option value='pod1'>pod1</option>
+				</select>
+			</div>
+			<div class="col-sm-3">
+				<button onclick="javascript: $('.content').load('iiot/app/edge_app_monitor.html')">返回</button>
+			</div>
+		</div>
+		<div id="cpu_pod_chart" style="height:500px;width:1000px;">
+		
+		</div>
+		<div id="memory_pod_chart" style="height:500px;width:1000px;">
+		
+		</div>
+		<div id="io_pod_chart" style="height:500px;width:1000px;">
+		
+		</div>
+	</div>
+</div>

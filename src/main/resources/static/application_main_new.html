@@ -1,0 +1,1127 @@
+<ul id="myTab" class="nav nav-tabs">
+	<li class="active">
+		<a href="#home" data-toggle="tab">
+			瀹瑰櫒搴旂敤
+		</a>
+	</li>
+	<li><a href="#ios" data-toggle="tab">瀹瑰櫒鏈嶅姟</a></li>
+	<li><a href="#job_main" data-toggle="tab">鎵瑰鐞�</a></li>
+	<li class="dropdown">
+		<a href="#" id="myTabDrop1" class="dropdown-toggle" 
+		   data-toggle="dropdown">Java 
+			<b class="caret"></b>
+		</a>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="myTabDrop1">
+			<li><a href="#jmeter" tabindex="-1" data-toggle="tab">jmeter</a></li>
+			<li><a href="#ejb" tabindex="-1" data-toggle="tab">ejb</a></li>
+		</ul>
+	</li>
+</ul>
+<div id="myTabContent" class="tab-content">
+	<div class="tab-pane fade in active" id="home">
+		<!-- 瀹瑰櫒搴旂敤椤甸潰   application_main-->
+		<p>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="addApplication">鏂板 Application</a>
+					</div>
+					<div class="col-sm-6 no-padding">
+						<button type="button" class="btn btn-primary pull-right" id="importApp_open" data-loading-text="<i class='fa fa-spin fa-cog'></i>">Import Application</button>
+						<div class="col-sm-5 input-group input-group-sm pull-right" id="importApp_div0" style="display:none;">
+							<input type="text" class="form-control" placeholder="Enter Service Name" id="importApp_input"/>
+							<span class="input-group-btn">
+							  <button type="button" data-loading-text="<i class='fa fa-spin fa-cog'></i>" class="btn btn-primary btn-flat" id="importApp_btn">Import</button>
+							</span>
+						</div>
+						<div class="col-sm-3 pull-right no-padding input-group-sm" id="importApp_div1" style="margin-right:5px;display:none;">
+							<select class="form-control" id="importApp_partition" data-toggle="tooltip" data-placement="top" title="Select the partition"/>
+						</div>
+					</div>
+            </div>
+			<div class="box-body">
+				<table id="appTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>搴旂敤鍚嶇О</th>
+							<th>鎷ユ湁鑰�</th>
+							<th>鐗堟湰</th>
+							<th>鏇存柊鏃堕棿</th>
+							<th>鐘舵��</th>
+							<th>鎿嶄綔</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >脳</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to deploy</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					鍏�<span style="padding-left: 12px" />闂�
+				</button>
+				<button type="button" class="btn btn-primary" id="partModalDeploy" onclick="return deployApplication();">
+					閮�<span style="padding-left: 12px" />缃�
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>脳</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+	
+    var table = $('#appTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"/application/getApplications",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+					{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+					{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+            switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+
+				//Deploying
+				case 1: $(row).find('td:eq(5)').html('');
+						$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+
+				//Deployed
+				case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+				break;
+
+				//Failed
+				case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+
+			   default: console.log('Unknown case..');
+			   break;
+			}
+        }
+    });
+
+	$('#addApplication').click( function() {
+		$('section.content').load('add_application.html?h=' + new Date().getTime());
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+    });
+
+	$('#importApp_open').click( function() {
+		var $caller = $(this).button("loading");
+		$.ajax({
+			url: "/application/getNamespacesByUser",
+			type: "GET",
+			dataType: "json",
+			success: function(d) {
+				if (d.data === null) {
+					alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+					return;
+				}
+				if (d.data.length === 0) {
+					alertError("ERROR", 'No partitions found<br/>Please verify User Groups');
+					return;
+				}
+
+				var $partition_select = $("#importApp_partition");
+				var $part_select = $('#importApp_partition').empty();
+				$.each(d.data, function(i, c) {
+					$.each(c.namespace, function(j, n) {
+						$("<option />").text(n).val(n).appendTo($part_select);
+					});
+				});
+				$caller.hide();
+				$('#importApp_div0, #importApp_div1').animate({width:'toggle'},500);
+			}
+		}).always(function() {
+			$caller.button("reset");
+		}).fail(function() {
+			alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+			return;
+		});
+    });
+
+	$('#importApp_btn').click( function() {
+		var $caller = $(this).button('loading');
+		var $namespace = $('#importApp_partition').attr('disabled', 'disabled').val();
+		var $serviceName = $('#importApp_input').attr('disabled', 'disabled');
+
+		$.ajax({
+			url: "/application/importApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				namespace:$namespace,
+				serviceName:$serviceName.val()
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess('SUCESS', response.message);
+					$serviceName.val('');
+				}
+				else
+				{
+					alertError('ERROR', response.message);
+				}
+			}
+		}).always(function() {
+			$caller.button('reset');
+			$('#importApp_input, #importApp_partition').removeAttr('disabled');
+			table.ajax.reload();
+		});
+    });
+
+	$('#appTable tbody').on( 'click', 'button.deploy', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+
+		getPartitions(data, caller);
+    });
+
+	$('#appTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('view_application.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+    });
+
+	$('#appTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete application <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+
+	$('#appTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_application.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+	});
+
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/application/deleteApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+
+	function deployApplication() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+			{
+				_namespaces.push($(this).val());
+			}
+		});
+
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+
+		$.ajax({
+			url: "/application/deployApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces)
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+    }
+</script>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>
+	</div>
+	<div class="tab-pane fade" id="ios">
+	    <!-- 瀹瑰櫒鏈嶅姟椤甸潰   service_main-->
+		<p>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+                <div class="input-group input-group-sm">
+                	<a href="javascript:void(0);" class="btn btn-primary" id="addService">鏂板 Service</a>
+                	&nbsp;
+                	<a class="btn btn-primary" id="uploadYaml">Yaml鏂瑰紡鏂板Service</a> 
+                </div>
+            </div>
+			<div class="box-body">
+				<table id="serviceTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Owner</th>
+							<th>Version</th>
+							<th>Last Updated</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >脳</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to deploy</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					鍏�<span style="padding-left: 12px" />闂�
+				</button>
+				<button type="button" class="btn btn-primary" onclick="return deployServiceAndRC();">
+					閮�<span style="padding-left: 12px" />缃�
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal" data-backdrop="static" data-keyboard="false">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>脳</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+
+	<!-- 妯℃�佹锛圡odal锛夋柊澧炴垨淇敼 -->
+	<div class="modal fade" id="yamlMode" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left">yaml涓婁紶</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<div class="box box-info" style="margin-bottom:0px;">
+						<div>  
+						    <!--鐢ㄦ潵瀛樻斁item-->  
+						    <div>
+						    	<input id="thelist" name="thelist" style="height:30px;width:300px;margin-top:10px;" readonly="readonly" tmpFileId="" />
+						    </div>
+						    <div>  
+						     <div id="filePicker" style="margin-top:10px;margin-bottom:10px;float:left;">閫夋嫨鏂囦欢</div>  
+						     <div id="delYamlFile" class="webuploader-pick" style="margin-top:10px;">鍒犻櫎鏂囦欢</div>
+						    </div>  
+						</div>  
+					</div>
+				</div>
+				<div class="modal-footer">
+					<!--濡傛灉鐐瑰嚮鍙栨秷娌℃湁鍏朵粬閿欏仛锛屽彲浠ョ洿鎺ュ姞杩欎釜灞炴�� data-dismiss="modal" 锛屾槸modal鍏抽棴-->
+					<button id="yamlCancelBtn" type="button"
+						class="btn btn-outline btn-default">鍙栨秷</button>
+					<button id="yamlSureBtn" type="button"
+						class="btn btn-outline btn-primary">涓婁紶</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+<script src="/plugins/bootbox/bootbox.js"></script>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+    var table = $('#serviceTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        "ajax": {
+			url:"/publicservice/getServiceAndRCs",
+			error: function (XMLHttpRequest, textStatus, errorThrown) 
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+        			{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+        			{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+			switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+			   
+				//Deploying
+				case 1: $(row).find('td:eq(5)').html('');
+						$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+			   
+				//Deployed
+				case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+				break;
+				
+				//Failed
+				case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+			   
+			   default: console.log('Unknown case..');
+			   break;
+			}
+		}
+	});
+
+    $('#addService').on('click', function () {
+    	$('section.content').load('add_service.html?h=' + new Date().getTime());
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+    } );
+    
+	$('#serviceTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+		$('section.content').load('view_service.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+    } );
+	
+	$('#serviceTable tbody').on('click', 'button.deploy', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+		
+		getPartitions(data, caller);
+    });
+    
+    function deployServiceAndRC() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+				_namespaces.push($(this).val());
+		});
+		
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+        
+		$.ajax({
+			url: "/publicservice/deployServiceAndRC",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces)
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+	}
+	
+	$('#serviceTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_service.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	$('#serviceTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete service <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+	
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/publicservice/deleteService",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	//chenwei add upload
+	$("#uploadYaml").on("click",function(){
+		$("#thelist").val('');
+		initUploadYaml();
+		$("#yamlMode").modal('show');
+	});
+	$("#yamlCancelBtn").on("click",function(){
+		$("#yamlMode").modal('hide');
+	});
+   //鍒犻櫎
+   $("#delYamlFile").on('click',function(){
+	   $("#thelist").val('');
+	   initUploadYaml();
+   });
+	
+	var uploader;
+	 function initUploadYaml(){  
+		   /*init webuploader*/  
+		   var $list=$("#thelist");   //杩欏嚑涓垵濮嬪寲鍏ㄥ眬鐨勭櫨搴︽枃妗ｄ笂娌¤鏄庯紝濂借泲鐤笺��  
+		   var $btn =$("#yamlSureBtn");   //寮�濮嬩笂浼�  
+		   var thumbnailWidth = 100;   //缂╃暐鍥鹃珮搴﹀拰瀹藉害 锛堝崟浣嶆槸鍍忕礌锛夛紝褰撳楂樺害鏄�0~1鐨勬椂鍊欙紝鏄寜鐓х櫨鍒嗘瘮璁＄畻锛屽叿浣撳彲浠ョ湅api鏂囨。  
+		   var thumbnailHeight = 100;  
+		  
+		    if(uploader){
+		    	uploader.destroy();
+		    }
+		   
+		   uploader = WebUploader.create({  
+		       // 閫夊畬鏂囦欢鍚庯紝鏄惁鑷姩涓婁紶銆�  
+		       auto: false,  
+		  
+		       // swf鏂囦欢璺緞  
+		       swf: '../js/Uploader.swf',  
+		  
+		       // 鏂囦欢鎺ユ敹鏈嶅姟绔��  
+		       server: '/publicservice/upload-yamlFile',  
+		  
+		       // 閫夋嫨鏂囦欢鐨勬寜閽�傚彲閫夈��  
+		       // 鍐呴儴鏍规嵁褰撳墠杩愯鏄垱寤猴紝鍙兘鏄痠nput鍏冪礌锛屼篃鍙兘鏄痜lash.  
+		       pick:{
+		    	   id:'#filePicker',
+		    	   multiple:false
+		       },
+		  
+		       // 鍙厑璁搁�夋嫨鍥剧墖鏂囦欢銆�  
+		       accept: {  
+		           title: 'Images',  
+		           extensions: 'yaml',  
+		           mimeTypes: 'yaml/*'  
+		       },  
+		       method:'POST',  
+		   });  
+		   // 褰撴湁鏂囦欢娣诲姞杩涙潵鐨勬椂鍊�  
+		   uploader.on( 'fileQueued', function( file ) {  // webuploader浜嬩欢.褰撻�夋嫨鏂囦欢鍚庯紝鏂囦欢琚姞杞藉埌鏂囦欢闃熷垪涓紝瑙﹀彂璇ヤ簨浠躲�傜瓑鏁堜簬 uploader.onFileueued = function(file){...} 锛岀被浼糺s鐨勪簨浠跺畾涔夈��  
+		       $list.val(file.name);  
+		   	   $list.attr("tmpFileId",file.id);
+		   });  
+		   // 鏂囦欢涓婁紶杩囩▼涓垱寤鸿繘搴︽潯瀹炴椂鏄剧ず銆�  
+		   uploader.on( 'uploadProgress', function( file, percentage ) {  
+		       var $li = $( '#'+file.id ),  
+		           $percent = $li.find('.progress span');  
+		  
+		       // 閬垮厤閲嶅鍒涘缓  
+		       if ( !$percent.length ) {  
+		           $percent = $('<p class="progress"><span></span></p>')  
+		                   .appendTo( $li )  
+		                   .find('span');  
+		       }  
+		  
+		       $percent.css( 'width', percentage * 100 + '%' );  
+		   });  
+		  
+		   // 鏂囦欢涓婁紶鎴愬姛锛岀粰item娣诲姞鎴愬姛class, 鐢ㄦ牱寮忔爣璁颁笂浼犳垚鍔熴��  
+		   uploader.on( 'uploadSuccess', function( file ) {  
+		       $( '#'+file.id ).addClass('upload-state-done');  
+		       //涓婁紶鎴愬姛浠ュ悗璋冪敤k8s鎺ュ彛鍙戝竷鏈嶅姟
+		       var tmpFileObeject={
+		    		name:file.name	   
+		       };
+		       $.ajax({
+			        url : "publicservice/issueServiceByYaml",
+			        dataType : "json",
+			        type:"post",
+			        async: false,
+			        data :JSON.stringify(tmpFileObeject),
+			        contentType : "application/json; charset=utf-8",
+			        success : function(res)
+			        {
+			        	if(res.status!=200 && res.status!=201){
+			        		bootbox.alert(res.body);
+			        	}else{
+			 		      $("#yamlMode").modal('hide'); 
+			 		      bootbox.alert('涓婁紶鎴愬姛');
+			        	}
+			        }
+			    });
+		   });  
+		  
+		   // 鏂囦欢涓婁紶澶辫触锛屾樉绀轰笂浼犲嚭閿欍��  
+		   uploader.on( 'uploadError', function( file ) {  
+		       var $li = $( '#'+file.id ),  
+		           $error = $li.find('div.error');  
+		       // 閬垮厤閲嶅鍒涘缓  
+		       if ( !$error.length ) {  
+		           $error = $('<div class="error"></div>').appendTo( $li );  
+		       }  
+		       $error.text('涓婁紶澶辫触');  
+		       bootbox.alert('涓婁紶澶辫触');
+		   });  
+		  
+		   // 瀹屾垚涓婁紶瀹屼簡锛屾垚鍔熸垨鑰呭け璐ワ紝鍏堝垹闄よ繘搴︽潯銆�  
+		   uploader.on( 'uploadComplete', function( file ) {  
+		       $( '#'+file.id ).find('.progress').remove();  
+		   }); 
+		   
+		   uploader.on('error',function(type){
+			   if(type=='Q_TYPE_DENIED'){
+				   bootbox.alert('鍙兘鍗曚釜涓婁紶');
+			   }
+		   });
+		   
+		   //涓婁紶鎸夐挳
+	      $btn.on( 'click', function() {  
+	        uploader.upload(); //涓婁紶
+	      });  
+	      
+		  
+	}
+	
+</script>
+		</p>
+	</div>
+	
+	<div class="tab-pane fade" id="ios">
+	    <!-- 鎵瑰鐞�  job_main-->
+	    <p>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="addJob">鏂板 Job</a>
+					</div>
+            </div>
+			<div class="box-body">
+				<table id="jobTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Owner</th>
+							<th>Version</th>
+							<th>Job Type</th>
+							<th>Last Updated</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal" data-backdrop="static" data-keyboard="false">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >脳</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to run</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div id="partModalJobType">
+							<div class="form-group" style="margin-top:5px; margin-bottom:0px;">
+								<label class="col-md-offset-1 col-sm-5"><input type="radio" name="jobtype" id="jobsingle" checked="true"> Run Once</label>
+								<label class="col-sm-6"><input type="radio" name="jobtype" id="jobmulti"> Scheduled Run</label>
+							</div>
+						</div>
+						<div id="partModalJob" style="display:none; margin-top:15px;">
+							<div class="form-group">
+								<label class="col-sm-2 control-label">瀹氭椂瑙勫垯</label>
+								<div class="col-sm-3">
+									<div class="form-group">
+									<label class="col-sm-3 control-label">鏈�:</label>
+									<div class="col-sm-9">
+										<input type="text" class="form-control" id="month" placeholder="1-12鎴�*">
+									</div>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">鏄熸湡:</label>
+										<div class="col-sm-7">
+											<select class="form-control" id="week">
+												<option value=*>*</option>
+												<option value=1>涓�</option>
+												<option value=2>浜�</option>
+												<option value=3>涓�</option>
+												<option value=4>鍥�</option>
+												<option value=5>浜�</option>
+												<option value=6>鍏�</option>
+												<option value=0>鏃�</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-3 control-label">鏃�:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" id="day" placeholder="1-31鎴�*">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group ">
+								<div class="col-sm-offset-2 col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-3 control-label">鏃讹細</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" id="hour" placeholder="0-23鎴�*">
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">鍒�:</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" id="min" placeholder="0-59鎴�*">
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-12 control-label" style="font-size:12px">'*'浠ｈ〃姣忎竴涓椂闂寸偣</label>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">鐘舵��</label>
+								<div class="col-sm-6">
+									<select class="form-control" id="jobStatus">
+										<option value=1>寮�鍚�</option>
+										<option value=0>鍏抽棴</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					鍏�<span style="padding-left: 12px" />闂�
+				</button>
+				<button type="button" class="btn btn-primary" id="partModalDeploy" onclick="return runJob();">
+					閮�<span style="padding-left: 12px" />缃�
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>脳</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+    var table = $('#jobTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"/job/getJobs",
+			error: function (XMLHttpRequest, textStatus, errorThrown) 
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+					{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+					{ "data": "jobType", "render": function(data, type, row) {
+							if(data === 0)
+								return "Single Run";
+							else
+								return "Scheduled Run";
+						}
+					},
+					{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+            switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm run' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Run</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+			   
+				//Deploying
+				case 1: $(row).find('td:eq(6)').html('');
+						$(row).find('td:eq(5)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+			   
+				//Running
+				case 2: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-green btn-sm label-status'>Running</span>");
+				break;
+				
+				//Scheduled
+				case 3: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-purple btn-sm label-status'>Scheduled</span>");
+				break;
+				
+				//Failed
+				case -1: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm run' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Run</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(5)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+			   
+			   default: console.log('Unknown case..');
+			   break;
+			}
+        }
+    });
+	
+	$('#addJob').click( function() {
+		$('section.content').load('add_job.html?h=' + new Date().getTime());
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.run', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+		
+		getPartitions(data, caller);
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('view_job.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete job <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+	
+	$('#jobTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_job.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/job/deleteJob",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	function runJob() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		
+		var _cronExpression = "";
+		if($('#jobmulti').is(':checked'))
+			_cronExpression = getCron();
+		
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+			{
+				_namespaces.push($(this).val());
+			}
+		});
+		
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+		
+		$.ajax({
+			url: "/job/runJob",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces),
+				cronExpression:_cronExpression,
+				taskStatus:$('#jobStatus').val()
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	function getCron(){
+		var min = $('#min').val() || '*';
+		var hour = $('#hour').val() || '*';
+		var day = $('#day').val() || '*';
+		var week = $('#week').val() || '*';
+		var month = $('#month').val() || '*';
+		return min + " " + hour + " " + day + " " + month + " " + week + " ?";
+	}
+</script>
+	    </p>
+	    
+	    
+			</div>
+	
+	
+	<div class="tab-pane fade" id="jmeter">
+		<p>
+			
+		</p>
+	</div>
+	<div class="tab-pane fade" id="ejb">
+		<p>Enterprise Java Beans锛圗JB锛夋槸涓�涓垱寤洪珮搴﹀彲鎵╁睍鎬у拰寮哄ぇ浼佷笟绾у簲鐢ㄧ▼搴忕殑寮�鍙戞灦鏋勶紝閮ㄧ讲鍦ㄥ吋瀹瑰簲鐢ㄧ▼搴忔湇鍔″櫒锛堟瘮濡� JBOSS銆乄eb Logic 绛夛級鐨� J2EE 涓娿��
+		</p>
+	</div>
+</div>

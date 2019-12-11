@@ -1,0 +1,282 @@
+<style type="text/css">
+    #all_info_show_cpu_div {
+        width: 350px;
+        height: 250px;
+        display: inline-block;
+    }
+    .myTitle{
+        font-size: 20px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="row">
+    <div class="col-xs-12">
+    
+        <div class="box-header">
+            <div class="box-header"  style="border:1px solid #F0F0F0;">
+                <button id="btn-list-style" class="btn btn-primary" type="button">List</button>
+                <button id="btn-grid-style" class="btn btn-primary" type="button">Grid</button>
+            </div>
+
+        <div class="box-header" style="border:1px solid #F0F0F0;float:right">
+            <button id="btn-cpu-used-grid" class="btn btn-primary" type="button">Cpu</button>
+            <button id="btn-mem-used-grid" class="btn btn-primary" type="button">Memory</button>
+        </div>
+        
+            <div class="box-body" id="div-list-style">
+                <table id="table-node-list" class="table table-bordered table-hover" style="font-size: 12px;">
+                    <thead>
+                    <tr>
+                        <th>IP地址</th>
+                        <th>CPU使用率</th>
+                        <th>Mem使用率</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-body" id="div-grid-style">
+                <div style="width:80%;height:100%;border:1px solid #F0F0F0;">
+                    <div id="all_info_show_cpu_container" style="width:100%;float:left">
+                    </div>
+                    <div id="all_info_show_mem_container" style="width:100%;float:left">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var myRadius = 70;
+    var myCenter = ['50%', '40%'];
+    var dataStyle = {
+        normal : {
+            label : {
+                show : false
+            },
+            labelLine : {
+                show : false
+            }
+        }
+    };
+
+    var addDivDone = false;
+    var echarts_cpu = [];
+    var echarts_mem = [];
+
+    function updateNodesState() {
+        $.ajax({
+            url: "/nodes/states/used",
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: null,
+            success: function (response) {
+                var nodeStateUsedInfo = $.parseJSON(response.body);
+                if (!nodeStateUsedInfo) {
+                    return;
+                }
+
+                $("#table-node-list tbody").empty();
+
+                nodeStateUsedInfo["slaves"].forEach(function (slave) {
+                    if(!addDivDone){
+                        var cpu_div = '<div id="dcos_nodes_cpu_' + slave.hostname + '" style="float:left;width:350px;height:250px;"></div>';
+                        $("#all_info_show_cpu_container").append(cpu_div);
+
+                        var mem_div = '<div id="dcos_nodes_mem_' + slave.hostname + '" style="float:left;width:350px;height:250px;"></div>';
+                        $("#all_info_show_mem_container").append(mem_div);
+
+                        var cpu_domain =document.getElementById('dcos_nodes_cpu_' + slave.hostname);
+                        echarts_cpu[slave.hostname] = echarts.init(cpu_domain);
+
+                        var mem_domain =document.getElementById('dcos_nodes_mem_' + slave.hostname);
+                        echarts_mem[slave.hostname] = echarts.init(mem_domain);
+                    }
+
+                    var cpu_used_percent = accMul(changeTwoDecimal(accDiv(slave["used_resources"].cpus, slave["resources"].cpus)), 100);
+                    var mem_used_percent = accMul(changeTwoDecimal(accDiv(slave["used_resources"].mem, slave["resources"].mem)), 100);
+                    updateCpuEchatOption(slave.hostname, cpu_used_percent);
+                    updateMemEchatOption(slave.hostname, mem_used_percent);
+
+                    var node_list_line = "";
+                    node_list_line +="<tr>";
+                    node_list_line +=   "<td>"+slave.hostname+"</td>";
+                    node_list_line +=   "<td>"+cpu_used_percent+"%</td>";
+                    node_list_line +=   "<td>"+mem_used_percent+"%</td>";
+                    node_list_line +="</tr>";
+                    $("#table-node-list tbody").append(node_list_line);
+                });
+
+                addDivDone = true;
+            }
+        });
+    }
+
+    function updateCpuEchatOption(slave_host_name, value) {
+        var all_info_show_cpu_div_option = {
+            title: {
+                text: slave_host_name + '-cpu',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                y: 'top',
+                data: ['已使用', '未使用']
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: myRadius,
+                    center: myCenter,
+                    itemStyle: dataStyle,
+                    data: [
+                        {name:'已使用', value:value},
+                        {name:'未使用', value:100-value}
+                        ]
+                }
+            ]
+        };
+        echarts_cpu[slave_host_name].setOption(all_info_show_cpu_div_option);
+    }
+
+    function updateMemEchatOption(slave_host_name, value) {
+        var all_info_show_mem_div_option = {
+            title: {
+                text: slave_host_name + '-mem',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                y: 'top',
+                data: ['已使用', '未使用']
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: myRadius,
+                    center: myCenter,
+                    itemStyle: dataStyle,
+                    data: [
+                        {name:'已使用', value:value},
+                        {name:'未使用', value:100-value}
+                    ]
+                }
+            ]
+        };
+        echarts_mem[slave_host_name].setOption(all_info_show_mem_div_option);
+    }
+
+    function changeTwoDecimal(num, prex) {
+        if (num == null || num == "") {
+            return 0;
+        }
+        if (isNaN(num)) {;
+            return 0;
+        }
+        if (prex == null || prex == "") {
+            prex = 2;
+        }
+        if (isNaN(prex)) {
+            prex = 2;
+        }
+        /**
+         * 格式化为数字
+         */
+        num = parseFloat(num)
+
+        return num.toFixed(prex);
+    }
+
+    //返回值：arg1乘以arg2的精确结果
+    function accMul(arg1, arg2) {
+        var m = 0, s1 = arg1.toString(), s2 = arg2.toString();
+        try {
+            m += s1.split(".")[1].length
+        } catch (e) {
+        }
+        try {
+            m += s2.split(".")[1].length
+        } catch (e) {
+        }
+        return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m)
+    }
+
+    //浮点数除法运算
+    function accDiv(arg1, arg2) {
+        var r1 = 0, r2 = 0, m, s1 = arg1.toString(), s2 = arg2.toString();
+        try {
+            if (s1.split(".")[1] != undefined)
+                r1 = s1.split(".")[1].length;
+        } catch (e) {
+        }
+        try {
+            if (s2.split(".")[1] != undefined)
+                r2 = s2.split(".")[1].length;
+        } catch (e) {
+        }
+        m = Math.pow(10, Math.max(r1, r2));
+        return (accMul(arg1, m)) / (accMul(arg2, m));
+    }
+
+
+
+    $("#btn-list-style").click(function() {
+        $("#btn-cpu-used-grid").hide();
+        $("#btn-mem-used-grid").hide();
+        $("#div-grid-style").hide();
+        $("#div-list-style").show();
+    });
+
+    $("#btn-grid-style").click(function() {
+        $("#div-list-style").hide();
+        $("#div-grid-style").show();
+        $("#btn-cpu-used-grid").show();
+        $("#btn-mem-used-grid").show();
+        
+        
+    });
+
+
+    $("#btn-cpu-used").click(function() {
+        $("#all_info_show_mem_container").hide();
+        $("#all_info_show_cpu_container").show();
+    });
+
+    $("#btn-mem-used").click(function() {
+        $("#all_info_show_cpu_container").hide();
+        $("#all_info_show_mem_container").show();
+    });
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+       
+
+
+        if(!isDcosNodesPageLoaded) {
+            setInterval("updateNodesState()", 30000);
+            isDcosNodesPageLoaded = true;
+        }
+        setTimeout("updateNodesState()", 200);
+        $("#div-grid-style").hide();
+        $("#all_info_show_mem_container").hide();
+        $("#btn-cpu-used-grid").hide();
+        $("#btn-mem-used-grid").hide();
+    });
+</script>

@@ -1,0 +1,142 @@
+<div class="box-header">
+    <button id="packages" class="btn btn-primary" type="button">Packages</button>
+    <button id="installed-packages" class="btn btn-primary" type="button">Installed Packages</button>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-body">
+                <table id="universe-installed-packages-table" class="table table-bordered table-hover" style="font-size: 12px;">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>版本号</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uninstallPackageConfirmDialog" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="z-index: 100; width: 900px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">&times;</button>
+                <h4 class="modal-title" >确定要卸载么?</h4></br>
+                <h4 class="modal-title" id="uninstallInformation">version</h4>
+            </div>
+            <br class="modal-footer">
+            <button id="confirmUninstall" type="button"
+                    class="btn btn-outline btn-default"  horizontal-align="middle">确定</button>
+            <button id="cancelUninstall" type="button"
+                    class="btn btn-outline btn-primary"  horizontal-align="middle">取消</button>
+        </div>
+    </div>
+    <!-- /.modal-content -->
+</div>
+<!-- /.modal -->
+</div>
+
+<script type="text/javascript">
+    var data;
+    var table = $('#universe-installed-packages-table')
+            .DataTable(
+                    {
+                        "language":{
+                            "sProcessing":"处理中...",
+                            "sLengthMenu":"显示_MENU_项结果",
+                            "sZeroRecords":"没有匹配结果",
+                            "sInfo":"显示第_START_至_END_项结果，共_TOTAL_项","sInfoEmpty":"显示第0至0项结果，共0项",
+                            "sInfoFiltered":"(由_MAX_项结果过滤)",
+                            "sInfoPostFix":"",
+                            "sSearch":"搜索:",
+                            "sUrl":"",
+                            "sEmptyTable":"表中数据为空",
+                            "sLoadingRecords":"载入中...",
+                            "sInfoThousands":",",
+                            "oPaginate":{
+                                "sFirst":"首页",
+                                "sPrevious":"上页",
+                                "sNext":"下页",
+                                "sLast":"末页"
+                            },
+                            "oAria":{
+                                "sSortAscending":":以升序排列此列",
+                                "sSortDescending":":以降序排列此列"
+                            }
+                        },
+                        ajax:{
+                            url:"/universe/packages/installed",
+                            type: "POST",
+                            error: function (XMLHttpRequest, textStatus, errorThrown)
+                            {
+                                if(JSON.parse(XMLHttpRequest.status) === 403)
+                                {
+                                    window.location.replace('/login.html');
+                                }
+                            }
+                        },
+                        "columns" : [
+                            {
+                                "data" : "appId"
+                            },
+                            {
+                                "data" : "packageInformation.packageDefinition.name"
+                            },
+                            {
+                                "data" : "packageInformation.packageDefinition.version"
+                            },
+                            {
+                                "defaultContent" : "<button class='btn btn-primary btn-xs uninstall'>Uninstall</button>"
+                            } ]
+                    });
+
+    $('#universe-installed-packages-table tbody').on('click', 'button.uninstall', function() {
+        data = table.row($(this).parents('tr')).data();
+        $("#uninstallInformation").html(data.packageInformation.packageDefinition.name + "将会被卸载, 从DC/OS!");
+        $("#uninstallPackageConfirmDialog").modal("show");
+    });
+
+    $("#confirmUninstall").click(function() {
+        $.ajax({
+            url: "/universe/packages/uninstall",
+            type: "POST",
+            dataType:"json",
+            contentType: "application/json; charset=utf-8",
+            data: '{"packageName":"' + data.packageInformation.packageDefinition.name
+            + '", "packageVersion":"' + data.packageInformation.packageDefinition.version
+            + '", "appId":"' + data.appId
+            + '",  "all":false}',
+            success: function(response){
+                console.log(response);
+
+                $('#uninstallPackageConfirmDialog').modal('hide');
+            }
+        });
+    });
+
+    $("#cancelUninstall").click(function() {
+        $("#uninstallPackageConfirmDialog").modal("hide");
+    });
+
+    $("#packages").click(function() {
+        if(sessionStorage.getItem("dcos_universe_packages_installed")){
+            sessionStorage.removeItem("dcos_universe_packages_installed");
+        }
+        $(".content").load("/universe/dcos_universe.html");
+    });
+
+    $("#installed-packages").click(function() {
+        if(sessionStorage.getItem("dcos_universe")){
+            sessionStorage.removeItem("dcos_universe");
+        }
+        $(".content").load("/universe/dcos_universe_packages_installed.html?_="+new Data());
+    });
+</script>

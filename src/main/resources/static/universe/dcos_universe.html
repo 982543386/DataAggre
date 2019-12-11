@@ -1,0 +1,694 @@
+<div class="box-header" xmlns="http://www.w3.org/1999/html">
+	<button id="packages" class="btn btn-primary" type="button">Packages</button>
+	<button id="installed-packages" class="btn btn-primary" type="button">Installed Packages</button>
+</div>
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-body">
+				<table id="universe-packages-table" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+					<tr>
+						<th>名称</th>
+						<th>版本号</th>
+						<th>操作</th>
+					</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+	<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="addOrEdit" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left;">Deploy New Service|Update Service</div>
+						<div style="float:right;">
+                            <button id="switchJsonModeBtn" class="btn btn-xs btn-white">JsonMode</button>&nbsp;&nbsp;&nbsp;
+						</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<form role="form" id="addOrEditForm" action="">
+					<!-- 隐藏字段 -->
+					<input type="text" id="isNew" name="isNew"  hidden="true" value=""/>
+
+					<div class="tabs-container">
+						<div class="tabs-left">
+							<ul class="nav nav-tabs">
+								<li class="active"><a data-toggle="tab" href="#tab-1" id="generalTab"> General</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-2"> Container Settings</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-3"> Network</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-4"> Environment Variables</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-5"> Labels</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-6"> Health Checks</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-7"> Volumes</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-8"> Optional</a>
+								</li>
+							</ul>
+							<div class="tab-content ">
+								<div id="tab-1" class="tab-pane active">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>General</h3>
+											    <h5>Configure your container service here or install from Universe</h5>
+										    </div>
+											<div class="col-sm-12">
+												<label class="control-label">ID*&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="ID for the service"></span></label>
+												<input type="text" id="id" name="id" class="form-control" value="/">
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">CPUS*&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Amounts of CPUs used for the service"></span></label>
+												<input type="number" min="1" id="cpus" name="cpus" class="form-control" value="1" />
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">Memory (MiB)</label>
+												<input type="number" min="1" id="mem" name="mem" class="form-control" value="128" />
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">Disk (MiB)</label>
+												<input type="number" min="0" id="disk" name="disk" class="form-control" value="128" />
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">Instances</label>
+												<input type="number" min="0" id="instances" name="instances" class="form-control" value="0" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">Command*&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Command executed by the service"></span></label>
+												<input type="text" id="cmd" name="cmd" class="form-control"/>
+											</div>
+									</div>
+								</div>
+								<div id="tab-2" class="tab-pane">
+									<div class="panel-body">
+										 <div class="col-sm-12">
+												<h3>Container Settings</h3>
+											    <h5>Configure your Docker Container. You can configure your Docker volumes in the Volumes tab and your Docker ports in the Network tab.</h5>
+										 </div>
+										 <div class="col-sm-12">
+												<label class="control-label">Container Image&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Configure your Docker container.\n Use DockerHub to find popular repositories."></span></label>
+												<input type="text" id="dockerImage" name="dockerImage" class="form-control" value="" onchange="initNetworkType()">
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+												<input type="checkbox" id="dockerPrivileged" name="dockerPrivileged" value="true">Extend runtime privileges &nbsp;&nbsp;
+												<input type="checkbox" id="dockerForcePullImage" name="dockerForcePullImage" value="true">Force pull image on launch
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+											Docker Parameters
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										<div id="addParameterDiv"></div>
+										<div class="col-sm-2">
+											<div id="addParameter">+ Add Parameter</div>
+										</div>
+										<div class="col-sm-10">
+											&nbsp;
+										</div>
+									</div>
+								</div>
+								<div id="tab-3" class="tab-pane">
+									<div class="panel-body">
+										 <div class="col-sm-12">
+											<h3>Network</h3>
+											<h5>Configure the networking for your service. We will automatically generate a Service Address to connect to for each of your load balanced endpoints. Read more about load balancing.</h5>
+										 </div>
+										 <div id="initDockerNetwork">
+											 <div class="col-sm-4">
+												<label class="control-label">Network Type</label>
+												<select id="dockerNetwork" name="dockerNetwork" class="form-control" onchange="initDockerNetworkContent()">
+													<option value="HOST" selected="selected">HOST(Default)</option>
+													<option value="BRIDGE">Bridge</option>
+													<option value="USER">Virtual Network:dcos</option>
+												</select>
+											 </div>
+										 </div>
+										 <div class="col-sm-8">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+											Service Endpoints
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div id="addAnEndpointDiv">
+										 	
+										</div>
+										<div class="col-sm-12">
+											<div id="addAnEndpoint">+ Add an endpoint</div>
+										</div>
+									</div>
+								</div>
+								<div id="tab-4" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Environment Variables</h3>
+											    <h5>Set variables for each task your service launches. Learn more about variables.</h5>
+										    </div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div id="addEnvironmentVariableDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addEnvironmentVariable">+ Add Environment Variable</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-5" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Labels</h3>
+											    <h5>Attach metadata to services to expose additional information to other services.</h5>
+										    </div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div id="addLabelDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addLabel">+ Add Label</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-6" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Health Checks</h3>
+											    <h5>Perform health checks on running tasks to determine if they are operating as expected.</h5>
+										    </div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div id="addHealthCheckDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addHealthCheck">+ Add Another Health Check</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-7" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Volumes</h3>
+										    </div>
+											<div class="col-sm-12">
+											<label class="control-label">Persistent Local Volumes</label>
+											</div>
+											<div id="addLocalVolumeDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addLocalVolume">+ Add Local Volume</div>
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+											<label class="control-label">Docker Container Volumes</label>
+											</div>
+											<div id="addContainerVolumeDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addContainerVolume">+ Add Container Volume</div>
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+											<label class="control-label">External Volumes</label>
+											</div>
+											<div id="addExternalVolumeDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addExternalVolume">+ Add External Volume</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-8" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Optional</h3>
+										    </div>
+											<div class="col-sm-12">
+												<label class="control-label">Executor&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Executor must be the string '//cmd', a string containing only single slashes ('/'), or blank."></span></label>
+												<input type="text" id="executor" name="executor" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">URIs&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Comma-separated list of valid URIs"></span></label>
+												<input type="text" id="fetchUri" name="fetchUri" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">Constraints&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title='Comma-separated list of valid constraints. Valid constraint format is "field:operator[:value]". operator must be one of the following: [UNIQUE, LIKE, CLUSTER, GROUP_BY, UNLIKE, MAX_PER]'></span></label>
+												<input type="text" id="constraints" name="constraints" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">Accepted Resource Roles&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Comma-separated list of resource roles. Marathon considers only resource offers with roles in this list for launching tasks of this app."></span></label>
+												<input type="text" id="acceptedResourceRoles" name="acceptedResourceRoles" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">User</label>
+												<input type="text" id="user" name="user" class="form-control" />
+											</div>
+									</div>
+								</div>
+							</div>
+						   </div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="cancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="sureBtn" type="button"
+						class="btn btn-outline btn-primary">确定</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+
+
+<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="jsonMode" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left">Deploy New Service|Update Service</div>
+						<div style="float:right">
+                            <button id="switchJsonModeBtn2" class="btn btn-xs btn-primary" type="button">JsonMode</button>&nbsp;&nbsp;&nbsp;
+						</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<form role="form" id="addOrEditForm" action="">
+							<div id="jsonModeDiv" style="width: 600px; height: 500px;"></div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="jsonModeCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="jsonModeSureBtn" type="button"
+						class="btn btn-outline btn-primary">确定</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+	
+	
+<div class="modal fade" id="installPackageConfirmDialog" tabindex="-1" role="dialog"
+	 aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" style="z-index: 100; width: 900px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="packageName">install package</h4></br>
+				<h4 class="modal-title" id="packageVersion">version</h4>
+			</div>
+			<br class="modal-footer">
+				<button id="install" type="button"
+						class="btn btn-outline btn-default"  horizontal-align="middle">安装</button>
+				<button id="advanced-installation" type="button"
+						class="btn btn-outline btn-primary"  horizontal-align="middle">自定义安装</button>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal -->
+</div>
+
+<!-- advanced installation dialog -->
+<div class="modal fade" id="advancedInstallPackageConfigDialog" tabindex="-1" role="dialog"
+	 aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" style="z-index: 100; width: 900px;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="myAdvancedLabel">package name</h4>
+			</div>
+			<div class="modal-body">
+				<form role="form" id="advancedInstallForm" action="">
+					<!-- 隐藏字段 -->
+					<input type="text" name="isNew"  hidden="true" value=""/>
+					<div class="tabs-container">
+						<div class="tabs-left">
+							<ul class="nav nav-tabs" id="leftTable">
+							</ul>
+							<div class="tab-content " id="right-content">
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="cancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+				<button id="sureBtn" type="button"
+						class="btn btn-outline btn-primary">确定</button>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal -->
+</div>
+		<!-- json editor -->
+	<script src="/plugins/jsoneditor/jsoneditor.js"></script>
+
+	<script src="/plugins/validate/jquery.validate.min.js" ></script>
+	<script src="/plugins/validate/messages_zh.min.js" ></script>
+	
+	<script src="/plugins/bootbox/bootbox.js"></script>
+	
+	<script src="/plugins/store/store.js"></script>
+	
+	<script src="/marathon/js/jquery_extends.js"></script>
+	<script src="/marathon/js/self.common.js"></script>
+	
+	<script src="/marathon/frame_list.js"></script>
+	<script src="/marathon/initContainerSettings.js"></script>
+	<script src="/marathon/initNetwork.js"></script>
+	<script src="/marathon/initEnvironmentVariables.js"></script>
+	<script src="/marathon/initLabels.js"></script>
+	<script src="/marathon/initHealthChecks.js"></script>
+	<script src="/marathon/initVolumes.js"></script>
+	
+<script type="text/javascript">
+	var data;
+	var configDetail = {};
+	var configDetailDefault = {};
+	var table = $('#universe-packages-table')
+			.DataTable(
+					{
+						"language":{
+							"sProcessing":"处理中...",
+							"sLengthMenu":"显示_MENU_项结果",
+							"sZeroRecords":"没有匹配结果",
+							"sInfo":"显示第_START_至_END_项结果，共_TOTAL_项","sInfoEmpty":"显示第0至0项结果，共0项",
+							"sInfoFiltered":"(由_MAX_项结果过滤)",
+							"sInfoPostFix":"",
+							"sSearch":"搜索:",
+							"sUrl":"",
+							"sEmptyTable":"表中数据为空",
+							"sLoadingRecords":"载入中...",
+							"sInfoThousands":",",
+							"oPaginate":{
+								"sFirst":"首页",
+								"sPrevious":"上页",
+								"sNext":"下页",
+								"sLast":"末页"
+							},
+							"oAria":{
+								"sSortAscending":":以升序排列此列",
+								"sSortDescending":":以降序排列此列"
+							}
+						},
+						ajax:{
+							url:"/universe/packages",
+							type: "POST",
+							error: function (XMLHttpRequest, textStatus, errorThrown)
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+							{
+								"data" : "name"
+							},
+							{
+								"data" : "currentVersion"
+							},
+							{
+								"defaultContent" : "<button class='btn btn-primary btn-xs install'>Install Pacakge</button>"
+							} ]
+					});
+
+	$('#universe-packages-table tbody').on('click', 'button.install', function() {
+		data = table.row($(this).parents('tr')).data();
+		
+		if(data.name=="myriad"){
+			$("#isNew").val("1");
+			$("#addOrEdit").modal("show");
+		}else {
+			$("#packageName").html(data.name);
+			$("#packageVersion").html(data.currentVersion);
+			$("#installPackageConfirmDialog").modal("show");
+			
+		}
+		
+	});
+
+	$("#advanced-installation").on("click", function(){
+		$.ajax({
+			url: "/universe/packages/detail",
+			type: "POST",
+			dataType:"json",
+			contentType: "application/json; charset=utf-8",
+			data: '{"packageName":"' + data.name + '", "packageVersion":"' + data.currentVersion +'"}',
+			success: function(response){
+				var packageInfo = $.parseJSON(response.body);
+				if(!packageInfo) { return; }
+				var configProperties = packageInfo.config.properties;
+				if(!configProperties) { return; }
+
+				$("#leftTable").html("");
+				$("#right-content").html("");
+				$("#myAdvancedLabel").html(data.name);
+
+				configDetail = {};
+				configDetailDefault = {};
+
+				$.each(configProperties, function(key, value) {
+					$("#leftTable").append('<li class=""><a data-toggle="tab" href="#content-'+key+'" id="tab-'+key+'">'+key+'</a></li>');
+
+					var configDetailDiv = "";
+					configDetailDiv += '<div id="content-'+key+'" class="tab-pane">';
+					configDetailDiv += 		'<div id="content-'+key+'body" class="panel-body">';
+					configDetailDiv += 			'<div class="col-sm-12">';
+					configDetailDiv +=				'<h3>'+key+'</h3>';
+					configDetailDiv +=				'<h5>'+value.description+'</h5>';
+					configDetailDiv +=			'</div>';
+					configDetailDiv +=		'</div>';
+					configDetailDiv += '</div>';
+
+					$("#right-content").append(configDetailDiv);
+
+					var itemList= {};
+					var itemListDefault = {};
+					var itemProperties = value.properties;
+					var requiredItems = value.required;
+
+					$.each(itemProperties, function(item, itemValue) {
+						var itemObject = {};
+
+						itemObject.default = itemValue.default;
+						itemObject.type = itemValue.type;
+						itemObject.required = (requiredItems.find(function(requiredItem) {return requiredItem == item;}) == item);
+
+						var labelContent = "";
+						if (itemObject.required) {
+							labelContent = item + "&nbsp;*&nbsp;&nbsp;&nbsp;";
+						} else {
+							labelContent = item + "&nbsp;&nbsp;&nbsp;";
+						}
+
+						var inputId = key+"_"+item;
+
+						configDetailDiv = "";
+						configDetailDiv += '<div class="col-sm-12">';
+						configDetailDiv += 		'<label class="control-label">'+labelContent;
+						configDetailDiv +=			'<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="'+itemValue.description+'"></span>';
+						configDetailDiv +=		'</label>';
+						configDetailDiv += 		'<input type="text" id="'+inputId+'" name="constraints" onblur="onInputBlur(\''+inputId+'\');" class="form-control" value="'+itemValue.default+'" />';
+						configDetailDiv += '<div>';
+						$("#content-"+key+"body").append(configDetailDiv);
+
+						itemList[item]  = itemValue.default;
+						itemListDefault[item] = itemObject;
+					});
+
+					configDetail[key] = itemList;
+					configDetailDefault[key] = itemListDefault;
+				});
+
+				$('#installPackageConfirmDialog').modal('hide');
+				$("#advancedInstallPackageConfigDialog").modal('show');
+			}
+		});
+	});
+
+	function onInputBlur(input_id) {
+		var inputId = input_id
+		console.log(inputId);
+		var inputValue = $("#"+input_id).val();
+		console.log(inputValue);
+
+		var configItem = inputId.split("_");
+		console.log(configItem);
+
+		var configItemDefault = configDetailDefault[configItem[0]][configItem[1]];
+		console.log(configItemDefault);
+		if (configItemDefault.default == inputValue)
+			return;
+
+		switch (configItemDefault.type) {
+			case "integer":
+				if (!inputValue.IsInteger()) {
+					alert("格式不正确!");
+					$("#"+input_id).setFocus();
+					return;
+				}
+				break;
+
+			case "number":
+				if (!inputValue.isNumber()) {
+					alert("格式不正确!");
+					$("#"+input_id).setFocus();
+					return;
+				}
+				break;
+			case "string":
+				if (!inputValue.IsString()) {
+					alert("格式不正确!");
+					$("#"+input_id).setFocus();
+					return;
+				}
+				break;
+			case "boolean":
+				if (!inputValue.IsBoolean()) {
+					alert("格式不正确!");
+					$("#"+input_id).setFocus();
+					return;
+				}
+				break;
+		}
+
+		configDetail[configItem[0]][configItem[1]] = inputValue;
+	}
+
+	$("#sureBtn").on("click", function() {
+		$.ajax({
+			url: "/universe/packages/install",
+			type: "POST",
+			dataType:"json",
+			contentType: "application/json; charset=utf-8",
+			data: '{"packageName":"' + data.name + '", "packageVersion":"' + data.currentVersion + '", "options":'+JSON.stringify(configDetail)+'}',
+			success: function(response){
+				$('#advancedInstallPackageConfigDialog').modal('hide');
+			}
+		});
+	});
+
+	$("#cancelBtn").on("click", function(){
+		$('#installPackageConfirmDialog').modal('hide');
+	});
+
+	$("#install").click(function() {
+		$.ajax({
+			url: "/universe/packages/install",
+			type: "POST",
+			dataType:"json",
+			contentType: "application/json; charset=utf-8",
+			data: '{"packageName":"' + data.name + '", "packageVersion":"' + data.currentVersion + '", "options":{}}',
+			success: function(response){
+				$('#installPackageConfirmDialog').modal('hide');
+			}
+		});
+	});
+
+	$("#packages").click(function() {
+		if(sessionStorage.getItem("dcos_universe_packages_installed")){
+			sessionStorage.removeItem("dcos_universe_packages_installed");
+		}
+		$(".content").load("/universe/dcos_universe.html");
+	});
+	$("#installed-packages").click(function() {
+		if(sessionStorage.getItem("dcos_universe")){
+			sessionStorage.removeItem("dcos_universe");
+		}
+		$(".content").load("/universe/dcos_universe_packages_installed.html");
+	});
+
+	String.prototype.IsString = function() {
+		return this.length != 0;
+	}
+
+	String.prototype.IsInteger = function() {
+		var numberReg = new RegExp("^[1-9]\d*$");
+		return numberReg.test(this);
+	}
+
+	String.prototype.IsNumber = function() {
+		var numberReg = new RegExp("/^([1-9](\.\d{1,2})*$)|(0\.(?!0\.0$|0\.00$)(\d{1,2}?)$)/");
+		return numberReg.test(this);
+	}
+
+	String.prototype.IsBoolean = function() {
+		return this == "false " || this == "true";
+	}
+
+</script>

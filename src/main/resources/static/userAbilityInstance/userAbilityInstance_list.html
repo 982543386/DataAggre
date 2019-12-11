@@ -1,0 +1,127 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					
+					<!-- <div class="col-sm-6 no-padding">
+						<button type="button" class="btn btn-primary pull-right" id="importApp_open" data-loading-text="<i class='fa fa-spin fa-cog'></i>">Import Application</button>
+						<div class="col-sm-5 input-group input-group-sm pull-right" id="importApp_div0" style="display:none;">
+							<input type="text" class="form-control" placeholder="Enter Service Name" id="importApp_input"/>
+							<span class="input-group-btn">
+							  <button type="button" data-loading-text="<i class='fa fa-spin fa-cog'></i>" class="btn btn-primary btn-flat" id="importApp_btn">Import</button>
+							</span>
+						</div>
+						<div class="col-sm-3 pull-right no-padding input-group-sm" id="importApp_div1" style="margin-right:5px;display:none;">
+							<select class="form-control" id="importApp_partition" data-toggle="tooltip" data-placement="top" title="Select the partition"/>
+						</div>
+					</div> -->
+            </div>
+			<div class="box-body">
+				<table id="userAbilityInstance" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>服务实例</th>
+							<th>服务名称</th>
+							<th>服务描述</th>
+							<th>服务方式</th>
+							<th>服务状态</th>
+							<th>服务类型</th>
+							<th>数据中心</th>
+							<th>用户</th>
+							<th>创建时间</th>
+							<th>起始日期</th>
+							<th>结束日期</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <!-- <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div> -->
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+    var table = $('#userAbilityInstance').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"userAbilityInstance/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "id" },
+					{ "data": "abilityInstance" },
+					//{ "data": "tenantId" },
+					{ "data": "abilityName" },
+					{ "data": "abilityDesc" },
+					{ "data": "deliverDescribe" },
+					{ "data": "abilityStatus","render":function(data, type, row){
+						if(data=="0") return "未初始化";
+						else if(data=="1") return "已启用";
+						else if(data=="2") return "已注销";
+						else return "无效";
+						}
+					},
+					{ "data": "abilityType","render":function(data, type, row){
+						if(data=="1") return "大数据服务";
+						else if(data=="2") return "数据库服务";
+						else if(data=="3") return "业务服务";
+						else return "";
+						}
+					},
+					{ "data": "zoneId","render":function(data, type, row){
+						if(data=="1") return "亦庄数据中心";
+						else if(data=="2") return "廊坊数据中心";
+						else return "";
+						}
+					},
+					{ "data": "userId" },
+					{ "data": "createTime", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+					{ "data": "startTime", "render": function(data, type, row) {
+						    return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+					    }
+					},
+					{ "data": "endTime", "render": function(data, type, row) {
+					        return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+					    }
+					},
+        		]
+		
+    });
+    
+    
+
+
+
+</script>

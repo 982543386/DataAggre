@@ -1,0 +1,188 @@
+<div class="row">
+	<div class="box">
+		<div class="box-header">
+			<h3 class="box-title"><span>增加</span>用户</h3>
+		</div>
+		<div class="box-body">
+			<form class="form-horizontal" role="form" id="userForm">
+				<div class="form-group">
+					<label class="col-xs-3 control-label">User ID</label>
+					<div class="col-xs-7">
+						<input type="text" class="form-control" id="userId" placeholder="user">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-xs-3 control-label">Password</label>
+					<div class="col-xs-7">
+						<input type="password" class="form-control" id="password" placeholder="password">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-xs-3 control-label">User Type</label>
+					<div class="col-xs-7">
+						<select class="form-control" id="userType">
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-xs-3 control-label">User Group</label>
+					<div class="col-xs-7">
+						<select class="form-control" id="userGroup">
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-xs-3 control-label">Note</label>
+					<div class="col-xs-7">
+						<input type="text" class="form-control" id="note" placeholder="note">
+					</div>
+				</div>
+			</form>
+			<div class="box-footer">
+				<div class="box-tools pull-right">
+					<button id="submit" class="btn btn-primary" type="button">保存</button>
+					<button id="back" class="btn btn-default" type="button">返回</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	// if update 填充内容 user alias  password  note
+	function initPageForUpdate(data){
+    	$('#userId').val(data.userId).prop('disabled',true);
+    	$('#password').val(data.password);
+    	$('#note').val(data.note);
+	}
+	if(sessionStorage.getItem("security_user")){
+		$(".box-header span").empty().html("修改");
+		var user = JSON.parse(sessionStorage.getItem("security_user"));
+		initPageForUpdate(user);
+		sessionStorage.removeItem("security_user");
+		submit("/user/updateUser");
+	}else{
+		submit("/user/addNew");
+	}
+	// 创建usertype select  if update userType init
+	function mkUsertypeSelect(id,surl){
+		var $id = '#'+id;
+		$($id).empty();
+		$.ajax({
+	        url: surl,
+	        type: "GET",
+	        dataType: "json",
+	        success: function(response, textStatus, jqXHR) {
+	        	for(var key in response.data){
+					var text = "<option value='"+key+"'>"+response.data[key]+"</option>";
+					$($id).append(text);  
+					if(user){
+				    	//console.info($("#userType").find("option[value='"+user.userType+"']"));
+				    	$("#userType").find("option[value='"+user.userType+"']").attr("selected",true);
+					}
+	        	}
+	        }
+	    }); 	
+	}
+	mkUsertypeSelect('userType','/user/types');
+	// 创建userGroup select if update userGroup init
+	function mkUserGroupSelect(id,surl){
+		var $id = '#'+id;
+		$($id).empty();
+		$.ajax({
+	        url: surl,
+	        type: "GET",
+	        dataType: "json",
+	        success: function(response, textStatus, jqXHR) {
+	        	for(var i=0;i<response.data.length;i++){
+	        		var userGroup = response.data[i];
+					var text = "<option value='"+userGroup.groupId+"'>"+userGroup.groupName+"</option>";
+					$($id).append(text);  
+					if(user){
+				    	//console.info($("#userGroup").find("option[value='"+user.userGroup+"']"));
+				    	$("#userGroup").find("option[value='"+user.userGroup+"']").attr("selected",true);
+					}
+	        	}
+	        }
+	    }); 	
+	}
+	mkUserGroupSelect('userGroup','/usergroup/list');
+	// 给所有的input 添加校验 出去 note 这个可以为空
+	$("#userForm input").not($("#note")[0]).on('focusout',function (e) {
+		setFormTips($(e.target));
+	});
+	function checkInput(){
+		var ret = true;
+		$('#userForm input').not($("#note")[0]).each(function () {
+			if($(this).val() === '')
+			{
+				setFormTips(this);
+				ret = false;
+			}
+		});
+		return ret;
+	}
+	function setFormTips(field)
+	{
+		$(field).parent().find('.formtips').remove().end();
+		var v = $(field).val();
+		if(v === '')
+		{
+			$(field).closest('.form-group').addClass('has-error');
+            $(field).parent().append('<span class="formtips text-red">不能为空!</span>');
+		}
+		else
+		{
+			$(field).closest('.form-group').removeClass('has-error').addClass('has-success');
+		}
+	}
+	// 补充submit事件
+	function submit(surl){
+		$("#submit").click(function() {
+			if(checkInput()){
+				//console.info($("#userType").find("option:selected").val());
+		        var para = {
+		        	'id':$('#userId').val(),
+		        	'alias':$("#userGroup").find("option:selected").text(),
+					'pass':$('#password').val(),
+					'desc':$('#note').val(),
+					'type':$("#userType").find("option:selected").val(),
+					'groupId':$("#userGroup").find("option:selected").val()    	
+				};
+		        $.ajax({
+			        url: surl,
+			        type: "GET",
+			        dataType: "json",
+			        data: para,
+			        success: function(response, textStatus, jqXHR) {
+			        	if (response['status'] > 0) {
+			        		$(".content").load("user_security.html");
+				        } else {
+				               var _div = $('<div/>');
+				               _div.load('alert_error.html',
+				               function() {
+				                   $(this).find('#title').html("ERROR");
+				                   $(this).find('#message').html(response['message']);
+				                   var child = $(this).children();
+				                   child.fadeTo(3000, 1,
+				                   function() {
+				                        setTimeout(function() {
+				                            child.slideToggle(2000,
+					                            function() {
+					                                child.alert('close');
+					                            })
+				                        },
+				                        5000);
+				                   });
+				                   $('.content').append(child);
+				               });
+				       }
+			        }
+			    }); 	
+			}
+		});
+	}
+	// 补充back事件
+	$("#back").click(function() {
+		$(".content").load("user_security.html");
+	});
+</script>

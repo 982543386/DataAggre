@@ -1,0 +1,128 @@
+
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	
+    var table = $('#orderTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"k8Order/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "k8orderId" },
+        			{ "data": "createTime", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+        			{ "data": "k8orderType" },				
+					{ "data": "status","render":function(data, type, row){
+						if(data=="0") return "待处理";
+						else if(data=="1") return "已处理";
+						else if(data=="2") return "未处理";
+						else if(data=="3") return "提交更改申请";
+						else return "已发布并且全部服务异常"
+						}
+					},
+					{ "defaultContent": "<button class='btn btn-info btn-sm view'>查看</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>" }
+        		]
+    });
+    
+    $('#orderTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+		if(data.k8orderType=="cicd"){
+        	$('section.content').load('k8order/admin/cicd_admin.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="spark"){
+        	$('section.content').load('catalog/bigdata.html?h=' + new Date().getTime());
+        }else if(data.k8orderType=="tomcat"){
+        	$('section.content').load('catalog/middleware.html?h=' + new Date().getTime());
+        }
+		sessionStorage.setItem("id", data.k8orderId);
+		sessionStorage.setItem('lastPage', 'catalog/all_k8order.html');
+
+		history.pushState(null, null, 'index');
+    });
+    
+    $('#orderTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		if(data.status=="2"){
+			//alert("对不起，您所要删除的订单状态为已完成，所以不能做删除操作，谢谢！");
+			$('#deleteModalMsgConfirm').html('对不起，您所要删除的订单' + data.orderNo + '状态为已处理，所以不能做删除操作，谢谢！');
+			$('#deleteModalConfirm').modal().one('click', '#modal-delete', function() {
+				//$(e.target).button('loading');
+				return;
+			});
+		}else{
+			$('#deleteModalMsg').html('你确定要删除这个订单 <strong>' + data.orderNo + '</strong>?');
+			$('#deleteModal').modal().one('click', '#modal-delete', function() {
+				$(e.target).button('loading');
+				confirmDelete(data);
+			});
+		}
+	});
+
+
+	function confirmDelete(data) {
+		$.ajax({
+			url: "order/delete",
+			type: "POST",
+			dataType: "json",
+			data: {
+				id:data.orderId
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+
+</script>
+
+
+
+ <div class="box">
+        <div class="box-header with-border">
+        	<h3 class="box-title">订单详情</h3>
+        </div>
+        
+        <div class="box-body">
+          <div class="box-body">
+				<table id="orderTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<!-- <th>ID</th>
+							<th>订单号</th>
+							<th>租户</th> -->
+							<th>订单号</th>
+							<th>创建时间</th>
+							<th>服务类型</th>
+							<th>订单处理状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>					
+				</table>
+		  </div>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+        </div>
+        <!-- /.box-footer-->
+      </div>

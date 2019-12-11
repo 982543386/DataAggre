@@ -1,0 +1,125 @@
+
+	
+	
+<script type="text/javascript">
+	$.getScript("js/project.js"); 
+	$.getScript("js/date.format.js");
+	
+    var table = $('#appTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"k8Order/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "k8orderType" },
+        			{ "data": "userId"	},
+        			{ "data": "k8orderType" },	
+        			{ "data": "startTime", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+					{"defaultContent":"<span class='btn-block bg-green btn-sm label-status'>Deployed</span>"},
+					{ "defaultContent": "<button class='btn btn-primary btn-sm view'>查看</button>&nbsp;<button class='btn btn-info btn-sm status'>状态</button>&nbsp;<button class='btn btn-warning btn-sm update'>update</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>" }
+        		]
+    });
+</script>
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+			定制服务管理
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="add">申请订单</a>
+					</div>
+            </div>
+			<div class="box-body">				
+				<table id="appTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>应用名称</th>
+							<th>拥有者</th>
+							<th>版本</th>
+							<th>更新时间</th>
+							<th>状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<!-- <tbody>
+						<tr>
+							<td>ecshop</td>
+							<td>guest</td>
+							<td>v1</td>
+							<td>v2016/12/23 下午4:20:31</td>
+							<td><span class='btn-block bg-green btn-sm label-status'>Deployed</span></td>
+							<td><button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button></td>
+						</tr>
+						<tr>
+							<td>redis</td>
+							<td>guest</td>
+							<td>v1</td>
+							<td>v2016/12/23 下午4:20:31</td>
+							<td><span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style=' min-width: 2em; border-radius:3px;'>10%</div></div></span></td>
+							<td><button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button></td>
+						</tr>
+					</tbody> -->
+				</table>
+				
+			</div>
+		</div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModalConfirm">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsgConfirm"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">确认</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+    
+	$('#add').click( function() {
+		$('section.content').load('order/order_add_user.html?h=' + new Date().getTime());
+
+		sessionStorage.setItem('lastPage', 'k8order/containerService/customizedService.html');
+		history.pushState(null, null, 'index');
+    });
+
+</script>

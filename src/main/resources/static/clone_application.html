@@ -1,0 +1,113 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Add Application (Clone)</h3>
+        </div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Application Name</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="name"
+							placeholder="项目名称"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Version</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special lowercase validation" id="version"
+							placeholder="项目版本号"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Note</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special validation" id="note"
+							placeholder="笔记"/>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="form-group" name="service">
+                    <div class="col-sm-9 col-sm-offset-1">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+								Service&nbsp;
+								<div class="btn-group">
+                                    <button type="button" class="btn btn-primary" onclick="addService(this)">+</button>
+                                    <button type="button" class="btn btn-primary" onclick="delService(this)">-</button>
+                                    <button type="button" class="btn btn-primary" name="expand" data-parent="#selector" data-toggle="collapse" data-target="#service_panel_0" onclick="hide_show(this)">></button>
+                                </div>
+                            </div>
+                            <div class="panel-body" id="service_panel_0"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+                    <button onclick="return addApplication()" type="button" class="btn btn-primary saveBtn" disabled="disabled">
+						保<span style="padding-left: 12px" />存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+<script>
+	var _id = sessionStorage.getItem("ku8ID");
+	$.getScript("../js/project.js");
+	
+	$(document).ready(function(){
+		sessionStorage.removeItem("ku8ID");
+		if(_id !== null)
+		{
+			$.ajax({
+				url: "/application/getApplication",
+				type: "GET",
+				dataType: "json",
+				data: {ku8ID:_id},
+				success: function(data){
+					$("#version").val(data.version);
+					$("#owner").val(data.owner);
+					$("#note").val(data.note);
+					
+					var json = JSON.parse(data.jsonSpec);
+					
+					//Loop Services
+					$.each(json.services, function(i, s) {
+						
+						if(i > 0)
+						{
+							var $service = $("div.form-group[name='service']:last");
+							var $new_service = $service.clone();
+							$new_service.find("button[name='expand']").attr("data-target", "#service_panel_" + i);
+							$new_service.find(".panel-body").attr("id", "service_panel_" + i).html('');
+							$service.after($new_service);
+						}
+						
+						var servicePanel = $("#service_panel_" + i);
+						cloneService(s, servicePanel, ku8App);
+					});
+				}
+			});
+		}
+		else
+		{
+			alertError('ERROR', 'NO SESSION FOUND');
+		}
+	});
+</script>

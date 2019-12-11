@@ -1,0 +1,442 @@
+<style>
+.initMapDataList {
+	margin-top:15px;
+	margin-left: auto;
+	margin-right: auto;
+	font-family: arial,"Hiragino Sans GB","Microsoft Yahei",sans-serif;
+	font-size: 12pt;
+	line-height:130px;
+    width: 130px; 
+    height: 130px; 
+    background: turquoise; 
+    -moz-border-radius: 130px 130px 130px 130px;
+    -webkit-border-radius: 130px 130px 130px 130px;
+    border-radius: 130px 130px 130px 130px;
+}
+</style>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5></h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+            	<table class="table table-bordered table-striped">
+			        <tbody>
+			        	<tr>
+			        		<td style="vertical-align:top;text-align:center;">
+			        			<div id="myChart" style="width:100%;height:600%;"></div>
+			        		</td>
+			        		<td style="width:30%; vertical-align:top;text-align:center;">
+			        		   <div id="initMapDataDiv" style="margin-top:15px;display:none">
+									<!-- 后台ajax获取 -->
+				            	</div>
+			        		</td>
+			        	</tr>
+			        </tbody>
+			    </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" id="all_ablity_catalogs">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>能力列表</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <table id="all_ablity_catalogs_div" class="table table-bordered table-striped">
+					<thead>
+						<th>能力名称</th>
+						<th>能力类型</th>
+						<th>能力描述</th>
+						
+						<th>版本</th>
+					</thead>
+			        <tbody>
+			        </tbody>
+			    </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>DCOS节点信息</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <table id="all_info_show_nodes_div" class="table table-bordered table-striped">
+					<thead>
+						<th>节点IP</th>
+						<th>节点状态</th>
+						<th>成员角色</th>
+						<th>cpu使用情况(used/Avelibale)</th>
+						<th>memory使情况(used/Avelibale)</th>
+					</thead>
+			        <tbody>
+			        </tbody>
+			    </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>K8s public service 信息</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <table id="all_info_show_service_div" class="table table-bordered table-striped">
+					<thead>
+						<th>public service名字</th>
+						<th>service名字</th>
+						<th>pod数量</th>
+						<th>cpu使用率</th>
+						<th>memory使用率</th>
+					</thead>
+			        <tbody>
+			        </tbody>
+			    </table>
+            </div>
+        </div>
+    </div>
+</div>
+ -->
+<script>
+function cacheDcosUrlConfig(zoneLocalIp,zoneId){
+	$.ajax({
+        url : "cacheDcos/update",
+        type:"post",
+        async: false,
+        data :'zoneLocalIp='+zoneLocalIp+'&zoneId='+zoneId,
+        success : function(res)
+        {
+        	
+        }
+	});
+}
+function showMapDataInfo(zoneLocal){
+	var data = {
+			zoneLocal:zoneLocal
+	};
+	var zoneLocalArray;
+	$.ajax({
+        url : "home/homeAblityStatisticByLocal",
+        dataType : "json",
+        type:"post",
+        async: false,
+        data :JSON.stringify(data),
+        contentType : "application/json; charset=utf-8",
+        success : function(res)
+        {
+        	zoneLocalArray = res;	        	
+        }
+	});
+	//console.log(zoneLocalArray);
+	$("#initMapDataDiv").empty();
+	$("#initDataCore").empty();//main.html initDataCore
+	if(zoneLocalArray && zoneLocalArray.length>0){
+		var tmpHtml = '';
+	    var tmpZoneName ='';
+	    for(var i=0;i<zoneLocalArray.length;i++){
+		    if(i==0){
+		    	tmpHtml += '<div style="font-size: 20pt;margin-top:30px;">'+zoneLocalArray[i].zoneName+'</div>';
+		    	$("#initDataCore").text(zoneLocalArray[i].zoneName);//main.html 首页显示数据中心
+		    	//缓存选择数据中心的DCOS ip地址
+		    	console.log(zoneLocalArray[i]);
+		    	cacheDcosUrlConfig(zoneLocalArray[i].zoneLocalIp,zoneLocalArray[i].zoneId);
+		    }
+		    if(zoneLocalArray[i].ablityType==1){
+		    	tmpHtml += '<a href="#all_ablity_catalogs"><div class="initMapDataList" style="background: #D8BFD8;">大数据服务['+zoneLocalArray[i].abilityNum+']</div></a>';
+		    }else if(zoneLocalArray[i].ablityType==2){
+		    	tmpHtml += '<a href="#all_ablity_catalogs"><div class="initMapDataList" style="background: #BBBB00;">数据库服务['+zoneLocalArray[i].abilityNum+']</div></a>';
+		    }else if(zoneLocalArray[i].ablityType==3){
+		    	tmpHtml += '<a href="#all_ablity_catalogs"><div class="initMapDataList" style="background: #40C9E0;">容器服务['+zoneLocalArray[i].abilityNum+']</div></a>';
+		    }
+	    	tmpZoneName = zoneLocalArray[i].zoneName;
+	    }
+	}
+    $("#initMapDataDiv").append(tmpHtml);
+    $("#initMapDataDiv").show(3000);
+}
+
+	$(function(){
+		$('.collapse-link').click(function () {
+		    var ibox = $(this).closest('div.ibox');
+		    var button = $(this).find('i');
+		    var content = ibox.find('div.ibox-content');
+		    content.slideToggle(200);
+		    button.toggleClass('fa-chevron-up').toggleClass('fa-chevron-down');
+		    ibox.toggleClass('').toggleClass('border-bottom');
+		    setTimeout(function () {
+		        ibox.resize();
+		        ibox.find('[id^=map-]').resize();
+		    }, 50);
+		});
+		
+		// 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('myChart'));
+
+      //异步方式获取data
+      var series0data;
+        $.ajax({
+	        url : "home/homeAblityStatistic",
+	        dataType : "json",
+	        type:"post",
+	        async: false,
+	        //data :JSON.stringify(data),
+	        //contentType : "application/json; charset=utf-8",
+	        success : function(res)
+	        {
+	        	series0data = res;	        	
+	        }
+    	});
+		
+		
+        // 指定图表的配置项和数据
+        var option = {
+        	    title: {
+        	        text: '中国联通数据中心能力分布',
+        	        //subtext: '纯属虚构',
+        	        left: 'center'
+        	    },
+        	    tooltip: {
+        	        trigger: 'item'
+        	    },
+        	    legend: {
+        	        orient: 'vertical',
+        	        left: 'left',
+        	        data:['能力服务汇总']
+        	    },
+        	    toolbox: {
+        	        show: true,
+        	        orient: 'vertical',
+        	        left: 'right',
+        	        top: 'center',
+        	        feature: {
+        	            dataView: {readOnly: false},
+        	            restore: {},
+        	            saveAsImage: {}
+        	        }
+        	    },
+        	    series: [
+        	        {
+        	            name: '能力服务汇总',
+        	            type: 'map',
+        	            mapType: 'china',
+        	            roam: false,
+        	            label: {
+        	                normal: {
+        	                    show: true
+        	                },
+        	                emphasis: {
+        	                    show: true
+        	                }
+        	            },
+        	            data:series0data
+        	        }
+        	    ]
+        	};
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+        window.onresize = myChart.resize;
+        //定义点击事件
+        myChart.on('click', function (params) {
+            showMapDataInfo(params.name); 
+           
+    		/*初始化Dcos节点信息列表 */
+    		$.ajax({
+    			url : "/monitor/dcosnodes",
+    			type : "GET",
+    			dataType : "json",
+    			success : function(data) {
+    				$("#all_info_show_nodes_div tbody").empty();
+    				for(var i = 0; i < data.length; i++){
+    					
+    					var resourceUsage = data[i].resourceUsage;
+    					var tr = $("<tr></tr>"); 
+    					//$("<td>" + "<a href=\"javascript:void(0);\" class='goApplication'>" + data[i].NodeIP + "</a>" +"</td>").appendTo(tr);
+    					$("<td>" + data[i].NodeIP +"</td>").appendTo(tr);
+    					if(data[i].Health=="0"){
+    						$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + "Health" + "</a>" + "</td>").appendTo(tr);
+    					}else {
+    						
+    						$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + "unHealth" + "</a>" + "</td>").appendTo(tr);
+    					}
+    					
+    					$("<td>" +  data[i].Role + "</td>").appendTo(tr);
+    					$("<td>" + resourceUsage.cpuUsage + "/" + resourceUsage.cpuAveliable + "</td>").appendTo(tr);
+    					$("<td>" + resourceUsage.memoryUsage + "GB/" + resourceUsage.memoryAvelibale + "GB</td>").appendTo(tr);
+    				
+    					tr.appendTo($("#all_info_show_nodes_div tbody"));
+    				}
+    				//dataTables app
+    				$('#all_info_show_nodes_div').DataTable();
+    				//$(".goApplication").on("click",function(){
+    				//	$("#menuapplication").addClass("active");
+    				//	$("#menuapplication").children("ul").children("li").eq(1).children("a").click();
+    				//});
+    				$(".appToService").on("click",function(){
+    					var _this = this;
+    					$("#menudashboard").addClass("active");
+    					$("#menudashboard ul").first().children("li").eq(1).addClass("active");
+    					$("#menudashboard ul").first().children("li").eq(1).children("ul").first().children("li").children("a").each(function(index){
+    						if($(this).text() == $(_this).text()){
+    							$(this).click();
+    						}
+    					});
+    				});
+    			}
+    		});
+        });
+        
+        //自动触发北京
+        showMapDataInfo('北京');
+        
+		/*初始化Dcos节点信息列表 */
+		$.ajax({
+			url : "/monitor/dcosnodes",
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				for(var i = 0; i < data.length; i++){
+					var resourceUsage = data[i].resourceUsage;
+					var tr = $("<tr></tr>"); 
+					//$("<td>" + "<a href=\"javascript:void(0);\" class='goApplication'>" + data[i].NodeIP + "</a>" +"</td>").appendTo(tr);
+					$("<td>" + data[i].NodeIP +"</td>").appendTo(tr);
+					if(data[i].Health=="0"){
+						$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + "Health" + "</a>" + "</td>").appendTo(tr);
+					}else {
+						
+						$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + "unHealth" + "</a>" + "</td>").appendTo(tr);
+					}
+					
+					$("<td>" +  data[i].Role + "</td>").appendTo(tr);
+					$("<td>" + resourceUsage.cpuUsage + "/" + resourceUsage.cpuAveliable + "</td>").appendTo(tr);
+					$("<td>" + resourceUsage.memoryUsage + "GB/" + resourceUsage.memoryAvelibale + "GB</td>").appendTo(tr);
+					tr.appendTo($("#all_info_show_nodes_div tbody"));
+				}
+				//dataTables app
+				$('#all_info_show_nodes_div').DataTable();
+				//$(".goApplication").on("click",function(){
+				//	$("#menuapplication").addClass("active");
+				//	$("#menuapplication").children("ul").children("li").eq(1).children("a").click();
+				//});
+				$(".appToService").on("click",function(){
+					var _this = this;
+					$("#menudashboard").addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).children("ul").first().children("li").children("a").each(function(index){
+						if($(this).text() == $(_this).text()){
+							$(this).click();
+						}
+					});
+				});
+			}
+		});
+		
+		/*初始化K8s public service 信息*/
+		$.ajax({
+			url : "/monitor/publicService",
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				for(var i = 0; i < data.length; i++){
+					var serviceInfos = data[i].serviceInfo;
+					if(serviceInfos.length == 0){
+						var tr_for_onlyOne = $("<tr></tr>");
+						$("<td>" + "<a href=\"javascript:void(0)\" class='goService'>" + data[i].name + "</a>" +"</td>").appendTo(tr_for_onlyOne);
+						$("<td>no service</td>").appendTo(tr_for_onlyOne);
+						$("<td>0</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						tr_for_onlyOne.appendTo($("#all_info_show_service_div tbody"));
+					}
+					else{
+						for(var j = 0; j < serviceInfos.length; j++){
+							var tr = $("<tr></tr>");
+							$("<td>" + "<a href=\"javascript:void(0);\" class='goService'>" + data[i].name + "</a>" +"</td>").appendTo(tr);
+							$("<td>" + "<a href='javascript:void(0)' class='pubToService'>" + serviceInfos[j].service_name + "</a>" + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].pod_amount + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].allCpuUsage + "/" + serviceInfos[j].allCpuLimit + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].allMemoryUsage + "/" + serviceInfos[j].allMemoryLimit + "</td>").appendTo(tr);
+							tr.appendTo($("#all_info_show_service_div tbody"));
+						}
+					}
+				}
+				//dataTables service
+				$('#all_info_show_service_div').DataTable();
+				$(".goService").on("click",function(){
+					$("#menuapplication").addClass("active");
+					$("#menuapplication").children("ul").children("li").eq(2).children("a").click();
+				});
+				$(".pubToService").on("click",function(){
+					var _this = this;
+					$("#menudashboard").addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).children("ul").first().children("li").children("a").each(function(index){
+						if($(this).text() == $(_this).text()){
+							$(this).click();
+						}
+					});
+				});
+			}
+		});
+		
+		/*  初始化系统事件*/
+		
+		/*
+		$('#all_info_show_events_div').DataTable({
+	        "ajax":"/monitor/systemEvents",
+	        "columns": [
+						{ "data": "firstSeen" },
+	        			{ "data": "lastSeen" },
+	        			{ "data": "count" },
+	        			{ "data": "name" },
+	        			{ "data": "kind" },
+	        			{ "data": "subObject" },
+	        			{ "data": "reason" },
+	        			{ "data": "source" },
+	        			{ "data": "message" }
+	        		]
+	    });*/
+		
+		/* 初始化能力列表 */
+		$('#all_ablity_catalogs_div').DataTable({
+	        "ajax":"/home/ablityCatalogs",
+	        "columns": [
+						{ "data": "ablityName" },
+	        			{ "data": "ablityTypeName" },
+	        			{ "data": "abilityDesc" },
+	        			{ "data": "version" }
+	        		]
+	    });
+		
+	});
+</script>

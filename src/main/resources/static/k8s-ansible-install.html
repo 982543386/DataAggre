@@ -1,0 +1,239 @@
+<style>
+  .paddingheight{
+  		padding-bottom: 5px;
+  		padding-top:15px
+  }
+  .leftproess{
+     padding-bottom: 5px;
+     height:600px;
+     color:#E9C340;
+     background-color:#000000;
+     OVERFLOW-Y: scroll;
+  }
+  .rightproess{
+  	padding-bottom: 5px;
+  	height:600px;
+  	background-color:#ffffff;
+  	OVERFLOW-Y: scroll
+  }
+  .rightProessBartitle{
+  	font-size:17px;
+  	padding-left:20px;
+  }
+  .processb{
+  	margin:10px 10px 10px 10px;
+  	width: 90%; height: 25px;
+    border: solid 1px #ccc;
+  }
+  .processbackground{
+     background-color: #90EE90;
+     width: 0px;
+     height: 24px;
+  }
+  .btnpadding{
+    padding-bottom: 5px;
+    padding-top:15px
+  }
+</style>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<!-- /.box-header -->
+			<div class="box-body">
+				<div class="paddingheight">
+				<button id="back"  class="btn btn-primary" data-dismiss="modal" style="float:right;">返回</button>	
+					<h3 id="resultTitle">正在为您安装kubernetes集群，请耐心等待。。。。</h3>
+				</div>
+				<table id="example1" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th style="width:60%;">
+							<div class="leftproess" id="scroll1">
+								<ul id="installData" style="list-style-type:none;">
+									
+								</ul>
+							</div>
+							</th>
+							<th><div class="rightproess" id="scroll2">
+								<span id="installPercent" class="rightProessBartitle">安装进度:</span>
+								<div class="processb" id="process1">
+								<div id="processbar" class="processbackground"></div>
+								</div>
+								
+								<ul id="installresult" style="list-style-type:none;"></ul>
+								</div>
+							</th>
+						</tr>
+					</thead>
+				</table>
+				<div class="btnpadding">
+				 	<button id="detail"  class="btn btn-primary" data-dismiss="modal">详细信息</button>	
+				</div>
+				
+			</div>
+			<!-- /.box-body -->
+		</div>
+		<!-- /.box -->
+	</div>
+	<!-- /.col -->
+</div>
+
+<div class="modal fade" id="myModal2" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">安装成功</h4>
+			</div>
+			<div class="modal-body">
+				<!-- Horizontal Form -->
+		          <div class="box box-info" style="margin-bottom:0px;">
+		            <!-- form start -->
+		            <form class="form-horizontal">
+		              <table id="dialogResult" class="table table-bordered table-hover" style="font-size: 12px;text-align:center;">
+						<thead>
+						<tr>
+							<th colspan="2">节点</th>
+							<th>安装汇总</th>
+						</tr>
+						</thead>
+						</table>
+		              <!-- /.box-body -->
+		            </form>
+		          </div>
+		          <!-- /.box -->
+			</div>
+			<div class="modal-footer">
+				<span style="color:#D81E12;float:left;" id="clusterSpan"></span>
+				<button type="button" class="btn btn-default" data-dismiss="modal" id="installSucc">保存集群
+				</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal" id="installFail">关<span style="padding-left: 12px" />闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+$("#back").click(function(){
+	$(".content").load("modeNext.html");
+});
+$("#detail").click(function(){
+	$("#myModal2").modal('show'); 
+});
+setTimeout(install, 2000);
+//每隔2秒，如果数据没更新完成，继续循环
+function install(){
+	$.ajax({
+	    url:"/deploycluster/fetch-ansilbe-result",
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    	var _data="";
+    		var _result="";
+    		var count=0;
+	    	$.each(data.stepResults,function(i,item){
+	    		_data +="<li style='color:#ffffff;font-size:18px;'>................Job  Begin : "+i+"................</li>";
+	    		_result +="<li style='weight:700;font-size:18px;'>...........Job : "+i+"...........</li>";
+	    		count++;
+	    		$("#installPercent").html("安装进度:"+(10*count)+ "%");
+	    		document.getElementById("processbar").style.width = (10*count)+ "%";
+	    		$.each(item,function(c,d){
+	    			if(c=="ansibleRowDatas"){
+	    				//左边输出
+	    	    		$.each(d,function(m,n){
+	    	    			_data += "<li>"+n+"</li>";
+	    	    		});
+	    			}
+	    			if(c=="ansibleOutSummary"){
+	    				//右边输出
+	    				count++;
+	    				$("#installPercent").html("安装进度:"+(10*count)+ "%");
+	    				document.getElementById("processbar").style.width = (10*count)+ "%";
+	    				$.each(d,function(a,b){
+	    					_result += "<li>"+b+"</li>";
+	    	    		});
+	    			}
+	    		});
+	    		
+	    	});
+	    	
+	    	$("#installData").html(_data);
+			$("#installresult").html(_result);
+			
+			$('#scroll1').scrollTop( $('#scroll1')[0].scrollHeight );
+			$('#scroll2').scrollTop( $('#scroll2')[0].scrollHeight );
+			
+	    	if(data.finished==true){
+	    		$("#installPercent").html("安装进度:100%");
+	    		document.getElementById("processbar").style.width = (100)+ "%";
+	    		if(data.success==true){
+	    			installResult("success");
+	    		}else{
+	    			installResult("fail");
+	    		}
+	    		
+	    	}else{
+	    		setTimeout(install, 2000);
+	    	}
+	    }
+	});
+}
+
+
+
+
+function installResult(_type){
+	if(_type=="success"){
+		$("#myModalLabel").html("安装成功");
+		$("#installSucc").show();
+		$("#resultTitle").html("安装成功");
+	}else{
+		$("#myModalLabel").html("安装失败");
+		$("#installSucc").hide();
+		$("#resultTitle").html("安装失败");
+	}
+	$("#myModal2").modal('show'); 
+	$.ajax({
+	    url:"/deploycluster/ansible-final-result-report/sumary",
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    	var faileMessage="";
+    		$.each(data,function(isa,isb){
+	    		if(_type=="success"){
+	    			$("#dialogResult").append("<tr><td><img src='./img/success.png' alt=''></td><td>"+isa+"</td><td>ok="+isb.ok+",changed="+isb.changed+",unreachable="+isb.unreachable+",failed="+isb.failed+",failedPrintMsg="+isb.failedPrintMsg+"</td></tr>");
+	    		}else{
+	    			$("#dialogResult").append("<tr><td><img src='./img/failed.png' alt=''></td><td>"+isa+"</td><td>ok="+isb.ok+",changed="+isb.changed+",unreachable="+isb.unreachable+",failed="+isb.failed+",failedPrintMsg="+isb.failedPrintMsg+"</td></tr>");
+	    		}
+	    		
+	    	});	
+	    }
+	});
+	
+	$("#installSucc").click(function(){
+		$.ajax({
+		    url:"/deploycluster/write-cluster-info2db",
+		    type: "GET",
+		    dataType:"text",
+		    success: function(data){
+		    	if(data=="SUCCESS:"){
+		    		$(".content").load("cluster_main.html");
+		    	}else{
+		    		$("#clusterSpan").html("保存数据失败！！！！");
+		    	}
+		    }
+		});
+	});
+	
+}
+
+
+
+
+
+</script>

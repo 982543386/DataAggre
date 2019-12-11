@@ -1,0 +1,128 @@
+
+<!-- <link href="plugins/icheck-1.x/skins/square/blue.css" rel="stylesheet">
+<script src="plugins/icheck-1.x/icheck.js"></script> -->
+<script>
+	$.getScript("js/jenkinsOrder.js");
+	//$.getScript("js/order.js");
+</script>
+
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">申请订单</h3>
+			</div>
+		</div>
+       
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="orderform">	
+            			
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">User Name</label>
+							<div class="col-sm-7">
+								<input placeholder="User Name" class="form-control layer-date allow-special validation" id="username">
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">URL</label>
+							<div class="col-sm-7">							
+								<input placeholder="URL" class="form-control layer-date allow-special validation" id="url">
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="form-group no-margin-bottom">			
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">API Token</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special validation" id="APItoken"
+							placeholder="API Token">
+							</div>
+						</div>
+					</div>
+					
+					<!-- <div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label" alig>Request Type</label>
+							<div class="col-sm-7">							
+								<input placeholder="Request Type" class="form-control layer-date allow-special validation" id="requesttype">
+							</div>
+						</div>
+					</div> -->		
+				</div>
+				
+				
+				<div class="form-group no-margin-bottom">
+					<!-- <div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Job</label>
+							<div class="col-sm-7">
+								<input placeholder="Job" class="form-control layer-date allow-special validation" id="job">
+							</div>
+						</div>
+					</div> -->
+					
+					<!-- <div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">Job Status</label>
+							<div class="col-sm-7">							
+								<input placeholder="Job Status" class="form-control layer-date allow-special validation" id="jobstatus">
+							</div>
+						</div>
+					</div> -->
+				</div>		
+										
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" onclick="history.back(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+                    <button onclick="return order.addOrder()" type="button" class="btn btn-primary saveBtn" >
+						保<span style="padding-left: 12px" />存
+                    </button>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+
+
+<!-- <script>
+    var start = {
+		  elem: '#start',
+		  format: 'YYYY/MM/DD hh:mm:ss',
+		  min: laydate.now(), //设定最小日期为当前日期
+		  max: '2099-06-16 23:59:59', //最大日期
+		  istime: true,
+		  istoday: false,
+		  choose: function(datas){
+		     end.min = datas; //开始日选好后，重置结束日的最小日期
+		     end.start = datas //将结束日的初始值设定为开始日
+		  }
+		};
+	var end = {
+	  elem: '#end',
+	  format: 'YYYY/MM/DD hh:mm:ss',
+	  min: laydate.now(),
+	  max: '2099-06-16 23:59:59',
+	  istime: true,
+	  istoday: false,
+	  choose: function(datas){
+	    start.max = datas; //结束日选好后，重置开始日的最大日期
+	  }
+	};
+	laydate(start);
+	laydate(end);
+</script> -->
+    

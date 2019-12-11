@@ -1,0 +1,310 @@
+<!-- 用户点击cicd类型订单详情页面 -->
+
+<script type="text/javascript">
+	var orderId = sessionStorage.getItem("id");
+    $(document).ready(function() {
+        if (orderId !== null) {
+            $.ajax({
+                url: "k8Order/cicd/viewByOrderId",
+                type: "GET",
+                dataType: "json",
+                data: {
+                    k8orderId: orderId
+                }, 
+                success: function(data) {
+                	$("#reponame").val(data.repoName);
+                	$("#orderNo").val(data.k8orderId);
+                	$("#url").val(data.sourceUrl);
+                	$("#username").val(data.sourceUsername);
+                	$("#password").val(data.sourcePassword);
+                		
+                  if (data.sourceType == 1) {
+                        $("#sourcetype").val("新申请git");
+                    } else  if (data.sourceType == 2) {
+                        $("#sourcetype").val("已有git");
+                        $("#url").attr("readonly","readonly");
+                    }else  if (data.sourceType == 3) {
+                        $("#sourcetype").val("新申请svn");
+                    }else  if (data.sourceType == 4) {
+                        $("#sourcetype").val("已有svn");
+                        $("#url").attr("readonly","readonly");
+                    }else  if (data.sourceType == 5) {
+                        $("#sourcetype").val("已有github");
+                        $("#url").attr("readonly","readonly");
+                    }
+                    
+                    if (data.cdType == "1") {
+                        $("#cdtype").val("Maven");
+                    } else {
+                        $("#cdtype").val("其他");
+                    }
+                	//$("#remarkadmin").val(data.remarkAdmin);
+                	if (data.remarkAdmin == null) {
+                        $("#remarkadmin").val("暂无");
+                    } else {
+                        $("#remarkadmin").val(data.remarkAdmin);
+                    }
+                    $("#remark").val(data.remark);
+                    if (data.resourceType == 1) {
+                        $("#resource").val("动态");
+                    } else if (data.resourceType == 2) {
+                        $("#resource").val("CPU1,RAM2");
+                    } else if (data.resourceType == 3) {
+                        $("#resource").val("CPU2,RAM4");
+                    } else if (data.resourceType == 4) {
+                        $("#resource").val("CPU4,RAM8");
+                    }
+                    if (data.storageType == 1) {
+                        $('#storage').val("容器内");
+                    } else if (data.storageType == 2) {
+                        $('#storage').val("本地");
+                    } else if (data.storageType == 3) {
+                        $('#storage').val("网络");
+                    }
+
+                }
+            });
+            sessionStorage.removeItem("orderId");
+        } else {
+            alertError('ERROR', 'NO SESSION FOUND');
+        }
+    });
+    $('#finishOrder').on("click",function(){
+        if (checkInput("#rely")) {
+           var url = $("#url").val();
+    		var remark = $("#rely").val();
+    		var status = 1 ;
+    		
+            $.ajax({
+                url: "k8Order/cicd/finish",
+                type: "GET",
+                dataType: "json",
+                data: {
+                	 k8order_id:orderId,
+                	 remark_admin:remark,
+                	 status:status,
+					url:url                	                               
+                },
+                success: function() {
+                }
+            });
+        }
+		$('section.content').load('k8order/admin/all_k8order_admin.html', function() {
+			alertSuccess("订单回复成功.");
+	    });	  
+    });
+    $('#refuseOrder').on("click",function(){
+    	$('#refuseModalMsg').html('您确定要拒绝这个订单吗?');
+    	$('#refuseModal').modal().on('click', '#modal-refuse', function() {	
+    		var remark = $('#rely').val();
+    		var status = 4 ;
+ 	         alert(orderId);
+             alert(status);
+             alert(remark); 
+            $.ajax({
+                url: "k8Order/cicd/finish",
+                type: "GET",
+                dataType: "json",
+                data: {
+                	 k8order_id:orderId,
+                	 status:status,
+                	 remark_admin:remark            
+                },
+                success: function() {
+                	
+                }
+                
+            });
+
+            
+            
+    	});
+    	
+    });
+    function installimage(){
+    	//var command = $('#command').val();
+		//var type = mysql;
+		//alert("提交命令" + command);
+		$.ajax({
+			url : "ssh/exec/war/install",
+			type : "POST",
+			dataType : "json",
+			data : {
+				k8order_id:orderId
+			},
+			success : function(response) {
+				
+				if (response == 1) {
+					alertSuccess(response, "命令发送成功.");
+					//$('section.content').load('devops/devops_check_user.html', function() {
+					//alertSuccess(response.message, "订单申请成功.");
+					//});
+
+				} else {
+					alertError("ERROR~", response.message);
+				}
+			}
+		});
+
+    }
+    $("#installimage").on("click",function(){
+    	installimage();
+    	$("#installimage").attr("disabled", true);
+   		//acceptOrder();
+   		//$('section.content').load('k8order/admin/all_k8order_admin.html', function() {
+		//	alertSuccess("订单回复成功.");
+	    //});	  
+   	 });
+    
+    </script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-info">
+            <div class="box-header with-border">
+                <div class="col-sm-6 no-padding">
+                    <h3 class="box-title">CICD订单处理</h3>
+				</div>
+            </div>
+            <div class="box-body">
+                <form class="form-horizontal" role="form" id="orderform">
+                    <div class="form-group no-margin-bottom">
+                
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" >订单号</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control lowercase validation" id="orderNo" placeholder="订单号" readonly="readonly" value="orderNumber" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group no-margin-bottom">
+                    
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">项目名称</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="reponame" readonly="readonly" value="versionNumber" /></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">项目源</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="sourcetype" readonly="readonly" value="项目源" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group no-margin-bottom">
+                   
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">构建方式</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="cdtype" readonly="readonly" value="构建类型" /></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">URL</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="url"  value="url" /></div>
+                            </div>
+                        </div>                        
+                    </div>
+                    
+                       <div class="form-group no-margin-bottom">
+                    <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">用户名</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control allow-special validation" id="username" readonly="readonly"
+									value="用户名"  /></div>
+                            </div>
+                        </div>
+                        
+                         <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">密码</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control allow-special validation" id="password" readonly="readonly"
+									value="密码"  /></div>
+                            </div>
+                        </div>
+                        </div>
+                    
+                     <div class="form-group no-margin-bottom">
+                     <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">用户备注</label>
+                                <div class="col-sm-8">
+                                    <textarea type="text" class="form-control lowercase validation" id="remark" readonly="readonly" value="1~10" /></div>
+                            </div>
+                        </div>  
+                    <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">管理员留言</label>
+                                <div class="col-sm-8">
+                                    <textarea type="text" class="form-control allow-special validation" id="rely"
+									placeholder="请在此处回复"  /></div>
+                            </div>
+                        </div>
+                        </div>
+                    
+                    <!-- <div class="form-group no-margin-bottom">
+                   
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">存储类型</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="storage" readonly="readonly" value="存储空间类型" /></div>
+                            </div>
+                        </div> 
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">用户备注</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="remark" placeholder="remark" readonly="readonly" value="remark" /></div>
+                            </div>
+                        </div>
+                    </div> -->
+                </form>
+                <div class="modal-footer clearfix">
+               		 <div class="col-sm-7 col-sm-offset-3 no-padding">
+						<button type="button" class="btn btn-default" onclick="history.back();">
+							返<span style="padding-left: 12px" />回
+						</button>
+						<button id="refuseOrder" type="button" class="btn btn-danger" >
+							拒<span style="padding-left: 12px" />绝
+						</button>
+						<button id="installimage" type="button" class="btn btn-info saveBtn" >
+							打包镜像
+                    	</button>
+                    	<button id="finishOrder" type="button" class="btn btn-primary saveBtn" >
+							同意
+                    	</button>
+                	</div>
+          		 </div>
+          		  <div class="modal modal-primary fade" id="refuseModal">
+			  	<div class="modal-dialog">
+					<div class="modal-content">
+					  <div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+						  <span>×</span></button>
+						<h4 class="modal-title">请确认</h4>
+					  </div>
+					  <div class="modal-body">
+						<p id="refuseModalMsg"/>
+					  </div>
+					  <div class="modal-footer">
+						<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-outline" id="modal-refuse" data-dismiss="modal">确认</button>
+				 	 </div>
+					</div>
+				  </div>
+		       </div>	
+            </div>
+        </div>
+    </div>
+</div>

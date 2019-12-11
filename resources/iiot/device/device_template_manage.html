@@ -1,0 +1,144 @@
+
+    <!-- Main content -->
+    <section class="content">
+
+      <!-- Default box -->
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">设备管理</h3>
+
+          <div class="box-tools ">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip"
+                    title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+        
+          
+          <div class="form-group col-md-12">
+         	 <div class="col-md-12">	
+				<label class="col-md-4 control-label">名称：</label>
+				<div class="col-md-4">
+						<input type="text" class="form-control" id="deviceName" placeholder="请输入模版名称" autocomplete="off" >
+				</div>
+			</div>
+		</div>
+		<div class="form-group col-md-12">
+			<div class="col-md-12">	
+				<label class="col-md-4 control-label">访问协议：</label>
+				<div class="col-md-8">
+					<div class="btn-group">
+	                     <button type="button" class="btn btn-default">自定义</button>
+	                     <button type="button" class="btn btn-default">Modbus</button>
+	                     <button type="button" class="btn btn-default">OPC-UA</button>
+	                </div>
+                </div>
+                </div>
+				
+		</div>
+		 <div class="form-group col-md-12">
+				<div class="col-md-12">	
+				<label class="col-md-4 control-label">设备属性：</label>
+				<div class="col-md-4"> 
+				 <table class="table table-bordered">
+				 <tr>
+                  <th >属性名</th>
+                  <th>类型</th>
+                  <th>属性值</th>
+                </tr>
+				 </table>
+				</div>
+				</div>
+				
+				<div class="col-md-12">				
+					<div class="col-md-1 col-md-offset-4"> 
+					<button type="button" class="btn btn-block btn-default">新增属性</button>
+					</div>
+				</div>
+		</div>
+		<div class="form-group col-md-12">
+			<div class="col-md-12">	
+				<label class="col-md-4 control-label">孪生属性：</label>
+				<div class="col-md-4"> 
+				 <table class="table table-bordered">
+				 <tr>
+                  <th >属性名</th>
+                  <th>类型</th>
+                  <th>属性值</th>
+                </tr>
+				 </table>
+				</div>
+			</div>
+				<div class="col-md-12">				
+					<div class="col-md-1 col-md-offset-4"> 
+					<button type="button" class="btn btn-block btn-default">新增属性</button>
+					</div>
+				</div>	
+		</div>
+		 <div class="form-group col-md-12">
+		 	<div class="col-md-12">	
+				<label class="col-md-4 control-label">设备标签：</label>
+				<div class="col-md-4"> 
+				 <table class="table table-bordered">
+				 <tr>
+                  <th >属性名</th>
+                  <th>类型</th>
+                  <th>属性值</th>
+                </tr>
+				 </table>
+				</div>
+			</div>
+			<div class="col-md-12">				
+					<div class="col-md-1 col-md-offset-4"> 
+					<button type="button" class="btn btn-block btn-default">新增属性</button>
+					</div>
+				</div>	
+		</div>
+		<div class="form-group col-md-12">
+			<div class="col-md-12">	
+				<label class="col-md-4 control-label">描述：</label>
+				<div class="form-group col-md-4">
+                  <textarea class="form-control" rows="3" placeholder="请输入设备描述 ..." ></textarea>
+                </div>
+              </div>
+		</div>
+		 <div class="form-group col-md-12">
+		 	<div class="col-md-12">	
+				<label class="col-md-4 control-label">备注：</label>
+				 <div class="panel-body col-md-8">
+				<p>
+				<strong>名称：</strong>设备模版的名称。<br>
+				<strong>设备属性：</strong>属性是键值对形式，请输入属性名和属性值，并选择类型。<br>
+				通常将不会改变的元数据，包括序列号、资产标识符、Mac地址等描述设备的详细信息。<br>
+				<strong>孪生属性：</strong>不同协议类型的孪生属性设置方法不同。<br>
+				<strong>设备标签：</strong>标签用于为设备分类，标签可以帮助您更快的搜索到想要的设备。
+				您可以为设备设置标签，方便分类管理。
+				</p>
+				</div>
+			</div>	
+		</div>
+		 <div class="form-group col-md-12">
+		 	<div class="col-md-12">	
+				<div class="col-md-1 col-md-offset-4">
+				<button type="button" class="btn btn-block btn-default">创建模版</button>
+				</div>
+			</div>
+		</div>
+          
+          
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+          Footer
+        </div>
+        <!-- /.box-footer-->
+      </div>
+      <!-- /.box -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->

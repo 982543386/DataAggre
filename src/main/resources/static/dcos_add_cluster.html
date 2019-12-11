@@ -1,0 +1,82 @@
+<div class="row">
+<div class="col-xs-12">
+    <div class="box box-info">
+        <div class="box-header with-border">
+			<div class="col-sm-6 no-padding">
+            <h3 class="box-title">添加集群</h3>
+			</div>
+		</div>
+        <div class="box-body">
+            <form class="form-horizontal" role="form" id="ku8form">
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">集群名称</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="name"
+							placeholder="集群名称"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">集群网络</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special lowercase validation" id="network"
+							placeholder="集群网络" value="ens32"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group no-margin-bottom">
+					<div class="col-sm-5">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">主机用户名</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control lowercase validation" id="sshUserName"
+							placeholder="ssh username" value="root"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label class="col-sm-4 control-label">主机密码</label>
+							<div class="col-sm-7">
+								<input type="text" class="form-control allow-special lowercase validation" id="sshUserPassword"
+							placeholder="ssh userpassword" value="123456"/>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="form-group" name="service">
+                    <div class="col-sm-9 col-sm-offset-1">
+                        <div class="panel panel-info">
+                            <div class="panel-body" id="service_panel_0"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer clearfix">
+                <div class="col-sm-7 col-sm-offset-3 no-padding">
+					<button type="button" class="btn btn-default" onclick="history.go(-1);">
+						返<span style="padding-left: 12px" />回
+					</button>
+                    <button onclick="return dcos.installCluster()" type="button" class="btn btn-primary saveBtn">
+						保<span style="padding-left: 12px" />存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>	
+</div>
+<script>
+	$.getScript("../js/dcos.js");
+
+	$(document).ready(function(){
+		var _div = $('<div>');
+		_div.load('dcos_cluster_template.html?h=' + new Date().getTime(), function(){
+			$("#service_panel_0").append($(this).children());
+		});
+	});
+</script>

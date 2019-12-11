@@ -1,0 +1,1276 @@
+<ul id="myTab" class="nav nav-tabs">
+	<li class="active">
+		<a href="#application_main" data-toggle="tab">容器应用</a>
+	</li>
+	<li><a href="#service_main" data-toggle="tab">容器服务</a>
+	</li>
+	<li><a href="#job_main" data-toggle="tab">批处理</a>
+	</li>
+	
+	
+</ul>
+<div id="myTabContent" class="tab-content">
+	<!-- 容器应用页面   application_main-->
+	
+	
+	
+	
+	
+	
+	
+	<div class="tab-pane fade in active" id="application_main">
+		
+		<p>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="addApplication">新增 Application</a>
+					</div>
+					<div class="col-sm-6 no-padding">
+						<button type="button" class="btn btn-primary pull-right" id="importApp_open" data-loading-text="<i class='fa fa-spin fa-cog'></i>">Import Application</button>
+						<div class="col-sm-5 input-group input-group-sm pull-right" id="importApp_div0" style="display:none;">
+							<input type="text" class="form-control" placeholder="Enter Service Name" id="importApp_input"/>
+							<span class="input-group-btn">
+							  <button type="button" data-loading-text="<i class='fa fa-spin fa-cog'></i>" class="btn btn-primary btn-flat" id="importApp_btn">Import</button>
+							</span>
+						</div>
+						<div class="col-sm-3 pull-right no-padding input-group-sm" id="importApp_div1" style="margin-right:5px;display:none;">
+							<select class="form-control" id="importApp_partition" data-toggle="tooltip" data-placement="top" title="Select the partition"/>
+						</div>
+					</div>
+            </div>
+            <div>
+            <button type="button"  class="btn btn-primary btn-flat" id="buildJenkinsJob">Jenkins测试不要点！</button></div>
+			<div class="box-body">
+				<table id="appTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>应用名称</th>
+							<th>拥有者</th>
+							<th>版本</th>
+							<th>更新时间</th>
+							<th>状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >×</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to deploy</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" id="partModalDeploy" onclick="return deployApplication();">
+					部<span style="padding-left: 12px" />署
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+
+
+
+
+<script type="text/javascript">
+	
+	
+	
+	
+	
+	
+
+	$.getScript("../js/project.js");
+	
+	
+	
+	
+    var table = $('#appTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"/application/getApplications",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+					{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+					{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+            switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+
+				//Deploying
+				case 1: $(row).find('td:eq(5)').html('');
+						$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+
+				//Deployed
+				case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+				break;
+
+				//Failed
+				case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+
+			   default: console.log('Unknown case..');
+			   break;
+			}
+        }
+    });
+
+	$('#addApplication').click( function() {
+		$('section.content').load('add_application.html?h=' + new Date().getTime());
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#buildJenkinsJob').click( function() {
+		var settings = {
+				  "async": true,
+				  "crossDomain": true,
+				  "url": "http://10.1.24.164:10010/job/cudcos_admin/build",
+				  "method": "POST",
+				  "dataType": "JSONP",
+				  
+				  "headers": {
+				    "cache-control": "no-cache",
+				    "postman-token": "438a57ae-6a47-6bb2-8eb7-7cd987ce751a"
+				  }
+				}
+
+				$.ajax(settings).done(function (response) {
+				  console.log(response);"src/main/java/org/ku8eye/service/UIService.java"
+				});
+	});
+	
+	
+	$('#importApp_open').click( function() {
+		var $caller = $(this).button("loading");
+		$.ajax({
+			url: "/application/getNamespacesByUser",
+			type: "GET",
+			dataType: "json",
+			success: function(d) {
+				if (d.data === null) {
+					alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+					return;
+				}
+				if (d.data.length === 0) {
+					alertError("ERROR", 'No partitions found<br/>Please verify User Groups');
+					return;
+				}
+
+				var $partition_select = $("#importApp_partition");
+				var $part_select = $('#importApp_partition').empty();
+				$.each(d.data, function(i, c) {
+					$.each(c.namespace, function(j, n) {
+						$("<option />").text(n).val(n).appendTo($part_select);
+					});
+				});
+				$caller.hide();
+				$('#importApp_div0, #importApp_div1').animate({width:'toggle'},500);
+			}
+		}).always(function() {
+			$caller.button("reset");
+		}).fail(function() {
+			alertError("ERROR", 'Error while retrieving partitions<br/>Please verify User Groups');
+			return;
+		});
+    });
+
+	$('#importApp_btn').click( function() {
+		var $caller = $(this).button('loading');
+		var $namespace = $('#importApp_partition').attr('disabled', 'disabled').val();
+		var $serviceName = $('#importApp_input').attr('disabled', 'disabled');
+
+		$.ajax({
+			url: "/application/importApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				namespace:$namespace,
+				serviceName:$serviceName.val()
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess('SUCESS', response.message);
+					$serviceName.val('');
+				}
+				else
+				{
+					alertError('ERROR', response.message);
+				}
+			}
+		}).always(function() {
+			$caller.button('reset');
+			$('#importApp_input, #importApp_partition').removeAttr('disabled');
+			table.ajax.reload();
+		});
+    });
+
+	$('#appTable tbody').on( 'click', 'button.deploy', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+
+		getPartitions(data, caller);
+    });
+
+	$('#appTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('view_application.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+    });
+
+	$('#appTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete application <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+
+	$('#appTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_application.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+
+		sessionStorage.setItem('lastPage', 'application_main.html');
+		history.pushState(null, null, 'index');
+	});
+
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/application/deleteApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+
+	function deployApplication() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+			{
+				_namespaces.push($(this).val());
+			}
+		});
+
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+
+		$.ajax({
+			url: "/application/deployApplication",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces)
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+    }
+</script>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>
+	</div>
+	<!-- 容器服务页面   service_main-->
+	
+	
+	
+	
+	
+	<div class="tab-pane fade" id="service_main">
+	    
+		<p>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+                <div class="input-group input-group-sm">
+                	<a href="javascript:void(0);" class="btn btn-primary" id="addService">新增 Service</a>
+                	&nbsp;
+                	<a class="btn btn-primary" id="uploadYaml">Yaml方式新增Service</a> 
+                </div>
+            </div>
+			<div class="box-body">
+				<table id="serviceTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Owner</th>
+							<th>Version</th>
+							<th>Last Updated</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >×</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to deploy</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" onclick="return deployServiceAndRC();">
+					部<span style="padding-left: 12px" />署
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal" data-backdrop="static" data-keyboard="false">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<textarea id="editor_id" name="content" style="width:700px;height:300px;">
+&lt;strong&gt;HTML内容&lt;/strong&gt;
+</textarea>
+			
+			
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+
+	<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="yamlMode" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left">yaml上传</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<div class="box box-info" style="margin-bottom:0px;">
+						<div>
+						<textarea id="yaml_editor" name="content" style="width:700px;height:300px;">
+&lt;strong&gt;HTML内容&lt;/strong&gt;
+</textarea>
+						
+						<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="yamlCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="yamlRegistrySureBtn" type="button"
+						class="btn btn-outline btn-primary">上传</button>
+						<!-- class在这里好像没什么用 -->
+				</div>
+						</div>
+						<div>  
+						    <!--用来存放item-->  
+						    <div>
+						    	<input id="thelist" name="thelist" style="height:30px;width:300px;margin-top:10px;" readonly="readonly" tmpFileId="" />
+						    </div>
+						    <div>  
+						     <div id="filePicker" style="margin-top:10px;margin-bottom:10px;float:left;">选择文件</div>  
+						     <div id="delYamlFile" class="webuploader-pick" style="margin-top:10px;">删除文件</div>
+						    </div>  
+						</div>  
+					</div>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="yamlCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="yamlSureBtn" type="button"
+						class="btn btn-outline btn-primary">上传</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		
+		
+		
+		
+		
+		
+		
+		
+		<!-- /.modal -->
+	</div>
+
+
+
+	
+
+
+
+<script type="text/javascript">
+	
+	
+	
+	
+	
+	
+//点击上传按钮
+$("#yamlRegistrySureBtn").click(function(){
+	//SetPara(); 
+	uploadYaml();
+});
+
+/* 	function SetPara() { 
+		
+		alert("1.aspx?a=" + a + "&b=" + b + "&c=" + c); 
+	}; 
+ */
+//点击上传过程   
+	function uploadYaml(){
+	 var YamlContent = $("#yaml_editor").val()
+	/*  var Category = $("#Category") 井号对应的id.val(); 
+		var VersionType =  parseInt($("#VersionType").val()); 
+		var Source =  parseInt($("#Source").val());  */
+		
+	//var ImageName=$("#dockerName").val();	
+	$.ajax({
+	    url:"/yaml/uploadYaml",
+	    data:{
+	    	yamlContent:YamlContent
+	    	/* category:Category,
+	    	versionType:VersionType, 
+	    	source:Source */
+	    },
+	    type: "POST",
+	    dataType:"json",
+	    success:function(response){
+			if(response.status > -1)
+			{
+				alertSuccess("SUCCESS", response.message);
+			}
+			else
+			{
+				alertError("ERROR", response.message);
+			}
+			table.ajax.reload();
+		}
+	    	/* function(data){
+	    		var tablelist="";
+		        $.each(data.data,function(i,item){
+		        	var date = new Date(item.lastUpdated);   
+	        		var Y = date.getFullYear() + '-';
+	        		var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+					var D = (date.getDate() < 10 ? '0'+(date.getDate()) : date.getDate()) + ' ';
+					var h = (date.getHours() < 10 ? '0'+(date.getHours()) : date.getHours()) + ':';
+					var m = (date.getMinutes() < 10 ? '0'+(date.getMinutes()) : date.getMinutes()) + ':';
+					var s = (date.getSeconds() < 10 ? '0'+(date.getSeconds()) : date.getSeconds());		
+
+		        	
+		        	tablelist+=[
+	  							'<tr>',
+	  							'<td>'+item.title+'</td>',
+	  							'<td>'+item.imageName+'</td>',
+	  							'<td>'+item.version+'</td>',
+	  							item.versionType==1?'<td>生产版</td>':'<td>开发版</td>',
+// 	  							item.publicImage==1?'<td>公共镜像</td>':'<td>私有镜像</td>',
+	  							'<td>'+item.category+'</td>',
+	  							'<td>'+item.source+'</td>',
+	  							'<td>'+Y+M+D+h+s+'</td>',
+	  							'</tr>'
+	  		            ].join('');
+		        }); 
+		    	
+		        $('#selectImageTable').find('td').remove();
+		        $('#selectImageTable').append(tablelist);
+	    	
+	    } */
+	});
+}
+</script>
+<script src="/plugins/bootbox/bootbox.js"></script>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+    var table = $('#serviceTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        "ajax": {
+			url:"/publicservice/getServiceAndRCs",
+			error: function (XMLHttpRequest, textStatus, errorThrown) 
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+        			{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+        			{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+			switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+			   
+				//Deploying
+				case 1: $(row).find('td:eq(5)').html('');
+						$(row).find('td:eq(4)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+			   
+				//Deployed
+				case 2: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(4)').html("<span class='btn-block bg-green btn-sm label-status'>Deployed</span>");
+				break;
+				
+				//Failed
+				case -1: $(row).find('td:eq(5)').html("<button class='btn btn-primary btn-sm deploy' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Deploy</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(4)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+			   
+			   default: console.log('Unknown case..');
+			   break;
+			}
+		}
+	});
+
+    $('#addService').on('click', function () {
+    	$('section.content').load('add_service.html?h=' + new Date().getTime());
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+    } );
+    
+	$('#serviceTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+		$('section.content').load('view_service.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+    } );
+	
+	$('#serviceTable tbody').on('click', 'button.deploy', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+		
+		getPartitions(data, caller);
+    });
+    
+    function deployServiceAndRC() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+				_namespaces.push($(this).val());
+		});
+		
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+        
+		$.ajax({
+			url: "/publicservice/deployServiceAndRC",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces)
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+	}
+	
+	$('#serviceTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_service.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'service_main.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	$('#serviceTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete service <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+	
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/publicservice/deleteService",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+		////这个是上传文件
+	//chenwei add upload
+	$("#uploadYaml").on("click",function(){
+		$("#thelist").val('');
+		initUploadYaml();
+		$("#yamlMode").modal('show');
+	});
+	$("#yamlCancelBtn").on("click",function(){
+		$("#yamlMode").modal('hide');
+	});
+   //删除
+   $("#delYamlFile").on('click',function(){
+	   $("#thelist").val('');
+	   initUploadYaml();
+   });
+	
+	var uploader;
+	 function initUploadYaml(){  
+		   /*init webuploader*/  
+		   var $list=$("#thelist");   //这几个初始化全局的百度文档上没说明，好蛋疼。  
+		   var $btn =$("#yamlSureBtn");   //开始上传  
+		   var thumbnailWidth = 100;   //缩略图高度和宽度 （单位是像素），当宽高度是0~1的时候，是按照百分比计算，具体可以看api文档  
+		   var thumbnailHeight = 100;  
+		  
+		    if(uploader){
+		    	uploader.destroy();
+		    }
+		   
+		   uploader = WebUploader.create({  
+		       // 选完文件后，是否自动上传。  
+		       auto: false,  
+		  
+		       // swf文件路径  
+		       swf: '../js/Uploader.swf',  
+		  
+		       // 文件接收服务端。  
+		       server: '/publicservice/upload-yamlFile',  
+		  
+		       // 选择文件的按钮。可选。  
+		       // 内部根据当前运行是创建，可能是input元素，也可能是flash.  
+		       pick:{
+		    	   id:'#filePicker',
+		    	   multiple:false
+		       },
+		  
+		       // 只允许选择图片文件。  
+		       accept: {  
+		           title: 'Images',  
+		           extensions: 'yaml',  
+		           mimeTypes: 'yaml/*'  
+		       },  
+		       method:'POST',  
+		   });  
+		   // 当有文件添加进来的时候  
+		   uploader.on( 'fileQueued', function( file ) {  // webuploader事件.当选择文件后，文件被加载到文件队列中，触发该事件。等效于 uploader.onFileueued = function(file){...} ，类似js的事件定义。  
+		       $list.val(file.name);  
+		   	   $list.attr("tmpFileId",file.id);
+		   });  
+		   // 文件上传过程中创建进度条实时显示。  
+		   uploader.on( 'uploadProgress', function( file, percentage ) {  
+		       var $li = $( '#'+file.id ),  
+		           $percent = $li.find('.progress span');  
+		  
+		       // 避免重复创建  
+		       if ( !$percent.length ) {  
+		           $percent = $('<p class="progress"><span></span></p>')  
+		                   .appendTo( $li )  
+		                   .find('span');  
+		       }  
+		  
+		       $percent.css( 'width', percentage * 100 + '%' );  
+		   });  
+		  
+		   // 文件上传成功，给item添加成功class, 用样式标记上传成功。  
+		   uploader.on( 'uploadSuccess', function( file ) {  
+		       $( '#'+file.id ).addClass('upload-state-done');  
+		       //上传成功以后调用k8s接口发布服务
+		       var tmpFileObeject={
+		    		name:file.name	   
+		       };
+		       $.ajax({
+			        url : "publicservice/issueServiceByYaml",
+			        dataType : "json",
+			        type:"post",
+			        async: false,
+			        data :JSON.stringify(tmpFileObeject),
+			        contentType : "application/json; charset=utf-8",
+			        success : function(res)
+			        {
+			        	if(res.status!=200 && res.status!=201){
+			        		bootbox.alert(res.body);
+			        	}else{
+			 		      $("#yamlMode").modal('hide'); 
+			 		      bootbox.alert('上传成功');
+			        	}
+			        }
+			    });
+		   });  
+		  
+		   // 文件上传失败，显示上传出错。  
+		   uploader.on( 'uploadError', function( file ) {  
+		       var $li = $( '#'+file.id ),  
+		           $error = $li.find('div.error');  
+		       // 避免重复创建  
+		       if ( !$error.length ) {  
+		           $error = $('<div class="error"></div>').appendTo( $li );  
+		       }  
+		       $error.text('上传失败');  
+		       bootbox.alert('上传失败');
+		   });  
+		  
+		   // 完成上传完了，成功或者失败，先删除进度条。  
+		   uploader.on( 'uploadComplete', function( file ) {  
+		       $( '#'+file.id ).find('.progress').remove();  
+		   }); 
+		   
+		   uploader.on('error',function(type){
+			   if(type=='Q_TYPE_DENIED'){
+				   bootbox.alert('只能单个上传');
+			   }
+		   });
+		   
+		   //上传按钮
+	      $btn.on( 'click', function() {  
+	        uploader.upload(); //上传
+	      });  
+	      
+		  
+	}
+	
+</script>
+		</p>
+	</div>
+	<!-- 批处理  job_main-->
+	<div class="tab-pane fade" id="job_main">
+	    
+	    <p>
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+					<div class="col-sm-6 no-padding">
+						<a href="javascript:void(0);" class="btn btn-primary" id="addJob">新增 Job</a>
+					</div>
+            </div>
+			<div class="box-body">
+				<table id="jobTable" class="table table-bordered table-hover"
+					style="font-size: 12px; width: 100%">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Owner</th>
+							<th>Version</th>
+							<th>Job Type</th>
+							<th>Last Updated</th>
+							<th>Status</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="partModal" data-backdrop="static" data-keyboard="false">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span >×</span></button>
+			<h4 class="modal-title">Select the partitions that you would like to run</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="box box-info">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div id="partModalJobType">
+							<div class="form-group" style="margin-top:5px; margin-bottom:0px;">
+								<label class="col-md-offset-1 col-sm-5"><input type="radio" name="jobtype" id="jobsingle" checked="true"> Run Once</label>
+								<label class="col-sm-6"><input type="radio" name="jobtype" id="jobmulti"> Scheduled Run</label>
+							</div>
+						</div>
+						<div id="partModalJob" style="display:none; margin-top:15px;">
+							<div class="form-group">
+								<label class="col-sm-2 control-label">定时规则</label>
+								<div class="col-sm-3">
+									<div class="form-group">
+									<label class="col-sm-3 control-label">月:</label>
+									<div class="col-sm-9">
+										<input type="text" class="form-control" id="month" placeholder="1-12或*">
+									</div>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">星期:</label>
+										<div class="col-sm-7">
+											<select class="form-control" id="week">
+												<option value=*>*</option>
+												<option value=1>一</option>
+												<option value=2>二</option>
+												<option value=3>三</option>
+												<option value=4>四</option>
+												<option value=5>五</option>
+												<option value=6>六</option>
+												<option value=0>日</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-3 control-label">日:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" id="day" placeholder="1-31或*">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group ">
+								<div class="col-sm-offset-2 col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-3 control-label">时：</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" id="hour" placeholder="0-23或*">
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-4">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">分:</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" id="min" placeholder="0-59或*">
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="form-group">
+										<label class="col-sm-12 control-label" style="font-size:12px">'*'代表每一个时间点</label>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">状态</label>
+								<div class="col-sm-6">
+									<select class="form-control" id="jobStatus">
+										<option value=1>开启</option>
+										<option value=0>关闭</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="box box-info" style="margin-bottom:0px;">
+				<form class="form-horizontal">
+					<div class="box-body">
+						<div class="col-md-offset-1">
+							<ul class="products-list product-list-in-box" id="partModalContent">
+								<li class="item">
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		  </div>
+		  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">
+					关<span style="padding-left: 12px" />闭
+				</button>
+				<button type="button" class="btn btn-primary" id="partModalDeploy" onclick="return runJob();">
+					部<span style="padding-left: 12px" />署
+				</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal modal-primary fade" id="deleteModal">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">
+			  <span>×</span></button>
+			<h4 class="modal-title">Please confirm</h4>
+		  </div>
+		  <div class="modal-body">
+			<p id="deleteModalMsg"/>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Cancel</button>
+			<button type="button" class="btn btn-outline" id="modal-delete" data-dismiss="modal">Delete</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/project.js");
+
+    var table = $('#jobTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"/job/getJobs",
+			error: function (XMLHttpRequest, textStatus, errorThrown) 
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('/login.html');
+				}
+			}
+		},
+        "columns": [
+					{ "data": "name" },
+        			{ "data": "owner" },
+        			{ "data": "version" },
+					{ "data": "jobType", "render": function(data, type, row) {
+							if(data === 0)
+								return "Single Run";
+							else
+								return "Scheduled Run";
+						}
+					},
+					{ "data": "lastUpdated", "render": function(data, type, row) {
+							var date = new Date(data);
+							return date.toLocaleDateString('zh') + ' ' + date.toLocaleTimeString();
+						}
+					},
+					{ "defaultContent": "" },
+					{ "defaultContent": "" }
+        		],
+		"createdRow": function ( row, data, index ) {
+            switch (data.status)
+			{
+				//New
+				case 0: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm run' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Run</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-aqua btn-sm label-status'>New</span>");
+				break;
+			   
+				//Deploying
+				case 1: $(row).find('td:eq(6)').html('');
+						$(row).find('td:eq(5)').html("<span class='btn-block label-status'><div class='progress active bg-gray' style='border-radius: 3px;'><div class='progress-bar progress-bar-success progress-bar-striped' role='progressbar' style='width: " + data.progress + "%; min-width: 2em; border-radius:3px;'>" + data.progress + "%</div></div></span>");
+				break;
+			   
+				//Running
+				case 2: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-green btn-sm label-status'>Running</span>");
+				break;
+				
+				//Scheduled
+				case 3: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm view'>View/Update</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						$(row).find('td:eq(5)').html("<span class='btn-block bg-purple btn-sm label-status'>Scheduled</span>");
+				break;
+				
+				//Failed
+				case -1: $(row).find('td:eq(6)').html("<button class='btn btn-primary btn-sm run' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Run</button>&nbsp;<button class='btn btn-info btn-sm clone'>Clone</button>&nbsp;<button class='btn btn-danger btn-sm delete' data-loading-text='<i class=&quot;fa fa-spin fa-cog&quot;></i>'>Delete</button>");
+						 $(row).find('td:eq(5)').html("<span class='btn-block bg-red btn-sm label-status'>Failed</span>");
+				break;
+			   
+			   default: console.log('Unknown case..');
+			   break;
+			}
+        }
+    });
+	
+	$('#addJob').click( function() {
+		$('section.content').load('add_job.html?h=' + new Date().getTime());
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.run', function () {
+		var data = table.row($(this).parents('tr')).data();
+		var caller = $(this).button("loading");
+		
+		getPartitions(data, caller);
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.view', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('view_job.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+    });
+	
+	$('#jobTable tbody').on( 'click', 'button.delete', function (e) {
+		var data = table.row($(this).parents('tr')).data();
+		e.preventDefault();
+		$('#deleteModalMsg').html('Are you sure you want to delete job <strong>' + data.name + '</strong>?');
+		$('#deleteModal').modal().one('click', '#modal-delete', function() {
+			$(e.target).button('loading');
+			confirmDelete(data);
+		});
+	});
+	
+	$('#jobTable tbody').on( 'click', 'button.clone', function () {
+		var data = table.row($(this).parents('tr')).data();
+        $('section.content').load('clone_job.html?h=' + new Date().getTime());
+		sessionStorage.setItem("ku8ID", data.id);
+		
+		sessionStorage.setItem('lastPage', 'job_main.html');
+		history.pushState(null, null, 'index');
+	});
+	
+	function confirmDelete(data) {
+		$.ajax({
+			url: "/job/deleteJob",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	function runJob() {
+		var data = $('#partModal').modal('toggle').data('appData');
+		data.caller.attr("disabled", true);
+		
+		var _cronExpression = "";
+		if($('#jobmulti').is(':checked'))
+			_cronExpression = getCron();
+		
+		var _namespaces = [];
+		$('#partModalContent input').each( function(){
+			if(this.checked)
+			{
+				_namespaces.push($(this).val());
+			}
+		});
+		
+		var progress = setInterval(function() {
+			table.ajax.reload();
+		}, 500);
+		
+		$.ajax({
+			url: "/job/runJob",
+			type: "POST",
+			dataType: "json",
+			data: {
+				ku8ID:data.id,
+				namespaces:JSON.stringify(_namespaces),
+				cronExpression:_cronExpression,
+				taskStatus:$('#jobStatus').val()
+			},
+			success: function(response){
+				if(response.status > -1)
+				{
+					alertSuccess("SUCCESS", response.message);
+				}
+				else
+				{
+					alertError("ERROR", response.message);
+				}
+				clearInterval(progress);
+				table.ajax.reload();
+			}
+		});
+    }
+	
+	function getCron(){
+		var min = $('#min').val() || '*';
+		var hour = $('#hour').val() || '*';
+		var day = $('#day').val() || '*';
+		var week = $('#week').val() || '*';
+		var month = $('#month').val() || '*';
+		return min + " " + hour + " " + day + " " + month + " " + week + " ?";
+	}
+</script>
+	    </p>
+	    
+	    
+			</div>
+	
+	
+	
+	
+</div>

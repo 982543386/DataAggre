@@ -1,0 +1,260 @@
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<script type="text/javascript">
+	$.getScript("js/project.js");
+	$.getScript("js/date.format.js");
+	var userType;
+	
+	$.ajax({
+             type: "GET",
+             url: "k8Order/checkUser",
+             success: function(data){  
+             	 userType=data;
+             }	
+          });
+	
+	$("#deviceMonitor").click(function(){
+		$.getScript("iiot/device/device_list.js");
+		$(".content").load("iiot/device/device_list.html");
+	});
+	
+	$("#nodeMonitor").click(function(){
+		$(".content").load("iiot/node/edge_node_monitor.html");
+	});
+	
+	$("#appCreate").click(function(){
+		$.getScript("../js/iiot/project.js");
+		$(".content").load("iiot/app/edge_app_add.html");
+	});
+	
+	$("#appMonitor").click(function(){
+		$.getScript("../js/iiot/project.js");
+	   $(".content").load("iiot/app/edge_app_monitor.html");
+	   initAppDeploy();
+});
+
+	$("#orderNum").click(function(){
+		if(userType == 1){
+			$(".content").load("k8order/admin/all_k8order_admin.html");
+		}
+		else{
+			$(".content").load("catalog/all_k8order.html");
+		}
+});
+  $.ajax({
+             type: "GET",
+             url: "k8OrderHelm/count",
+             success: function(data){
+             	
+             	$("#container").text(data); 
+             }	
+          });
+/*   $.ajax({
+      type: "GET",
+      url: "/iiot/project/application/deployApplication",
+      success: function(data){
+      	//alert('k8test');
+      	$("#container").text(data); 
+      }	
+   }); */
+
+ $.ajax({
+             type: "GET",
+             url: "k8Order/count",
+             success: function(data){  
+             	$("#orderNum").text(data); 
+             	//alert(data);
+             }	
+          });
+
+	var table = $('#appTable').DataTable({
+		autoWidth: false,
+		responsive: true,
+        ajax:{
+			url:"k8OrderHelm/list",
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		},
+		"bSort":false,
+        "columns": [
+					{ "data": "charts" },
+					{ "data": "helmName"	},
+        			{ "data": "userId"	},
+        			{ "data": "time", "render": function(data, type, row) {
+							return new Date(data).format("yyyy-MM-dd HH:mm:ss");
+						}
+					},
+					{"defaultContent":"<span class='btn-block bg-green btn-sm label-status'>Deployed</span>"},
+					{ "defaultContent": "<button class='btn btn-primary btn-sm view'>查看</button>&nbsp;<button class='btn btn-info btn-sm status'>状态</button>&nbsp;<button class='btn btn-danger btn-sm delete' >删除</button>" }
+        		]
+	    });
+	    
+	    
+    $('#appTable tbody').on( 'click', 'button.delete', function () {
+		alertSuccess("删除申请已经提交");
+    });
+    
+    
+ 
+  $('#appTable tbody').on( 'click', 'button.view', function () {
+
+		var data = table.row($(this).parents('tr')).data();
+	
+		if(data.k8OrderType=="mysql"){
+        	$('section.content').load('k8order/containerService/catalog/database.html?h=' + new Date().getTime());
+        }else if(data.k8OrderType=="spark"){
+        	$('section.content').load('k8order/containerService/catalog/bigdata.html?h=' + new Date().getTime());
+        }else if(data.k8OrderType=="tomcat"){
+        	$('section.content').load('k8order/containerService/catalog/middleware.html?h=' + new Date().getTime());
+        }
+		sessionStorage.setItem("id", data.k8orderId);
+		sessionStorage.setItem('lastPage', 'home.html');
+
+		history.pushState(null, null, 'index');
+    });
+ 
+  $('#appTable tbody').on( 'click', 'button.status', function () {
+		var data = table.row($(this).parents('tr')).data();
+        var repoName = data.helmName;
+        //alert(repoName);
+        
+         $.ajax({
+         	type:"post",
+			url:"ssh/exec/status",
+			data:{
+				helmName:repoName
+			},
+			success: function(data){
+				/* data=data.replace(/STATUS/g,"<br />STATUS")
+				data=data.replace(/NAMESPACE/g,"<br />NAMESPACE")
+				data=data.replace(/RESOURCES/g,"<br /><br />RESOURCES")
+				data=data.replace(/==>/g,"<br />==>")
+				data=data.replace(/NAME /g,"<br />NAME ")
+				data=data.replace(/AGE/g,"AGE<br />")
+				data=data.substring(0,data.indexOf("NOTES")) */
+				$('#statusModalMsg').html(data);
+				$('#statusModal').modal()
+			},
+			error: function (XMLHttpRequest, textStatus, errorThrown)
+			{
+				if(JSON.parse(XMLHttpRequest.status) === 403)
+				{
+					window.location.replace('login.html');
+				}
+			}
+		});
+      
+    });
+	    
+</script>
+<body>
+<div class="container-fluid">
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+
+						<!-- ./col -->
+					</div>      
+			<div class="box-body">
+						<div class="col-md-6 text-center">
+							<!-- small box -->
+							<div class="small-box bg-aqua">
+								<div class="inner">
+									<h3 align="left">设备监控</h3>
+
+									<p align="left">Device</p>
+
+								</div>
+								<div class="icon">
+									<i class="ion ion-bag"></i>
+								</div>
+								<a class="small-box-footer" id="deviceMonitor">进入 <i
+									class="fa fa-arrow-circle-right"></i></a>
+							</div>
+						</div>
+						<!-- ./col -->
+						<div class="col-md-6 text-center">
+							<!-- small box -->
+							<div class="small-box bg-green">
+								<div class="inner">
+									<h3 align="left">
+										节点监控 </sup>
+									</h3>
+
+									<p align="left">
+										Node <a class="label label-warning" ></a>
+									</p>
+								</div>
+								<div class="icon">
+									<i class="ion ion-stats-bars"></i>
+								</div>
+								<a class="small-box-footer" id="nodeMonitor">进入 <i
+									class="fa fa-arrow-circle-right"></i></a>
+							</div>
+						</div>
+						<!-- ./col -->
+						<div class="col-md-6 text-center">
+							<!-- small box -->
+							<div class="small-box bg-yellow">
+								<div class="inner">
+									<h3 align="left">应用监控</h3>
+
+									<p align="left">
+										Application <a class="label label-danger" id="orderNum"></a>
+									</p>
+								</div>
+								<div class="icon">
+									<i class="ion ion-person-add"></i>
+								</div>
+								<a class="small-box-footer" id="appMonitor">进入 <i
+									class="fa fa-arrow-circle-right"></i></a>
+							</div>
+						</div>
+						<div class="col-md-6 text-center">
+							<div class="small-box bg-red">
+								<div class="inner">
+									<h3 align="left">创建应用</h3>
+
+									<p align="left">
+										Create <a class="label label-danger" id="orderNum"></a>
+									</p>
+								</div>
+								<div class="icon">
+									<i class="ion ion-pie-graph"></i>
+								</div>
+								<a href="#" class="small-box-footer" id="appCreate">进入 <i
+									class="fa fa-arrow-circle-right"></i></a>
+							</div>
+						</div>
+			
+			
+			</div>
+			  <div class="modal modal-primary fade" id="statusModal">
+			  	<div class="modal-dialog">
+					<div class="modal-content">
+					  <div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+						  <span>×</span></button>
+						<h4 class="modal-title">查看状态</h4>
+					  </div>
+					  <div class="modal-body">
+						<p id="statusModalMsg"/>
+					  </div>
+					</div>
+				  </div>
+		       </div>
+	
+		</div>
+	</div>
+</div>
+</div>
+</body>
+</html>

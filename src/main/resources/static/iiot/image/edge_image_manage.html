@@ -1,0 +1,441 @@
+<style>
+	ul li{list-style-type:none;}
+	.installationMode{
+		width:100%;
+		height:100%;
+		margin:0 auto;
+	}
+	.installationMode .projectdocker{
+	    margin:20px 15px 20px 15px;
+	    height:100%;
+		border:1px solid #E8E8E8;
+		background-color:#E8F2FC;
+	}
+	
+	.projectdockerSpanHead span{
+		width:100%;
+		float:left;
+		color:#2296C9;
+		padding:8px 0px 0px 15px;
+		overflow: hidden;
+	    height: 30px;
+	    text-overflow: ellipsis;
+    	white-space: nowrap;
+	}
+	
+	.projectdockerSpanBody span{
+		width:50%;
+		float:left;
+		color:#2296C9;
+		padding:8px 0px 0px 15px;
+		overflow: hidden;
+		height: 30px;
+	    text-overflow: ellipsis;
+    	white-space: nowrap;
+	}
+	
+	.docker-dialog{
+		width:100%;
+		height:100%;
+	}	
+	.docker-dialog tr td{
+		padding:8px 4px;
+	}
+   .projectdocker{
+		float:left;
+		width:30%;
+	}
+	.col-text{
+		weight:500;
+		text-align:right;
+		font-size:16px;
+		color:#3399FF;
+		width:25%;
+	}
+	.col-text1{
+		font-size:14px;
+		color:#66CCFF;
+		width:25%;
+	}
+	.images-control{
+		width:80%;
+	}	
+	.docker-list-image{
+	    float: right;
+    	height: 30px;
+    	width: 30px;
+    	margin-right: 3%;
+	}
+	.control-upload{
+		border:1px solid;
+		height: 30px;
+		width: 100px;
+		margin:-25px 0px 0px 20px;
+	}
+</style>
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<!-- /.box-header -->
+			<div class="box-body">
+				<div style="padding-bottom: 5px;margin-left:20px;">	
+					<input id="dockerName" type="text" style="height:32px;width:29%;margin:0px 5px 0px 40px;padding:2px 2px;" />
+					<button class="btn btn-primary" id="selectDocker"   >search</button>
+					<button class="btn btn-primary" id="synDocker"   >synHarbor</button>	
+					<!--<a class="btn btn-primary" id="addDocker" data-toggle="modal" data-target="#myModal2">add image</a> -->
+				</div>
+				<table id="dockerTable_init" class="table table-bordered table-hover"
+					style="font-size: 12px;" width="100%">
+					<thead>
+						<tr>
+							<th>image_name</th>
+							<th>tags_count</th>
+							<th>pull_count</th>
+							<th>operate</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<!-- /.box-body -->
+		</div>
+		<!-- /.box -->
+	</div>
+	<!-- /.col -->
+</div>
+<!-- /.row -->
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel" style="width:770px">
+	<div class="modal-dialog" role="document" style="width:770px">
+		<div class="modal-content" style="width:750px">
+			<div class="modal-header">
+				<h4 class="modal-title" id="detailinfomation">detail Image</h4>
+			</div>
+			<div class="modal-body" style="width:700px">
+				  <div class="box box-info" style="margin-bottom:0px;" width="100%">
+		            <table id="dockerTable" class="table table-bordered table-hover"
+					style="font-size: 12px;"  width="100%">
+						<thead>
+							<tr>
+								<th>title</th>
+								<th>image_name</th>
+								<th>version</th>
+								<th>version_type</th>
+								<th>category</th>
+								<th>last_updated</th>
+								<th>operate</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"><span style="padding-left: 12px" />close
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="myModal2" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				Add Image
+			</div>
+			<div class="modal-body">
+				<!-- Horizontal Form -->
+		          <div class="box box-info" style="margin-bottom:0px;">
+		            <!-- form start -->
+		            <form class="form-horizontal" id="addDockerData">
+		              <div class="box-body">
+		              
+		                <div class="form-group"  c="hideinfo">
+		                  <label for="addPathUrl" class="col-sm-2 control-label">File Url</label>
+		                  <div class="col-sm-10">
+		                    <select id="addPathUrl" class="images-control" name="addPathUrl">
+		                    </select>
+		                   <div class="btns" style="width:20%;float:right;">
+							<div id="pickerImage">pickerImage</div>
+							</div>
+		                  </div>
+		                  <div class="col-sm-10" style="text-align:center;">
+		                  	<p>support file type: .tar,.tar.gz,.img</p>
+		                  </div>
+		                </div>
+		                <!--save file info-->
+						<div id="thelist" class="uploader-list"></div>
+						
+		                <div class="form-group">
+		                  <label for="title" class="col-sm-2 control-label">title</label>
+		                  <div class="col-sm-10">
+		                    <input type="text" class="images-control" id="addtitle" name="addtitle">
+		                  </div>
+		                </div>
+		                
+		                <div class="form-group" c="hideinfo">
+		                  <label for="adddockerName" class="col-sm-2 control-label">imageName</label>
+		                  <div class="col-sm-10">
+		                    <input type="text" class="images-control" id="adddockerName" name="adddockerName">
+		                  </div>
+		                </div>
+		                
+		                
+		                <div class="form-group" c="hideinfo">
+		                  <label for="version" class="col-sm-2 control-label">version(tag)</label>
+		                  <div class="col-sm-10">
+		                    <input type="text" class="images-control" id="addversion"  name="addversion">
+		                  </div>
+		                </div>
+		              
+		                <div class="form-group">
+		                  <label for="title" class="col-sm-2 control-label">type</label>
+		                  <div class="col-sm-10">
+		                  	<select id="addcategory" name="addcategory">
+		                  		<option value="middleware">middleware</option>
+		                  		<option value="database">db</option>
+		                  		<option value="other">other</option>
+		                  	</select>
+		                   
+		                  </div>
+		                </div>
+		                <!--  
+		                <div class="form-group">
+		                  <label for="title" class="col-sm-2 control-label">buildfile</label>
+		                  <div class="col-sm-10">
+		                  	<textarea id="addbuild_file" rows="5" cols="50" name="addbuild_file"></textarea>
+		                  </div>
+		                </div>-->
+		                
+		            </form>
+		          </div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal" ><span style="padding-left: 12px" />close
+				</button>
+				<button type="button" class="btn btn-primary" id="addDockerSave"><span style="padding-left: 12px" />upload
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+	<div class="modal fade modal-primary" id="delAlertModel" tabindex="-1" role="dialog" 
+   aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <button type="button" class="close" 
+               data-dismiss="modal" aria-hidden="true">
+                  &times;
+            </button>
+            <h4 class="modal-title" >
+           删除
+            </h4>
+         </div>
+         <div class="modal-body">
+            您将删除
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-outline pull-left btn-default"  data-dismiss="modal">关闭    </button>
+            <button type="button" id="modal-confirm" class="btn btn-primary btn-outline" data-dismiss="modal">提交         </button>
+         </div>
+      </div><!-- /.modal-content -->
+</div><!-- /.modal -->
+</div>
+
+
+<div class="modal fade" id="myModalMask" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+
+		</div>
+	</div>
+</div>
+
+<script>
+dockerImage();
+var status=1;
+var par={};
+$("#dockerTable_init").show();
+_type();
+function _type(){
+	$("#dockerTable_init").show();
+}
+
+$("#selectDocker").click(function(){
+	dockerImage();
+	_type();
+});
+
+$("#synDocker").click(function(){
+	synHarborImage();
+});
+
+function synHarborImage(){
+	var ImageName=$("#dockerName").val();
+	var flag="0";
+	$.ajax({
+	    url:"/dockerimg/search",
+	    data:{
+	    	key:ImageName,
+	    	flag:flag
+	    },
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    	if(data.status==0){
+	    		var tableimages="",tablelist="";
+		        $.each(data.data,function(i,item){
+		        	tablelist+=[
+							'<tr>',
+							'<td>'+item.imageName+'</td>',
+							'<td>'+item.tagsCount+'</td>',
+							'<td>'+item.pullCount+'</td>',
+							'<td><a class="btn btn-primary" onclick="detailImage(&quot;'+item.imageName+'&quot;)" id="detailDocker" data-toggle="modal" data-target="#myModal">detail</a>',
+							   '&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-primary" id="deleDockerImage" onclick="deleDocker(&quot;0&quot;,&quot;'+item.imageName+'&quot;)">delete Image</button>',
+							'</td>',
+  							'</tr>'
+		            ].join('');
+        	
+        			}); 
+		        $('#dockerTable').find('td').remove();
+		        $('#dockerTable').append(tablelist);
+		        alert("Harbor镜像同步完成！");
+		       // refrsh
+		        $(".content").load("/iiot/image/edge_image_manage.html", function(){
+		        	dockerImage();
+		        });
+	    	}else if(data.status==1){
+	    		alert(data.message);
+	    	}
+	    }
+	});
+}
+
+function dockerImage(){
+	var ImageName=$("#dockerName").val();
+	var flag="1";
+	$.ajax({
+	    url:"/dockerimg/search",
+	    data:{
+	    	key:ImageName,
+	    	flag:flag
+	    },
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    	if(data.status==0){
+	    		var tableimages="",tablelist="";
+		        $.each(data.data,function(i,item){
+		        	tablelist+=[
+	  							'<tr>',
+	  							'<td>'+item.imageName+'</td>',
+	  							'<td>'+item.tagsCount+'</td>',
+	  							'<td>'+item.pullCount+'</td>',
+	  							'<td><a class="btn btn-primary" onclick="detailImage(&quot;'+item.imageName+'&quot;)" id="detailDocker" data-toggle="modal" data-target="#myModal">detail</a>',
+	  							    '&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-primary" id="deleDockerImage" onclick="deleDocker(&quot;0&quot;,&quot;'+item.imageName+'&quot;)">delete Image</button>',
+	  							'</td>',
+	  							'</tr>'
+	  		            ].join('');
+		        }); 
+		        $('#dockerTable_init').find('td').remove();
+		        $('#dockerTable_init').append(tablelist);
+	    	}else if(data.status==1){
+	    		alert(data.message);
+	    	}
+	    }
+	});
+}
+
+function detailImage(str){
+	//alert("ssss");
+	var ImageName=str;
+	var flag = "2";
+	$.ajax({
+	    url:"/dockerimg/search",
+	    data:{
+	    	key:ImageName,
+	    	flag:flag
+	    },
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    	if(data.status==0){
+	    		var tablelist="";
+		        $.each(data.data,function(i,item){
+		        	
+		        	var date = new Date(item.lastUpdated);   
+	        		var Y = date.getFullYear() + '-';
+	        		var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+					var D = (date.getDate() < 10 ? '0'+(date.getDate()) : date.getDate()) + ' ';
+					var h = (date.getHours() < 10 ? '0'+(date.getHours()) : date.getHours()) + ':';
+					var m = (date.getMinutes() < 10 ? '0'+(date.getMinutes()) : date.getMinutes()) + ':';
+					var s = (date.getSeconds() < 10 ? '0'+(date.getSeconds()) : date.getSeconds());		
+		        	tablelist+=[
+	  							'<tr>',
+	  							'<td>'+item.title+'</td>',
+	  							'<td>'+item.imageName+'</td>',
+	  							'<td>'+item.version+'</td>',
+	  							item.versionType==1?'<td>dep</td>':'<td>production</td>',
+	  							'<td>'+item.category+'</td>',
+	  							'<td>'+Y+M+D+h+m+s+'</td>',
+	  							'<td><button type="button" class="btn btn-primary" id="deleDocker" onclick="deleDocker(&quot;'+item.id+'&quot;,&quot;'+item.imageName+'&quot;)"><span style="padding-left: 12px" />del</button></td>',
+	  							'</tr>'
+	  		            ].join('');
+		        	
+		        }); 
+		       // alert(tablelist);
+		        $('#dockerTable').find('td').remove();
+		        $('#dockerTable').append(tablelist);
+	    	}else if(data.status==1){
+	    		alert(data.message);
+	    	}
+	    }
+	});
+}
+
+function hideModal(){
+	$("#myModal").modal('hide');
+}
+
+function deleDocker(str,str1){
+	var dockerId = str;
+	var imageName = str1;
+	//alert("dockerId=="+dockerId);
+	//alert(str1);
+	if(confirm("确实要删除吗？")){
+		$.ajax({
+		    url:"/dockerimg/deletedocker",
+		    type: "GET",
+		    data:{
+		    	dockerId:dockerId,
+		    	key:imageName
+		    },
+		    dataType:"json",
+		    success: function(data){
+		    	if(data.status==0){
+		    		setTimeout(hideModal,500);
+		    		$(".content").load("/iiot/image/edge_image_manage.html", function(){
+		    			detailImage(imageName);
+				    });
+		    	}else if(data.status==1){
+		    		alert(data.message);
+		    	}
+		    }
+		});
+	    alert("已经删除！");
+	}else {
+	    alert("已经取消了删除操作");
+	}
+	
+}
+
+</script>

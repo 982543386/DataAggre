@@ -1,0 +1,177 @@
+<style type="text/css">
+     div.mychart{
+         display: inline-block;
+         width: 200px;
+         height: 160px;
+     }
+     div.usage_show{
+     	width: 1000px;
+     }
+     div.usage_show_legend{
+     	width: 200px;
+     	height:20px;
+     }
+</style>
+<div id="usage_show_legend_div" class="usage_show_legend"></div>
+<div id="usage_show_div" class="usage_show"></div>
+<script>
+var service_name = $("h1#title").children("small").text();
+
+$.ajax({
+    url:"/monitor/service",
+    type: "GET",
+    dataType:"json",
+    success: function(data){
+    	var innerRadius = [25, 50];
+    	var outerRadius = [50, 75];
+		var dataStyle = {
+			normal: {
+				label: {show:false},
+				labelLine: {show:false}
+			}
+		};
+		var placeHolderStyle = {
+			normal : {
+				color: "rgba(200,200,200,0.5)",
+				label: {show:false},
+				labelLine: {show:false},
+				borderColor: "rgba(150,150,150,0.8)"
+			},
+			emphasis : {
+				color: "rgba(200,200,200,0.5)",
+				borderColor: "rgba(150,150,150,0.8)"
+			}
+		};
+		
+		//legend
+		var legend_div = $("#usage_show_legend_div");
+		var legend_option = {
+				legend: {
+					itemGap:12,
+					data:["内存使用率","CPU使用率"],
+					itemWidth: 10
+				},
+				series: [
+					{
+						type:'pie',
+						radius : [0,0],
+						itemStyle : dataStyle,
+						data:[
+							{
+								value:0,
+								name:'内存使用率',
+								itemStyle: {
+									normal: {
+										color: "rgb(64,136,41)"
+									}
+								}
+							}
+						]
+					},
+					{
+						type:'pie',
+						radius : [0,0],
+						itemStyle : dataStyle,
+						data:[
+							{
+								value:0,
+								name:'CPU使用率',
+								itemStyle: {
+									normal: {
+										color: "rgb(104,165,71)"
+									}
+								}
+							}
+						]
+					}
+				]
+			};
+		var legend_chart = echarts.init(legend_div[0]);
+		legend_chart.setOption(legend_option);
+		
+		//pie
+		var show_div = $("#usage_show_div");
+		for(var i = 0; i < data.length; i++){
+			var mydiv = $("<div>",{
+				id: "main" + i,
+				class: "mychart"
+			});
+			mydiv.appendTo(show_div);
+			var myChart = echarts.init(mydiv[0]);
+			var option = {
+				tooltip : {
+					show: true,
+					formatter: "{b} : {d}%"
+				},
+				title: {
+					text : data[i].title,
+					link: "",
+					x: 'center',
+					y: 'center',
+                    textStyle: {
+                        fontSize: 8
+                    }
+				},
+				series: [
+					{
+						type:'pie',
+						clockWise:false,
+						radius : outerRadius,
+						itemStyle : dataStyle,
+						data:[
+							{
+								value:data[i].memoryUsage,
+								name:'内存使用率',
+								itemStyle: {
+									normal: {
+										text: "",
+										color: "rgb(64,136,41)",
+										borderColor: "rgba(150,150,150,0.8)"
+									}
+								}
+							},
+							{
+								value:data[i].memoryAvelibale,
+								name:'invisible',
+								itemStyle : placeHolderStyle,
+								tooltip : {
+									show: false
+								}
+							}
+						]
+					},
+					{
+						type:'pie',
+						clockWise:false,
+						radius : innerRadius,
+						itemStyle : dataStyle,
+						data:[
+							{
+								value:data[i].cpuUsage,
+								name:'CPU使用率',
+								itemStyle: {
+									normal: {
+										text: "",
+										color: "rgb(104,165,71)",
+										borderColor: "rgba(150,150,150,0.8)"
+									}
+								}
+							},
+							{
+								value:data[i].cpuAveliable,
+								name:'invisible',
+								itemStyle : placeHolderStyle,
+								tooltip : {
+									show: false
+								}
+							}
+						]
+					}
+				]
+			};
+			myChart.setOption(option);
+		}
+    }
+});
+
+</script>

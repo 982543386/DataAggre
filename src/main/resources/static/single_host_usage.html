@@ -1,0 +1,230 @@
+<style type="text/css">
+     #host_cpu_usage_show_div,#host_memory_usage_show_div{
+     	width: 1000px;
+     	height: 250px;
+     }
+     #single_host_info{
+     	height:20px;
+     }
+</style>
+<div id="single_host_info">
+	<label>节点：</label><span id="host_ip"></span><label>历史性能数据(过去30分钟)</label>
+</div>
+<div style="width:100%;">
+	<select id="single_host_refrash_time">
+		<option value='30'>30秒</option>
+		<option value='60'>1分钟</option>
+		<option value='120'>2分钟</option>
+		<option value='180'>3分钟</option>
+		<option value='240'>4分钟</option>
+		<option value='0'>off</option>
+	</select>
+	<button onclick="backToHost()" type="button" class="btn btn-default" style="float:right;">
+		返<span style="padding-left: 12px;" />回
+	</button>
+</div>
+<div id="host_cpu_usage_show_div" class="host_cpu_usage_show"></div>
+<div id="host_memory_usage_show_div" class="host_memory_usage_show"></div>
+<script>
+var hostIP = sessionStorage.getItem("hostIP");
+sessionStorage.removeItem("hostIP");
+$("#host_ip").text(hostIP);
+//刷新时间
+var single_host_get_info_clock_time = $("#single_host_refrash_time").val();
+
+//清除定时器，当重新加载当前页面时
+clearInterval(single_host_get_info_clock);
+//声明定时器，定时器用于间隔时间取数据重新绘制画图
+var single_host_get_info_clock = setInterval(function() {
+	if ($("#host_cpu_usage_show_div").length > 0) {
+		get_single_host_info();
+	}
+	else {
+		clearInterval(single_host_get_info_clock);
+	}
+}, single_host_get_info_clock_time * 1000);
+
+function get_single_host_info(){
+	$.ajax({
+	    url:"/monitor/host/" + hostIP + ".do",
+	    type: "GET",
+	    dataType:"json",
+	    success: function(data){
+	    	if($("#host_ip").text()!= data[0].name){
+	    		return;
+	    	}
+	    	if(data[0].time[0] == null){
+	    		return;
+	    	}
+	    	var host_cpu_data_time_index = data[0].time.length - 1;
+	    	var cpu_option = {
+	    		    title : {
+	    		        text: '主机历史CPU使用率',
+	    		        x: 'center'
+	    		    },
+	    		    tooltip : {
+	    		        trigger: 'axis',
+	    		        formatter: function(params) {
+	    		            return params[0].name + '<br/>'
+	    		                   + params[0].seriesName + ' : ' + params[0].value;
+	    		        }
+	    		    },
+	    		    xAxis : [
+	    		        {
+	    		            type : 'category',
+	    		            boundaryGap : false,//类目起始和结束两端空白策略，默认为true留空，false则顶头
+	    		            axisLine: {onZero: false},//坐标轴线，定位到垂直方向的0值坐标上
+	    		            axisTick:{
+	    		            	interval: function(index, data){
+	    		            		if(index % 10 == 0){
+	    		            			return true;
+	    		            		} else if(index == host_cpu_data_time_index){
+	    		            			return true;
+	    		            		} else{
+	    		            			return false;
+	    		            		}
+	    		            	}
+	    		            },
+	    		            axisLabel: {
+	    		            	interval: function(index, data){
+	    		            		if(index % 10 == 0){
+	    		            			return true;
+	    		            		} else if(index == host_cpu_data_time_index){
+	    		            			return true;
+	    		            		} else{
+	    		            			return false;
+	    		            		}
+	    		            	}
+	    		            },
+	    		            data : data[0].time
+	    		        }
+	    		    ],
+	    		    yAxis : [
+	    		        {
+	    		            name : 'CPU',
+	    		            type : 'value',
+	    		            max : data[0].limit,
+	    		            min: 0,
+	    		          	nameTextStyle:{
+	    		            	color:'rgb(0,0,0)'
+	    		            }
+	    		        }
+	    		    ],
+	    		    series : [
+	    		        {
+	    		            name:'CPU',
+	    		            type:'line',
+	    		          	symbolSize:0,
+	    		          	clickable:false,
+	    		            itemStyle: {normal: {areaStyle: {type: 'default', color: "rgb(143,219,220)"}}},
+	    		            data:data[0].value
+	    		        }
+	    		    ]
+	    	};
+	    	var cpu_usage_show_div = $("#host_cpu_usage_show_div");
+			var cpu_chart = echarts.init(cpu_usage_show_div[0]);
+			cpu_chart.setOption(cpu_option);
+			
+			var host_memory_data_time_index = data[1].time.length - 1;
+	    	var memory_option = {
+	    		    title : {
+	    		        text: '主机历史memory使用率',
+	    		        x: 'center'
+	    		    },
+	    		    tooltip : {
+	    		        trigger: 'axis',
+	    		        formatter: function(params) {
+	    		            return params[0].name + '<br/>'
+	    		                   + params[0].seriesName + ' : ' + params[0].value + 'G';
+	    		        }
+	    		    },
+	    		    xAxis : [
+	    		        {
+	    		            type : 'category',
+	    		            boundaryGap : false,//类目起始和结束两端空白策略，见下图，默认为true留空，false则顶头
+	    		            axisLine: {onZero: false},//坐标轴线，定位到垂直方向的0值坐标上
+	    		            axisTick:{
+	    		            	interval: function(index, data){
+	    		            		if(index % 10 == 0){
+	    		            			return true;
+	    		            		} else if(index == host_memory_data_time_index){
+	    		            			return true;
+	    		            		} else{
+	    		            			return false;
+	    		            		}
+	    		            	}
+	    		            },
+	    		            axisLabel: {
+	    		            	interval: function(index, data){
+	    		            		if(index % 10 == 0){
+	    		            			return true;
+	    		            		} else if(index == host_memory_data_time_index){
+	    		            			return true;
+	    		            		} else{
+	    		            			return false;
+	    		            		}
+	    		            	}
+	    		            },
+	    		            data : data[1].time
+	    		        }
+	    		    ],
+	    		    yAxis : [
+	    		        {
+	    		            name : 'MEMORY',
+	    		            type : 'value',
+	    		            max : data[1].limit,
+	    		            min: 0,
+	    		          	nameTextStyle:{
+	    		            	color:'rgb(0,0,0)'
+	    		            }
+	    		        }
+	    		    ],
+	    		    series : [
+	    		        {
+	    		            name:'MEMORY',
+	    		            type:'line',
+	    		          	symbolSize:0,
+	    		          	clickable:false,
+	    		            itemStyle: {normal: {areaStyle: {type: 'default', color: "rgb(143,219,220)"}}},
+	    		            data: data[1].value
+	    		        }
+	    		    ]
+	    	};
+			var memory_usage_show_div = $("#host_memory_usage_show_div");
+			var memory_chart = echarts.init(memory_usage_show_div[0]);
+			memory_chart.setOption(memory_option);
+	    }
+	});
+};
+
+//select change事件，改变刷新时间值
+$("#single_host_refrash_time").on("change",function(){
+	single_host_get_info_clock_time = $("#single_host_refrash_time").val();
+	//清除定时器
+	clearInterval(single_host_get_info_clock);
+	if(single_host_get_info_clock_time != 0){
+		//声明定时器，定时器用于间隔时间取数据重新绘制画图
+		single_host_get_info_clock = setInterval(function() {
+			if ($("#host_cpu_usage_show_div").length > 0) {
+				get_single_host_info();
+			}
+			else {
+				clearInterval(single_host_get_info_clock);
+			}
+		}, single_host_get_info_clock_time * 1000);
+	}
+});
+
+function backToHost(){
+	$("#menudashboard").addClass("active");
+	$("#menudashboard").children("ul").first().children("li").first().children("a").click();
+	/* $.each($("#menudashboard ul").first().children("li").children("a"),function(index, value){
+		if($(this).text() == "主机视图"){
+			$(this).click();
+			return false;
+		}
+	}); */
+};
+
+get_single_host_info();
+</script>

@@ -1,0 +1,387 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<!-- /.box-header -->
+			<div class="box-body">
+				<div style="padding-bottom: 5px;">
+					<button id="addBtn" class="btn btn-primary">新增</button>
+				</div>
+				<table id="frameTable" class="table table-bordered table-hover"
+					style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>名称</th>
+							<th>Cpu数量(个)</th>
+							<th>内存大小(MiB)</th>
+							<th>磁盘(MiB)</th>
+							<th>已结束任务数</th>
+							<th>运行中任务数</th>
+							<th>健康任务数</th>
+							<th>不健康任务数</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<!-- /.box-body -->
+		</div>
+		<!-- /.box -->
+	</div>
+	<!-- /.col -->
+</div>
+
+
+	<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="addOrEdit" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left;">Deploy New Service|Update Service</div>
+						<div style="float:right;">
+                            <button id="switchJsonModeBtn" class="btn btn-xs btn-white">JsonMode</button>&nbsp;&nbsp;&nbsp;
+						</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<form role="form" id="addOrEditForm" action="">
+					<!-- 隐藏字段 -->
+					<input type="text" id="isNew" name="isNew"  hidden="true" value=""/>
+
+					<div class="tabs-container">
+						<div class="tabs-left">
+							<ul class="nav nav-tabs">
+								<li class="active"><a data-toggle="tab" href="#tab-1" id="generalTab"> General</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-2"> Container Settings</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-3"> Network</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-4"> Environment Variables</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-5"> Labels</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-6"> Health Checks</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-7"> Volumes</a>
+								</li>
+								<li class=""><a data-toggle="tab" href="#tab-8"> Optional</a>
+								</li>
+							</ul>
+							<div class="tab-content ">
+								<div id="tab-1" class="tab-pane active">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>General</h3>
+											    <h5>Configure your container service here or install from Universe</h5>
+										    </div>
+											<div class="col-sm-12">
+												<label class="control-label">ID*&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="ID for the service"></span></label>
+												<input type="text" id="id" name="id" class="form-control" value="/">
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">CPUS*&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Amounts of CPUs used for the service"></span></label>
+												<input type="number" min="1" id="cpus" name="cpus" class="form-control" value="1" />
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">Memory (MiB)</label>
+												<input type="number" min="1" id="mem" name="mem" class="form-control" value="128" />
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">Disk (MiB)</label>
+												<input type="number" min="0" id="disk" name="disk" class="form-control" value="128" />
+											</div>
+											<div class="col-sm-3">
+												<label class="control-label">Instances</label>
+												<input type="number" min="0" id="instances" name="instances" class="form-control" value="0" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">Command*&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Command executed by the service"></span></label>
+												<input type="text" id="cmd" name="cmd" class="form-control"/>
+											</div>
+									</div>
+								</div>
+								<div id="tab-2" class="tab-pane">
+									<div class="panel-body">
+										 <div class="col-sm-12">
+												<h3>Container Settings</h3>
+											    <h5>Configure your Docker Container. You can configure your Docker volumes in the Volumes tab and your Docker ports in the Network tab.</h5>
+										 </div>
+										 <div class="col-sm-12">
+												<label class="control-label">Container Image&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Configure your Docker container.\n Use DockerHub to find popular repositories."></span></label>
+												<input type="text" id="dockerImage" name="dockerImage" class="form-control" value="" onchange="initNetworkType()">
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+												<input type="checkbox" id="dockerPrivileged" name="dockerPrivileged" value="true">Extend runtime privileges &nbsp;&nbsp;
+												<input type="checkbox" id="dockerForcePullImage" name="dockerForcePullImage" value="true">Force pull image on launch
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+											Docker Parameters
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										<div id="addParameterDiv"></div>
+										<div class="col-sm-2">
+											<div id="addParameter">+ Add Parameter</div>
+										</div>
+										<div class="col-sm-10">
+											&nbsp;
+										</div>
+									</div>
+								</div>
+								<div id="tab-3" class="tab-pane">
+									<div class="panel-body">
+										 <div class="col-sm-12">
+											<h3>Network</h3>
+											<h5>Configure the networking for your service. We will automatically generate a Service Address to connect to for each of your load balanced endpoints. Read more about load balancing.</h5>
+										 </div>
+										 <div id="initDockerNetwork">
+											 <div class="col-sm-4">
+												<label class="control-label">Network Type</label>
+												<select id="dockerNetwork" name="dockerNetwork" class="form-control" onchange="initDockerNetworkContent()">
+													<option value="HOST" selected="selected">HOST(Default)</option>
+													<option value="BRIDGE">Bridge</option>
+													<option value="USER">Virtual Network:dcos</option>
+												</select>
+											 </div>
+										 </div>
+										 <div class="col-sm-8">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div class="col-sm-12">
+											Service Endpoints
+										 </div>
+										 <div class="col-sm-12">
+											&nbsp;
+										 </div>
+										 <div id="addAnEndpointDiv">
+										 	
+										</div>
+										<div class="col-sm-12">
+											<div id="addAnEndpoint">+ Add an endpoint</div>
+										</div>
+									</div>
+								</div>
+								<div id="tab-4" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Environment Variables</h3>
+											    <h5>Set variables for each task your service launches. Learn more about variables.</h5>
+										    </div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div id="addEnvironmentVariableDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addEnvironmentVariable">+ Add Environment Variable</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-5" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Labels</h3>
+											    <h5>Attach metadata to services to expose additional information to other services.</h5>
+										    </div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div id="addLabelDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addLabel">+ Add Label</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-6" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Health Checks</h3>
+											    <h5>Perform health checks on running tasks to determine if they are operating as expected.</h5>
+										    </div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div id="addHealthCheckDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addHealthCheck">+ Add Another Health Check</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-7" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Volumes</h3>
+										    </div>
+											<div class="col-sm-12">
+											<label class="control-label">Persistent Local Volumes</label>
+											</div>
+											<div id="addLocalVolumeDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addLocalVolume">+ Add Local Volume</div>
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+											<label class="control-label">Docker Container Volumes</label>
+											</div>
+											<div id="addContainerVolumeDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addContainerVolume">+ Add Container Volume</div>
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+											<label class="control-label">External Volumes</label>
+											</div>
+											<div id="addExternalVolumeDiv">
+												
+											</div>
+											<div class="col-sm-12">
+												<div id="addExternalVolume">+ Add External Volume</div>
+											</div>
+									</div>
+								</div>
+								<div id="tab-8" class="tab-pane">
+									<div class="panel-body">
+											<div class="col-sm-12">
+												<h3>Optional</h3>
+										    </div>
+											<div class="col-sm-12">
+												<label class="control-label">Executor&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Executor must be the string '//cmd', a string containing only single slashes ('/'), or blank."></span></label>
+												<input type="text" id="executor" name="executor" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">URIs&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Comma-separated list of valid URIs"></span></label>
+												<input type="text" id="fetchUri" name="fetchUri" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">Constraints&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title='Comma-separated list of valid constraints. Valid constraint format is "field:operator[:value]". operator must be one of the following: [UNIQUE, LIKE, CLUSTER, GROUP_BY, UNLIKE, MAX_PER]'></span></label>
+												<input type="text" id="constraints" name="constraints" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">Accepted Resource Roles&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Comma-separated list of resource roles. Marathon considers only resource offers with roles in this list for launching tasks of this app."></span></label>
+												<input type="text" id="acceptedResourceRoles" name="acceptedResourceRoles" class="form-control" />
+											</div>
+											<div class="col-sm-12">
+											&nbsp;
+											</div>
+											<div class="col-sm-12">
+												<label class="control-label">User</label>
+												<input type="text" id="user" name="user" class="form-control" />
+											</div>
+									</div>
+								</div>
+							</div>
+						   </div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="cancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="sureBtn" type="button"
+						class="btn btn-outline btn-primary">确定</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+	
+	<!-- 模态框（Modal）新增或修改 -->
+	<div class="modal fade" id="jsonMode" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index: 100; width: 900px;">
+			<div class="modal-content">
+				<div class="modal-header" style="border-bottom-style:none;border-bottom-width:0px;border-bottom-color:#FFFFFF">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h3 class="modal-title" id="myModalLabel">
+						<div style="float:left">Deploy New Service|Update Service</div>
+						<div style="float:right">
+                            <button id="switchJsonModeBtn2" class="btn btn-xs btn-primary" type="button">JsonMode</button>&nbsp;&nbsp;&nbsp;
+						</div>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<form role="form" id="addOrEditForm" action="">
+							<div id="jsonModeDiv" style="width: 600px; height: 500px;"></div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<!--如果点击取消没有其他错做，可以直接加这个属性 data-dismiss="modal" ，是modal关闭-->
+					<button id="jsonModeCancelBtn" type="button"
+						class="btn btn-outline btn-default">取消</button>
+					<button id="jsonModeSureBtn" type="button"
+						class="btn btn-outline btn-primary">确定</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal -->
+	</div>
+	
+		<!-- json editor -->
+	<script src="/plugins/jsoneditor/jsoneditor.js"></script>
+
+	<script src="/plugins/validate/jquery.validate.min.js" ></script>
+	<script src="/plugins/validate/messages_zh.min.js" ></script>
+	
+	<script src="/plugins/bootbox/bootbox.js"></script>
+	
+	<script src="/plugins/store/store.js"></script>
+	
+	<script src="/marathon/js/jquery_extends.js"></script>
+	<script src="/marathon/js/self.common.js"></script>
+	
+	<script src="/marathon/frame_list.js"></script>
+	<script src="/marathon/initContainerSettings.js"></script>
+	<script src="/marathon/initNetwork.js"></script>
+	<script src="/marathon/initEnvironmentVariables.js"></script>
+	<script src="/marathon/initLabels.js"></script>
+	<script src="/marathon/initHealthChecks.js"></script>
+	<script src="/marathon/initVolumes.js"></script>
+	
+
+

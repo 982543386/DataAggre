@@ -1,0 +1,99 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			
+			<div class="box-body">
+				<table id="clusterTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>节点IP</th>
+							<th>节点类型</th>
+							<th>用户名</th>
+							<th>密码</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div class="box-footer">
+				<div class="box-tools pull-right">
+					<button id="back" class="btn btn-default" type="button">返回</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+	var cluster = JSON.parse(sessionStorage.getItem("dcos_cluster"));
+	console.log(cluster.id+"============");
+	var table = $('#clusterTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/dcos/nodes/"+cluster.id,
+							type: "GET",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "id"
+								},
+								{
+									"data" : "nodeIp"
+								},
+								{
+									"data" : "nodeType"
+								},
+								{
+									"data" : "sshUserName"
+								},
+								{
+									"data" : "sshUserPassword"
+								},
+								{
+									"defaultContent" : "&nbsp;<button class='btn btn-primary btn-xs del' style='background-color:red'>删除节点</button>"
+								} ]
+					});
+	// 删除 需要确定删除方式  
+	$('#clusterTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		
+		var delClusterNodeVO = {};
+		delClusterNodeVO.nodeIP = data.nodeIp;
+		delClusterNodeVO.sshUserName = data.sshUserName;
+		delClusterNodeVO.sshUserPassword = data.sshUserPassword;
+		
+		var delNodeArr = new Array();
+		delNodeArr.push(delClusterNodeVO);
+		
+		$.ajax({
+		       url: "/dcos/" + data.clusterId + "/delNode",
+		       type: "PUT",
+		       dataType: "json",
+		       contentType: "application/json; charset=utf-8", 
+		       data: JSON.stringify(delNodeArr),
+		       success: function(response, textStatus, jqXHR) {
+		           if (response['status'] > 0) {
+		        	   table.ajax.reload();
+		        	   alertSuccess('删除中', '删除需要几分钟的时间，请耐心等待！！！');
+		           } else {
+		        	   alertError('删除失败', '请联系管理员');
+		           }
+		       }
+		   });
+	});
+	
+	// 补充back事件
+	$("#back").click(function() {
+		$(".content").load("dcos_cluster.html");
+	});
+</script>

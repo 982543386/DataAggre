@@ -1,0 +1,240 @@
+<script type="text/javascript">
+	var orderId = sessionStorage.getItem("id");
+    $(document).ready(function() {
+        if (orderId !== null) {
+            $.ajax({
+                url: "k8Order/app/view",
+                type: "GET",
+                dataType: "json",
+                data: {
+                    orderId: orderId
+                },
+                success: function(data) {
+                    $("#orderNo").val(data.k8orderId);
+                    
+                    if (data.zone == 1) {
+                        $("#zone").val("亦庄");
+                    } else {
+                        $("#zone").val("廊坊");
+                    }
+
+                    $("#remark").val(data.remark);
+                   
+                    if (data.additionalService == 1) {
+                        $('#exService').val("是");
+                    } else  {
+                        $('#exService').val("否");
+                    } 
+                }
+            });
+            sessionStorage.removeItem("orderId");
+        } else {
+            alertError('ERROR', 'NO SESSION FOUND');
+        }
+    });
+    
+    function acceptOrder(){
+    	if (checkInput("#rely")) {
+    		var remark = $("#rely").val();
+    		var status = 1 ;
+            $.ajax({
+                url: "k8Order/db/finish",
+                type: "GET",
+                dataType: "json",
+                data: {
+                	 k8order_id:orderId,
+                	 remark_admin:remark,
+                	 status:status
+                                
+                },
+                success: function() {
+                }
+            });
+        }
+    }
+    
+     function installOrder(){
+    	//var command = $('#command').val();
+		//var type = mysql;
+		//alert("提交命令" + command);
+		$.ajax({
+			url : "ssh/exec/install/das",
+			type : "POST",
+			dataType : "json",
+			data : {
+				k8order_id:orderId,
+				type : "das"
+			},
+			success : function(response) {
+				
+				if (response == 1) {
+					alertSuccess(response, "命令发送成功.");
+					//$('section.content').load('devops/devops_check_user.html', function() {
+					//alertSuccess(response.message, "订单申请成功.");
+					//});
+
+				} else {
+					alertError("启动失败，请检查配置信息", response.message);
+				}
+			}
+		}); 
+
+    }
+    $("#installOrder").on("click",function(){
+    	installOrder();
+    	$("#installOrder").attr("disabled", true);
+   		//acceptOrder();
+   		//$('section.content').load('k8order/admin/all_k8order_admin.html', function() {
+		//	alertSuccess("订单回复成功.");
+	    //});	  
+   	 });
+    
+    
+	 $('#finishOrder').on("click",function(){	
+	        if (checkInput('#form')) {
+	    		var remark = $("#rely").val();
+	    		var status = 1 ;
+	            
+	            $.ajax({
+	                url: "k8Order/app/finish",
+	                type: "GET",
+	                dataType: "json",
+	                data: {
+	                	 k8order_id:orderId,
+	                	 remark_admin:remark,
+	                	 status:status	                                
+	                },
+	                success: function() {
+	                }
+	            });
+	        }
+			$('section.content').load('k8order/admin/all_k8order_admin.html', function() {
+				alertSuccess("订单回复成功.");
+		    });	  
+	    });
+     
+     
+     
+    $('#refuseOrder').on("click",function(){
+    	$('#refuseModalMsg').html('您确定要拒绝这个订单吗?');
+    	$('#refuseModal').modal().on('click', '#modal-refuse', function() {
+
+    		var remark = $('#rely').val();
+    		var status = 4 ;
+            $.ajax({
+                url: "k8Order/app/finish",
+                type: "GET",
+                dataType: "json",
+                data: {
+                	 k8order_id:orderId,
+                	 status:status,
+                	 remark_admin:remark            
+                },
+                success: function() {
+						
+                }
+            });
+
+    	});
+	
+    });
+    </script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-info">
+            <div class="box-header with-border">
+                <div class="col-sm-6 no-padding">
+                    <h3 class="box-title">应用服务订单处理</h3>
+				</div>
+            </div>
+            <div class="box-body">
+                <form class="form-horizontal" role="form" id="orderform">
+                    <div class="form-group no-margin-bottom">
+                
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" >订单号</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control lowercase validation" id="orderNo" placeholder="订单号" readonly="readonly" value="orderNumber" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group no-margin-bottom">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">资源分区</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="zone" readonly="readonly" value="亦庄或者廊坊" /></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">是否需要申请外部访问</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control lowercase validation" id="exService" readonly="readonly" value="是否需要外部访问" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group no-margin-bottom">
+                    <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">用户备注</label>
+                                <div class="col-sm-8">
+                                    <textarea type="text" class="form-control lowercase validation" id="remark" placeholder="remark" readonly="readonly" value="remark" /></div>
+                            </div>
+                        </div>
+                    
+						<div class="col-sm-6">
+							<div class="form-group">
+								<label class="col-sm-4 control-label">管理员回复信息</label>
+								<div class="col-sm-8">
+									<textarea type="text" class="form-control allow-special validation" id="rely"
+									placeholder="请在此处回复"  />
+								</div>
+							</div>
+						</div>			
+					</div>
+                </form>
+              	 <div class="modal-footer clearfix">
+               		 <div class="col-sm-7 col-sm-offset-3 no-padding">
+						<button type="button" class="btn btn-default" onclick="history.back();">
+							返<span style="padding-left: 12px" />回
+						</button>
+						<button id="refuseOrder" type="button" class="btn btn-danger" >
+							拒<span style="padding-left: 12px" />绝
+						</button>
+						<button id="installOrder" type="button" class="btn btn-info saveBtn" >
+							Helm启动
+                    	</button>
+                    	<button id="finishOrder" type="button" class="btn btn-primary saveBtn" >
+							同意
+                    	</button>
+                	</div>
+          		 </div>
+              <div class="modal modal-primary fade" id="refuseModal">
+			  	<div class="modal-dialog">
+					<div class="modal-content">
+					  <div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+						  <span>×</span></button>
+						<h4 class="modal-title">请确认</h4>
+					  </div>
+					  <div class="modal-body">
+						<p id="refuseModalMsg"/>
+					  </div>
+					  <div class="modal-footer">
+						<button type="button" class="btn btn-outline pull-left" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-outline" id="modal-refuse" data-dismiss="modal">确认</button>
+				 	 </div>
+					</div>
+				  </div>
+		       </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    

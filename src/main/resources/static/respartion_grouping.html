@@ -1,0 +1,208 @@
+<div class="row">
+	<div class="box">
+		<div class="box-header">
+			<h3 class="box-title">Node 分组操作</h3>
+		</div>
+		<div class="box-body">
+			<form class="form-horizontal" role="form">
+				<div class="form-group">
+					<label class="col-xs-3 control-label">PartitionName</label>
+					<div class="col-xs-7">
+						<input type="text" class="form-control" id="groupName" placeholder="组名字">
+					</div>
+				</div>
+				<div class="panel panel-info">
+					<div class="panel-heading">
+						<h3 class="panel-title">Node 列表</h3>
+					</div>
+					<div class="panel-body">
+						<table id="nodeTable" class="table table-bordered table-hover" style="font-size: 12px;">
+							<thead>
+								<tr>
+									<th style="width: 15px;"><input id="checkBox" type="checkbox"></th>
+									<th>Pod Name</th>
+									<th>Cpu Limit</th>
+									<th>Memory Limit</th>
+									<th>Pods Limit</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</form>
+			<div class="box-footer">
+				<div class="box-tools pull-right">
+					<button id="submit" class="btn btn-primary" type="button">保存</button>
+					<!-- 					<button id="selectAll" class="btn btn-primary" type="button">全选</button>
+					<button id="unSelect" class="btn btn-primary" type="button">全不选</button>
+					<button id="reverse" class="btn btn-primary" type="button">反选</button> -->
+					<button id="back" class="btn btn-default" type="button">返回</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$("#groupName").on('focusout',function (e) {
+		(function(id){
+			$(id).parent().find('.formtips').remove().end();
+			var v = $(id).val();
+			if(v === '')
+			{
+				$(id).closest('.form-group').addClass('has-error');
+	            $(id).parent().append('<span class="formtips" style="color:#dd4b39">不能为空!</span>');
+			}
+			else
+			{
+				$(id).closest('.form-group').removeClass('has-error').addClass('has-success');
+			}
+		})($(e.target));
+	});
+	(function(){
+		var submit = function(flag){
+			$("#submit").click(function() {
+				if($("#groupName").val()==""){
+					$("#groupName").closest('.form-group').addClass('has-error');
+					$("#groupName").parent().find('.formtips').remove().end();
+		            $("#groupName").parent().append('<span class="formtips" style="color:#dd4b39">不能为空!</span>');
+				}else{
+					var names = [];
+				    $("input[name='nameList']:checked").each(function(i, n) {
+				        names.push(n.value);
+				    });
+				    if(names.length==0&&flag==='add'){
+				    	var _div = $('<div/>');
+		                _div.load('alert_error.html',function() {
+			                    $(this).find('#title').html("ERROR");
+			                    $(this).find('#message').html("Must choose some Node!!!");
+			                    var child = $(this).children();
+			                    child.fadeTo(3000, 1);
+			                    $('.content').append(child);
+		                });
+				    }else{
+				        var para = {
+						        'names': names.join()
+						    }
+					    var groupName = $("#groupName").val().toLowerCase();
+					    $.ajax({
+					        url: "/respartions/nodes/" + groupName +"/"+flag,
+					        type: "POST",
+					        dataType: "json",
+					        data: para,
+					        success: function(response, textStatus, jqXHR) {
+					            if (response['status'] > 0) {
+					                var _name = groupName;
+					                var _div = $('<div/>');
+					                _div.load('alert_success.html',
+					                function() {
+					                    $(this).find('#title').html(response['message']);
+					                    $(this).find('#message').html("Group <strong>" + _name + "</strong> group nodes successfully.");
+					                    var child = $(this).children();
+					                    child.fadeTo(3000, 1).slideToggle(1000,
+						                    function() {
+						                        child.alert('close');
+						                    });
+					                    $('.content').append(child);
+					                });
+					            } else {
+					                var _div = $('<div/>');
+					                _div.load('alert_error.html',
+					                function() {
+					                    $(this).find('#title').html("ERROR");
+					                    $(this).find('#message').html(response['message']);
+					                    var child = $(this).children();
+					                    child.fadeTo(3000, 1,
+						                    function() {
+						                        setTimeout(function() {
+						                            child.slideToggle(2000,
+							                            function() {
+							                                child.alert('close');
+							                            })
+						                        },
+						                        5000);
+					                    });
+					                    $('.content').append(child);
+					                });
+					            }
+					        }
+					    });
+				    }
+				}
+			});
+		}
+		var mkTable = function(surl,isUpdate){
+			$('#nodeTable').DataTable({
+		        ajax:{
+					url:surl,
+					error: function (XMLHttpRequest, textStatus, errorThrown) 
+					{
+						if(JSON.parse(XMLHttpRequest.status) === 403)
+						{
+							window.location.replace('/login.html');
+						}
+					}
+				},
+			    "columns": [{
+			        "data": "name",
+			        "render": function(data, type, row) {
+			        	if(isUpdate){
+			        		if(row.checked){
+			        			return "<input type='checkbox' name='nameList' checked value='" + data + "'/>";
+			        		}else{
+			        			return "<input type='checkbox' name='nameList' value='" + data + "'/>";
+			        		}
+			        	}else{
+			        		return "<input type='checkbox' name='nameList' value='" + data + "'/>";			        		
+			        	}
+			        }
+			    },
+			    {
+			        "data": "name"
+			    },
+			    {
+			        "data": "cpuLimit"
+			    },
+			    {
+			        "data": "memoryLimit",
+			        "render": function(data, type, row) {
+			            return data + "Ki";
+			        }
+			    },
+			    {
+			        "data": "podLimit"
+			    }],
+			    columnDefs: [{
+			        orderable: false,//禁用排序
+			        targets: 0//指定的列
+			    }]
+			});
+		}
+		if(sessionStorage.getItem("groupName")){
+			var groupName = sessionStorage.getItem("groupName");
+			sessionStorage.removeItem("groupName");
+			$("#groupName").val(groupName).prop('disabled',true);
+			mkTable("/respartions/nodes/"+groupName,true);
+			submit("update");
+		}else{
+			mkTable("/respartions/nodes");
+			submit("add");
+		}
+	})()
+	$("#checkBox").click(function() {
+	    $("tbody :checkbox").prop("checked", this.checked);
+	});
+	$("#selectAll").click(function() { //全选
+	    $("#nodeTable :checkbox").prop("checked", true);
+	});
+	$("#unSelect").click(function() { //全不选
+	    $("#nodeTable :checkbox").prop("checked", false);
+	});
+	$("#reverse").click(function() { //反选
+	    $("#nodeTable :checkbox").each(function() {
+	        $(this).prop("checked", !$(this).prop("checked"));
+	    });
+	});
+	$("#back").click(function() {
+		$(".content").load("respartion_main.html");
+	});
+</script>

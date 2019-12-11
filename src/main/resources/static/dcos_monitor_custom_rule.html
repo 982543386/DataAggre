@@ -1,0 +1,119 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<button id="add" class="btn btn-primary" type="button">新增定义</button>
+			</div>
+			<div class="box-body">
+				<table id="ruleTable" class="table table-bordered table-hover" style="font-size: 12px;">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>规则名称</th>
+							<th>集群信息</th>
+							<th>应用信息</th>
+							<th>指标信息</th>
+							<th>比较条件</th>
+							<th>比较值</th>
+							<th>持续次数</th>
+							<th>云处理</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$.getScript("../js/date.format.js");
+
+	var table = $('#ruleTable')
+			.DataTable(
+					{
+				        ajax:{
+							url:"/monitorRule/list",
+							type: "GET",
+							error: function (XMLHttpRequest, textStatus, errorThrown) 
+							{
+								if(JSON.parse(XMLHttpRequest.status) === 403)
+								{
+									window.location.replace('/login.html');
+								}
+							}
+						},
+						"columns" : [
+								{
+									"data" : "id"
+								},
+								{
+									"data" : "ruleName"
+								},
+								{
+									"data" : "clusterId"
+								},
+								{
+									"data" : "appId"
+								},
+								{
+									"data" : "counterName"
+								},
+								{
+									"data" : "conditionType",
+									"render" : function(data, type, row) {
+										
+										if (data == 1) {
+											return "大于";
+										} else {
+											return "小于";
+										}
+									}
+								},
+								{
+									"data" : "conditionValue"
+								},
+								
+								{
+									"data" : "span"
+								},
+								{
+									"data" : "ruleType",
+									"render" : function(data, type, row) {
+										if (data == -1) {
+											return "缩减集群";
+										} else {
+											return "扩大集群";
+										}
+									}
+								},
+								{
+									"defaultContent" : "<button class='btn btn-primary btn-xs update'>修改</button>&nbsp;&nbsp;<button class='btn btn-primary btn-xs del' style='background-color:red'>删除</button>"
+								} ]
+					});
+	// 删除 需要确定删除方式  
+	$('#ruleTable tbody').on('click', 'button.del', function() {
+		var data = table.row($(this).parents('tr')).data();
+		$.ajax({
+		       url: "/monitorRule/" + data.id,
+		       type: "DELETE",
+		       contentType: "application/json; charset=utf-8", 
+		       dataType: "json",
+		       success: function(response, textStatus, jqXHR) {
+		    	   table.ajax.reload();
+		    	   alertSuccess('删除成功');
+		       }
+		   }); 
+		 
+	});
+	$('#ruleTable tbody').on('click', 'button.update', function() {
+		var data = table.row($(this).parents('tr')).data();
+		sessionStorage.setItem("monitor_rule", JSON.stringify(data));
+		$('.content').load('dcos_add_monitor_rule.html');
+	});
+	$("#add").click(function() {
+		if(sessionStorage.getItem("monitor_rule")){
+			sessionStorage.removeItem("monitor_rule");
+		}
+		$(".content").load("dcos_add_monitor_rule.html");
+	});
+</script>

@@ -1,0 +1,475 @@
+<style type="text/css">
+#all_info_show_cpu_div,#all_info_show_memory_div,#all_info_show_disk_div {
+	width: 350px;
+	height: 250px;
+	display: inline-block;
+}
+.myTitle{
+	font-size: 20px;
+	font-weight: bold;
+}
+</style>
+<div id="all_info_show_div">
+	<div id="all_info_show_cpu_div">
+		<div class="col-sm-9" id="all_info_show_cpu_div_info" style="display:none; height:250px; width:350px; margin-top:5px;">
+			<div class="callout callout-danger">
+			<h4><i class="icon fa fa-warning"></i></h4>
+			<p></p>
+			</div>
+		</div>
+	</div>
+
+
+		<div id="all_info_show_memory_div">
+		<div class="col-sm-9" id="all_info_show_memory_div_info" style="display:none; height:250px; width:350px; margin-top:5px;">
+			<div class="callout callout-danger">
+			<h4><i class="icon fa fa-warning"></i></h4>
+			<p></p>
+			</div>
+		</div>
+	</div>
+	
+		<div id="all_info_show_disk_div">
+		<div class="col-sm-9" id="all_info_show_disk_div_info" style="display:none; height:250px; width:350px; margin-top:5px;">
+			<div class="callout callout-danger">
+			<h4><i class="icon fa fa-warning"></i>硬盘</h4>
+			<p></p>
+			</div>
+		</div>
+	</div>
+	<br />
+	
+
+	
+	<span class="myTitle">DCOS 节点信息</span>
+	<table id="all_info_show_nodes_div" class="table table-bordered table-hover" cellspacing="0" width="100%" style="background-color: white;">
+		<thead>
+			<th>节点IP</th>
+			<th>节点状态</th>
+			<th>成员角色</th>
+			<th>cpu使用情况(used/Avelibale)</th>
+			<th>memory使情况(used/Avelibale)</th>
+		</thead>
+        <tbody></tbody>
+    </table>
+    
+    
+	<!-- 
+	
+		<span class="myTitle">Appliaction 信息</span>
+	<table id="all_info_show_app_div" class="table table-bordered table-hover" cellspacing="0" width="100%" style="background-color: white;">
+		<thead>
+			<th>appliaction名字</th>
+			<th>service名字</th>
+			<th>pod数量</th>
+			<th>cpu使用率</th>
+			<th>memory使用率</th>
+		</thead>
+        <tbody></tbody>
+    </table>
+	
+	 -->
+
+    <span class="myTitle">K8s public service 信息</span>
+	<table id="all_info_show_service_div" class="table table-bordered table-hover" cellspacing="0" width="100%" style="background-color: white;">
+	<thead>
+			<th>public service名字</th>
+			<th>service名字</th>
+			<th>pod数量</th>
+			<th>cpu使用率</th>
+			<th>memory使用率</th>
+		</thead>
+        <tbody>
+        </tbody>
+    </table>
+    <span class="myTitle">系统事件</span>
+	<table id="all_info_show_events_div" class="table table-bordered table-hover" cellspacing="0" width="100%" style="background-color: white;">
+		<thead>
+			<th>FIRSTSEEN</th>
+			<th>LASTSEEN</th>
+			<th>COUNT</th>
+			<th>NAME</th>
+			<th>KIND</th>
+			<th>SUBOBJECT</th>
+			<th>REASON</th>
+			<th>SOURCE</th>
+			<th>MESSAGE</th>
+		</thead>
+    </table>
+   
+</div>
+<script>
+	$(function(){
+		
+		
+		$.ajax({
+			url : "/monitor/all",
+			type : "GET",
+			dataType : "json",
+			success : function(response) {
+				switch(response.status){
+					case -2:
+						
+					case -1:
+						$("#all_info_show_cpu_div_info").find("h4").text("CPU综合使用情况" + "\n" + "ERROR:");
+						$("#all_info_show_cpu_div_info").find("p").text(response.message);
+						$("#all_info_show_cpu_div_info").show();
+						$("#all_info_show_memory_div_info").find("h4").text("memory综合使用情况" + "\n"+ "ERROR:");
+						$("#all_info_show_memory_div_info").find("p").text(response.message);
+						$("#all_info_show_memory_div_info").show();
+						//硬盘使用情况
+						$("#all_info_show_disk_div").find("h4").text("磁盘综合使用情况" + "\n"+ "ERROR:");
+						$("#all_info_show_disk_div").find("p").text(response.message);
+						$("#all_info_show_disk_div").show();
+						break;
+					case 1:
+						$("#all_info_show_cpu_div_info").find("h4").text("CPU综合使用情况" + "\n" + "Warning");
+						$("#all_info_show_cpu_div_info").find("p").text(response.message);
+						$("#all_info_show_cpu_div_info").show();
+						$("#all_info_show_memory_div_info").find("h4").text("memory综合使用情况" + "\n"+ "Warning");
+						$("#all_info_show_memory_div_info").find("p").text(response.message);
+						$("#all_info_show_memory_div_info").show();
+						//硬盘使用情况
+						$("#all_info_show_disk_div").find("h4").text("磁盘综合使用情况" + "\n"+ "ERROR:");
+						$("#all_info_show_disk_div").find("p").text(response.message);
+						$("#all_info_show_disk_div").show();
+						break;
+					case 0:
+						$("#all_info_show_cpu_div_info").hide();
+						$("#all_info_show_memory_div_info").hide();
+						$("#all_info_show_disk_div_info").hide();
+						var data = response.data;
+						var myRadius = 70;
+						var myCenter = ['50%', '40%'];
+						
+						var dataStyle = {
+							normal : {
+								label : {
+									show : false
+								},
+								labelLine : {
+									show : false
+								}
+							}
+						};
+
+						//cpu 综合使用情况pie
+						var all_info_show_cpu_div_option = {
+							title : {
+								text: 'CPU综合使用情况',
+								x:'center'
+							},
+							tooltip : {
+								trigger: 'item',
+								formatter: "{b} : {c} ({d}%)"
+							},
+							legend: {
+								x : 'center',
+								y: 180,
+								data:['已使用','未使用']
+							},
+							series : [
+								{
+									type:'pie',
+									radius : myRadius,
+									center: myCenter,
+									itemStyle: dataStyle,
+									data:[
+										{value:data.cpuUsage, name:'已使用'},
+										{value:data.cpuAveliable, name:'未使用'}
+									]
+								}
+							]
+						};
+						
+						var all_info_show_cpu_div_chart = echarts.init($("#all_info_show_cpu_div")[0]);
+						all_info_show_cpu_div_chart.setOption(all_info_show_cpu_div_option);
+						
+						//memory 综合使用情况pie
+						var all_info_show_memory_div_option = {
+							title : {
+								text: 'memory综合使用情况(单位G)',
+								x:'center'
+							},
+							tooltip : {
+								trigger: 'item',
+								formatter: "{b} : {c} ({d}%)"
+							},
+							legend: {
+								x : 'center',
+								y: 180,
+								data:['已使用','未使用']
+							},
+							series : [
+								{
+									type:'pie',
+									radius : myRadius,
+									center: myCenter,
+									itemStyle: dataStyle,
+									data:[
+										{value:data.memoryUsage, name:'已使用'},
+										{value:data.memoryAvelibale, name:'未使用'}
+									]
+								}
+							]
+						};
+						var all_info_show_memory_div_chart = echarts.init($("#all_info_show_memory_div")[0]);
+						all_info_show_memory_div_chart.setOption(all_info_show_memory_div_option);
+						
+						//memory 综合使用情况pie
+						var all_info_show_disk_div_option = {
+							title : {
+								text: '磁盘综合使用情况(单位T)',
+								x:'center'
+							},
+							tooltip : {
+								trigger: 'item',
+								formatter: "{b} : {c} ({d}%)"
+							},
+							legend: {
+								x : 'center',
+								y: 180,
+								data:['已使用','未使用']
+							},
+							series : [
+								{
+									type:'pie',
+									radius : myRadius,
+									center: myCenter,
+									itemStyle: dataStyle,
+									data:[
+										{value:data.diskUsage, name:'已使用'},
+										{value:data.diskAvelibale, name:'未使用'}
+									]
+								}
+							]
+						};
+						
+						var all_info_show_disk_div_chart = echarts.init($("#all_info_show_disk_div")[0]);
+				
+						all_info_show_disk_div_chart.setOption(all_info_show_disk_div_option);
+					
+						break;
+					default:
+						console.info("Unknown case!");
+				}
+			}
+		});
+		
+		
+		$.ajax({
+			url : "/monitor/dcosnodes",
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				//alert(data.length);
+				for(var i = 0; i < data.length; i++){
+					//alert(data[i].NodeIP);
+					var resourceUsage = data[i].resourceUsage;
+					//alert(resourceUsage);
+					var tr = $("<tr></tr>"); 
+					$("<td>" + "<a href=\"javascript:void(0);\" class='goApplication'>" + data[i].NodeIP + "</a>" +"</td>").appendTo(tr);
+					if(data[i].Health=="0"){
+						$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + "Health" + "</a>" + "</td>").appendTo(tr);
+					}else {
+						
+						$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + "unHealth" + "</a>" + "</td>").appendTo(tr);
+					}
+					
+					$("<td>" +  data[i].Role + "</td>").appendTo(tr);
+					$("<td>" + resourceUsage.cpuUsage + "/" + resourceUsage.cpuAveliable + "</td>").appendTo(tr);
+					$("<td>" + resourceUsage.memoryUsage + "GB/" + resourceUsage.memoryAvelibale + "GB</td>").appendTo(tr);
+					tr.appendTo($("#all_info_show_nodes_div tbody"));
+					/*
+					if(resourceUsage.length == 0){
+						var tr_for_onlyOne = $("<tr></tr>");
+						$("<td>" + "<a href=\"javascript:void(0)\" class='goApplication'>" + data[i].NodeIP + "</a>" +"</td>").appendTo(tr_for_onlyOne);
+						$("<td>no service</td>").appendTo(tr_for_onlyOne);
+						$("<td>0</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						tr_for_onlyOne.appendTo($("#all_info_show_app_div tbody"));
+					}
+					else{
+						for(var j = 0; j < resourceUsage.length; j++){
+							var tr = $("<tr></tr>");
+							$("<td>" + "<a href=\"javascript:void(0);\" class='goApplication'>" + data[i].NodeIP + "</a>" +"</td>").appendTo(tr);
+							$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + data[i].Health + "</a>" + "</td>").appendTo(tr);
+							$("<td>" + resourceUsage[j].pod_amount + "</td>").appendTo(tr);
+							$("<td>" + resourceUsage[j].allCpuUsage + "/" + resourceUsage[j].allCpuLimit + "</td>").appendTo(tr);
+							$("<td>" + resourceUsage[j].allMemoryUsage + "/" + resourceUsage[j].allMemoryLimit + "</td>").appendTo(tr);
+							tr.appendTo($("#all_info_show_nodes_div tbody"));
+						}
+					}*/
+				}
+				//dataTables app
+				$('#all_info_show_nodes_div').DataTable();
+				$(".goApplication").on("click",function(){
+					$("#menuapplication").addClass("active");
+					$("#menuapplication").children("ul").children("li").eq(1).children("a").click();
+					/* $.each($("#menuapplication").children("ul").children("li").children("a"),function(index,value){
+						if($(this).text() == "我的应用"){
+							$(this).click();
+							return false;
+						}
+					}); */
+				});
+				$(".appToService").on("click",function(){
+					var _this = this;
+					$("#menudashboard").addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).children("ul").first().children("li").children("a").each(function(index){
+						if($(this).text() == $(_this).text()){
+							$(this).click();
+						}
+					});
+					/* $.each($("#menudashboard ul").first().children("li").children("a"),function(){
+						if($(this).text() == "服务视图"){
+							$(this).click();
+						}
+					}); */
+				});
+			}
+		});
+		
+		
+		/*
+		$.ajax({
+			url : "/monitor/application",
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				for(var i = 0; i < data.length; i++){
+					var serviceInfos = data[i].serviceInfo;
+					if(serviceInfos.length == 0){
+						var tr_for_onlyOne = $("<tr></tr>");
+						$("<td>" + "<a href=\"javascript:void(0)\" class='goApplication'>" + data[i].name + "</a>" +"</td>").appendTo(tr_for_onlyOne);
+						$("<td>no service</td>").appendTo(tr_for_onlyOne);
+						$("<td>0</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						tr_for_onlyOne.appendTo($("#all_info_show_app_div tbody"));
+					}
+					else{
+						for(var j = 0; j < serviceInfos.length; j++){
+							var tr = $("<tr></tr>");
+							$("<td>" + "<a href=\"javascript:void(0);\" class='goApplication'>" + data[i].name + "</a>" +"</td>").appendTo(tr);
+							$("<td>" + "<a href='javascript:void(0)' class='appToService'>" + serviceInfos[j].service_name + "</a>" + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].pod_amount + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].allCpuUsage + "/" + serviceInfos[j].allCpuLimit + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].allMemoryUsage + "/" + serviceInfos[j].allMemoryLimit + "</td>").appendTo(tr);
+							tr.appendTo($("#all_info_show_app_div tbody"));
+						}
+					}
+				}
+				//dataTables app
+				$('#all_info_show_app_div').DataTable();
+				$(".goApplication").on("click",function(){
+					$("#menuapplication").addClass("active");
+					$("#menuapplication").children("ul").children("li").eq(1).children("a").click();
+					/* $.each($("#menuapplication").children("ul").children("li").children("a"),function(index,value){
+						if($(this).text() == "我的应用"){
+							$(this).click();
+							return false;
+						}
+					}); */
+				//});
+				/*
+				$(".appToService").on("click",function(){
+					var _this = this;
+					$("#menudashboard").addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).children("ul").first().children("li").children("a").each(function(index){
+						if($(this).text() == $(_this).text()){
+							$(this).click();
+						}
+					});
+					/* $.each($("#menudashboard ul").first().children("li").children("a"),function(){
+						if($(this).text() == "服务视图"){
+							$(this).click();
+						}
+					}); */
+				//});
+			//}
+		//});
+		
+		$.ajax({
+			url : "/monitor/publicService",
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				for(var i = 0; i < data.length; i++){
+					var serviceInfos = data[i].serviceInfo;
+					if(serviceInfos.length == 0){
+						var tr_for_onlyOne = $("<tr></tr>");
+						$("<td>" + "<a href=\"javascript:void(0)\" class='goService'>" + data[i].name + "</a>" +"</td>").appendTo(tr_for_onlyOne);
+						$("<td>no service</td>").appendTo(tr_for_onlyOne);
+						$("<td>0</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						$("<td>0/100</td>").appendTo(tr_for_onlyOne);
+						tr_for_onlyOne.appendTo($("#all_info_show_service_div tbody"));
+					}
+					else{
+						for(var j = 0; j < serviceInfos.length; j++){
+							var tr = $("<tr></tr>");
+							$("<td>" + "<a href=\"javascript:void(0);\" class='goService'>" + data[i].name + "</a>" +"</td>").appendTo(tr);
+							$("<td>" + "<a href='javascript:void(0)' class='pubToService'>" + serviceInfos[j].service_name + "</a>" + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].pod_amount + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].allCpuUsage + "/" + serviceInfos[j].allCpuLimit + "</td>").appendTo(tr);
+							$("<td>" + serviceInfos[j].allMemoryUsage + "/" + serviceInfos[j].allMemoryLimit + "</td>").appendTo(tr);
+							tr.appendTo($("#all_info_show_service_div tbody"));
+						}
+					}
+				}
+				//dataTables service
+				$('#all_info_show_service_div').DataTable();
+				$(".goService").on("click",function(){
+					$("#menuapplication").addClass("active");
+					$("#menuapplication").children("ul").children("li").eq(2).children("a").click();
+				});
+				$(".pubToService").on("click",function(){
+					var _this = this;
+					$("#menudashboard").addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).addClass("active");
+					$("#menudashboard ul").first().children("li").eq(1).children("ul").first().children("li").children("a").each(function(index){
+						if($(this).text() == $(_this).text()){
+							$(this).click();
+						}
+					});
+				});
+			}
+		});
+		
+		$('#all_info_show_events_div').DataTable({
+	        "ajax":"/monitor/systemEvents",
+	        "columns": [
+						{ "data": "firstSeen" },
+	        			{ "data": "lastSeen" },
+	        			{ "data": "count" },
+	        			{ "data": "name" },
+	        			{ "data": "kind" },
+	        			{ "data": "subObject" },
+	        			{ "data": "reason" },
+	        			{ "data": "source" },
+	        			{ "data": "message" }
+	        		]
+	    });
+		
+		$("#all_info_show_cpu_div").on("click",function(){
+			$("#menudashboard").addClass("active");
+			$("#menudashboard ul").first().children("li").eq(0).addClass("active");
+			$("#menudashboard ul").first().children("li").eq(0).children("ul").first().children("li").first().children("a").click();
+			/* $("#menudashboard").children("ul").first().children("li").first().children("a").click(); */
+		});
+		$("#all_info_show_memory_div").on("click",function(){
+			$("#menudashboard").addClass("active");
+			$("#menudashboard ul").first().children("li").eq(0).addClass("active");
+			$("#menudashboard ul").first().children("li").eq(0).children("ul").first().children("li").first().children("a").click();
+		});
+		$("#all_info_show_disk_div").on("click",function(){
+			$("#menudashboard").addClass("active");
+			$("#menudashboard ul").first().children("li").eq(0).addClass("active");
+			$("#menudashboard ul").first().children("li").eq(0).children("ul").first().children("li").first().children("a").click();
+		});
+	});
+</script>

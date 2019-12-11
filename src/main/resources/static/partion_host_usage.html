@@ -1,0 +1,304 @@
+<style type="text/css">
+div.mychart {
+	display: inline-block;
+	width: 200px;
+	height: 160px;
+}
+
+#partion_host_usage_show_div {
+	width: 1000px;
+}
+
+#partion_host_usage_show_legend_div {
+	width: 200px;
+	height: 20px;
+	display: inline-block;
+}
+
+#partion_all_host_info {
+	width: 200px;
+	height: 20px;
+	display: inline-block;
+}
+</style>
+<div id="partion_all_host_info">
+	<label>主机数量：</label><span id="partion_host_amout"></span>
+</div>
+<div id="partion_host_usage_show_legend_div" class="partion_host_usage_show_legend"></div>
+<br />
+<select id="partion_host_refrash_time">
+	<option value='30'>30秒</option>
+	<option value='60'>1分钟</option>
+	<option value='120'>2分钟</option>
+	<option value='180'>3分钟</option>
+	<option value='240'>4分钟</option>
+	<option value='0'>off</option>
+</select>
+<div id="partion_host_usage_show_div" class="partion_host_usage_show"></div>
+<div class="col-sm-9" id="partion_host_usage_warning_info" style="display:none; height:400px; width:1000px; margin-top:5px;">
+	<div class="callout callout-danger">
+	<h4><i class="icon fa fa-warning"></i>Warning</h4>
+	<p>There has no hosts!</p>
+	</div>
+</div>
+<script>
+	var partion_group = $("h1#title").children("small").text();
+	//刷新时间
+	var partion_host_get_info_clock_time = $("#partion_host_refrash_time").val();
+	//环形图内外半径
+	var innerRadius = [ 25, 50 ];
+	var outerRadius = [ 50, 75 ];
+	//环形图显示部分(即图中的利用率)格式，不显示线条和标签
+	var dataStyle = {
+		normal : {
+			label : {
+				show : false
+			},
+			labelLine : {
+				show : false
+			}
+		}
+	};
+	//环形图不显示部分(即图中的右侧灰色部分)格式，颜色和边框以及线条和标签
+	var placeHolderStyle = {
+		normal : {
+			color : 'rgba(200,200,200,0.5)',
+			label : {
+				show : false
+			},
+			labelLine : {
+				show : false
+			},
+			borderColor : "rgba(150,150,150,0.8)"
+		},
+		emphasis : {
+			color : 'rgba(200,200,200,0.5)',
+			borderColor : "rgba(150,150,150,0.8)"
+		}
+	};
+	//图例的画图参数
+	var legend_option = {
+			legend : {
+				itemGap : 12,
+				data : [ "内存使用率", "CPU使用率" ],
+				itemWidth : 10
+			},
+			series : [ {
+				type : 'pie',
+				radius : [ 0, 0 ],
+				itemStyle : dataStyle,
+				data : [ {
+					value : 0,
+					name : '内存使用率',
+					itemStyle : {
+						normal : {
+							color : "rgb(64,136,41)"
+						}
+					}
+				} ]
+			}, {
+				type : 'pie',
+				radius : [ 0, 0 ],
+				itemStyle : dataStyle,
+				data : [ {
+					value : 0,
+					name : 'CPU使用率',
+					itemStyle : {
+						normal : {
+							color : "rgb(104,165,71)"
+						}
+					}
+				} ]
+			} ]
+		};
+	//清除定时器，当重新加载当前页面时
+	clearInterval(partion_host_get_info_clock);
+	//声明定时器，定时器用于间隔时间取数据重新绘制画图
+	var partion_host_get_info_clock = setInterval(function() {
+		if ($("#host_usage_show_div").length > 0) {
+			getPartionInfo();
+		}
+		else {
+			clearInterval(partion_host_get_info_clock);
+		}
+	}, partion_host_get_info_clock_time * 1000);
+	
+	//ajax请求数据，成功时绘制画图
+	function getPartionInfo(){
+		$.ajax({
+			url : "/monitor/partionGroup/" + partion_group,
+			type : "GET",
+			dataType : "json",
+			success : function(response) {
+				switch(response.status){
+					case -1:
+						
+					case -2:
+						$("#partion_host_usage_warning_info").hide();
+						$("#partion_host_amout").text("");
+						$("#partion_host_usage_show_div").load('alert_error.html', function(){
+							$(this).find('#title').html("ERROR:").end().find('#message').html(response.message);
+							var content = $(this).children();
+							content.fadeTo(3000, 1).slideToggle(500, function(){
+								 content.alert('close');
+							});
+						});
+						break;
+					case 1:
+						$("#partion_host_usage_warning_info").show();
+						$("#partion_host_amout").text("0");
+						break;
+					case 0:
+						$("#partion_host_usage_warning_info").hide();
+						var data = response.data;
+						//显示主机数量
+						$("#partion_host_amout").text(data.length);
+						
+						//显示legend
+						var legend_div = $("#partion_host_usage_show_legend_div");
+						var legend_chart = echarts.init(legend_div[0]);
+						legend_chart.setOption(legend_option);
+
+						//main pies，信息主显示区
+						var show_div = $("#partion_host_usage_show_div");
+						//当重新发起请求时，清除当前页面上所有的画框
+						show_div.children().remove();
+						//根据返回信息创建DOM，以及画图
+						for (var i = 0; i < data.length; i++) {
+							var mydiv = $("<div>", {
+								id : "main" + i,
+								class : "mychart",
+								"ip" : data[i].title
+							});
+							//绑定click事件，跳转历史记录页面
+							mydiv.on("click", function() {
+								clearInterval(partion_host_get_info_clock);
+								sessionStorage.setItem("host_title", $(this).attr(
+										"ip"));
+								$('.content').load('single_host_usage.html');
+							});
+							mydiv.appendTo(show_div);
+							//画图的参数
+							var option = {
+								tooltip : {
+									show : true,
+									formatter : "{b} : {d}%"
+								},
+								animation: false,
+								title : {
+									text : data[i].title,
+									x : 'center',
+									y : 'center',
+									textStyle : {
+										fontSize : 8
+									}
+								},
+								series : [
+										{
+											type : 'pie',
+											clockWise : false,
+											radius : outerRadius,
+											itemStyle : dataStyle,
+											data : [
+													{
+														value : data[i].memoryUsage,
+														name : '内存使用率',
+														//自定义颜色，当使用率为60%以下时绿色，60%-80%黄色，80%以上红色
+														itemStyle : {
+															normal : {
+																text : "",
+																color : function(
+																		message) {
+																	var use_percent = message.data.value
+																			/ (message.data.value + message.series.data[1].value);
+																	if (use_percent < 0.6) {
+																		return "rgb(64,136,41)";
+																	} else if (use_percent >= 0.6
+																			&& use_percent < 0.8) {
+																		return "yellow";
+																	} else {
+																		return "red";
+																	}
+																},
+																borderColor : "rgba(150,150,150,0.8)"
+															}
+														}
+													},
+													{
+														value : data[i].memoryAvelibale,
+														name : 'invisible',
+														itemStyle : placeHolderStyle,
+														tooltip : {
+															show : false
+														}
+													} ]
+										},
+										{
+											type : 'pie',
+											clockWise : false,
+											radius : innerRadius,
+											itemStyle : dataStyle,
+											data : [
+													{
+														value : data[i].cpuUsage,
+														name : 'CPU使用率',
+														itemStyle : {
+															normal : {
+																text : "",
+																color : function(
+																		message) {
+																	var use_percent = message.data.value
+																			/ (message.data.value + message.series.data[1].value);
+																	if (use_percent < 0.6) {
+																		return "rgb(104,165,71)";
+																	} else if (use_percent >= 0.6
+																			&& use_percent < 0.8) {
+																		return "yellow";
+																	} else {
+																		return "red";
+																	}
+																},
+																borderColor : "rgba(150,150,150,0.8)"
+															}
+														}
+													},
+													{
+														value : data[i].cpuAveliable,
+														name : 'invisible',
+														itemStyle : placeHolderStyle,
+														tooltip : {
+															show : false
+														}
+													} ]
+										} ]
+							};
+							var myChart = echarts.init(mydiv[0]);
+							myChart.setOption(option);
+						}
+						break;
+					default: 
+						console.log('Unknown case..');
+				}
+			}
+		});
+	};
+	//select change事件，改变刷新时间值
+	$("#partion_host_refrash_time").on("change",function(){
+		partion_host_get_info_clock_time = $("#partion_host_refrash_time").val();
+		//清除定时器
+		clearInterval(partion_host_get_info_clock);
+		if(partion_host_get_info_clock_time != 0){
+			//声明定时器，定时器用于间隔时间取数据重新绘制画图
+			partion_host_get_info_clock = setInterval(function() {
+				if ($("#partion_host_usage_show_div").length > 0) {
+					getPartionInfo();
+				}
+				else {
+					clearInterval(partion_host_get_info_clock);
+				}
+			}, partion_host_get_info_clock_time * 1000);
+		}
+	});
+	//初次加载信息
+	getPartionInfo();
+</script>
